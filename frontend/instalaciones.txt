@@ -1,0 +1,30 @@
+# Tailwind CSS
+npm install tailwindcss @tailwindcss/vite
+
+# React router
+npm i react-router-dom
+
+#Axios
+npm i axios
+
+#React toast
+npm i react-hot-toast
+
+# React datatables
+npm i react-data-table-component
+
+# React query
+npm i @tanstack/react-query@4
+
+# Dotenv
+npm i dotenv
+
+# Lucide react (iconos)
+npm install lucide-react
+
+# Framer motion (para animaciones)
+npm install framer-motion
+
+# Formularios con yup
+npm install @hookform/resolvers
+npm i yup
