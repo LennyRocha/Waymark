@@ -4,7 +4,6 @@ from rest_framework.decorators import action
 from .serializers import PropiedadSerializer, DivisaSerializer, FavoritoSerializer, TipoPropSerializer, AmenidadSerializer, CategoriaAmenidadSerializer, PropCardSerializer, UbicacionSerializer
 from .models import Propiedad, Divisa, PropiedadImagen, Favorito, TipoPropiedad,Amenidad, CategoriasAmenidad, PropiedadCard, Ubicaciones
 from django.db import transaction
-import cloudinary.uploader
 
 # Create your views here.
 method_not_allowed_response = Response({'error': 'Method not allowed'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
@@ -67,7 +66,7 @@ class PropiedadViewSet(viewsets.ModelViewSet):
 
                     PropiedadImagen.objects.create(
                         propiedad=propiedad,
-                        imagen=imagen,
+                        url=imagen,
                         orden=i
                     )
 
@@ -119,7 +118,7 @@ class PropiedadViewSet(viewsets.ModelViewSet):
 
                     if existente:
                         # reemplazar imagen
-                        existente.imagen = imagen
+                        existente.url = imagen
                         existente.save()
 
                     else:
@@ -131,7 +130,7 @@ class PropiedadViewSet(viewsets.ModelViewSet):
 
                         PropiedadImagen.objects.create(
                             propiedad=propiedad,
-                            imagen=imagen,
+                            url=imagen,
                             orden=orden
                         )
 
@@ -153,7 +152,7 @@ class DivisaViewSet(viewsets.ModelViewSet):
     queryset = Divisa.objects.all().order_by("nombre")
     serializer_class = DivisaSerializer
     
-class FavoritoViewSet(viewsets.ModelViewSet):
+class FavoritoViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateModelMixin):
     queryset = Favorito.objects.all()
     serializer_class = FavoritoSerializer
     
