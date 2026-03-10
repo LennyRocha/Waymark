@@ -1,4 +1,4 @@
-from .models import Divisa, Propiedad, PropiedadImagen, Amenidad, TipoPropiedad
+from .models import Divisa, Propiedad, PropiedadImagen, Amenidad, TipoPropiedad, CategoriasAmenidad, PropiedadCard, Ubicaciones, Favorito
 from rest_framework import serializers
 
 class DivisaSerializer (serializers.ModelSerializer):
@@ -27,7 +27,7 @@ class ImagenSerializer (serializers.ModelSerializer):
         )
 class FavoritoSerializer (serializers.ModelSerializer):
     class Meta:
-        model = PropiedadImagen
+        model = Favorito
         fields ='__all__'
         
 class PropiedadSerializer(serializers.ModelSerializer):
@@ -90,3 +90,18 @@ class PropiedadSerializer(serializers.ModelSerializer):
             'amenidades_ids',
             'imagenes'
         )
+        
+class CategoriaAmenidadSerializer (serializers.ModelSerializer):
+    class Meta:
+        model = CategoriasAmenidad
+        fields = '__all__'
+        
+class PropCardSerializer (serializers.ModelSerializer):
+    class Meta:
+        model = PropiedadCard
+        fields = '__all__'
+
+class UbicacionSerializer (serializers.ModelSerializer):
+    class Meta:
+        model = Ubicaciones
+        fields = '__all__'

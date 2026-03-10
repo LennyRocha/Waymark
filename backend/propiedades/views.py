@@ -1,8 +1,8 @@
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, mixins
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from .serializers import PropiedadSerializer, DivisaSerializer, FavoritoSerializer, TipoPropSerializer, AmenidadSerializer
-from .models import Propiedad, Divisa, PropiedadImagen, Favorito, TipoPropiedad, Amenidad
+from .serializers import PropiedadSerializer, DivisaSerializer, FavoritoSerializer, TipoPropSerializer, AmenidadSerializer, CategoriaAmenidadSerializer, PropCardSerializer, UbicacionSerializer
+from .models import Propiedad, Divisa, PropiedadImagen, Favorito, TipoPropiedad,Amenidad, CategoriasAmenidad, PropiedadCard, Ubicaciones
 from django.db import transaction
 import cloudinary.uploader
 
@@ -18,6 +18,18 @@ class PropiedadViewSet(viewsets.ModelViewSet):
         'imagenes'
     )
     serializer_class = PropiedadSerializer
+    
+    @action(detail=False, methods=["GET"])
+    def cards(self, request, pk=None):
+        queryset = PropiedadCard.objects.all()
+        serializer = PropCardSerializer(queryset, many = True)
+        return Response(serializer.data)
+    
+    @action(detail=False, methods=["GET"])
+    def locations(self, request, pk=None):
+        queryset = Ubicaciones.objects.all()
+        serializer = UbicacionSerializer(queryset, many = True)
+        return Response(serializer.data)
     
     @action(detail=False, methods=["GET"], url_path="by-host/(?P<host_id>[^/.]+)")
     def by_host(self, request, host_id=None):
@@ -45,8 +57,6 @@ class PropiedadViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        public_ids = []
-
         try:
 
             with transaction.atomic():
@@ -55,25 +65,13 @@ class PropiedadViewSet(viewsets.ModelViewSet):
 
                 for i, imagen in enumerate(imagenes):
 
-                    subida = cloudinary.uploader.upload(imagen)
-
-                    public_ids.append(subida['public_id'])
-
                     PropiedadImagen.objects.create(
                         propiedad=propiedad,
-                        url=subida['secure_url'],
-                        public_id=subida['public_id'],
+                        imagen=imagen,
                         orden=i
                     )
 
         except Exception as e:
-
-            # eliminar imágenes subidas si algo falla
-            for public_id in public_ids:
-                try:
-                    cloudinary.uploader.destroy(public_id)
-                except Exception:
-                    pass
 
             return Response(
                 {'error': str(e)},
@@ -87,21 +85,14 @@ class PropiedadViewSet(viewsets.ModelViewSet):
     
     def update(self, request, *args, **kwargs):
 
-        propiedad = self.get_object()
+        partial = kwargs.pop("partial", False)
+        instance = self.get_object()
 
-        serializer = self.get_serializer(
-            propiedad,
-            data=request.data,
-            partial=False
-        )
-
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
 
         imagenes = request.FILES.getlist("imagenes")
         ordenes = request.data.getlist("ordenes")
-
-        public_ids_nuevos = []
-        public_ids_viejos = []
 
         try:
 
@@ -109,51 +100,44 @@ class PropiedadViewSet(viewsets.ModelViewSet):
 
                 propiedad = serializer.save()
 
-                for imagen, orden in zip(imagenes, ordenes):
+                existentes = PropiedadImagen.objects.filter(propiedad=propiedad).count()
 
-                    orden = int(orden)
+                for i, imagen in enumerate(imagenes):
 
-                    imagen_obj = PropiedadImagen.objects.filter(
+                    orden = int(ordenes[i])
+
+                    if orden < 0 or orden > 9:
+                        return Response(
+                            {"error": "El orden debe estar entre 0 y 9"},
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
+
+                    existente = PropiedadImagen.objects.filter(
                         propiedad=propiedad,
                         orden=orden
                     ).first()
 
-                    subida = cloudinary.uploader.upload(imagen)
-
-                    public_ids_nuevos.append(subida['public_id'])
-
-                    if imagen_obj:
-
-                        public_ids_viejos.append(imagen_obj.public_id)
-
-                        imagen_obj.url = subida['secure_url']
-                        imagen_obj.public_id = subida['public_id']
-                        imagen_obj.save()
+                    if existente:
+                        # reemplazar imagen
+                        existente.imagen = imagen
+                        existente.save()
 
                     else:
+                        if existentes >= 10:
+                            return Response(
+                                {"error": "Máximo 10 imágenes por propiedad"},
+                                status=status.HTTP_400_BAD_REQUEST
+                            )
 
                         PropiedadImagen.objects.create(
                             propiedad=propiedad,
-                            url=subida['secure_url'],
-                            public_id=subida['public_id'],
+                            imagen=imagen,
                             orden=orden
                         )
 
-            # eliminar imágenes viejas
-            for public_id in public_ids_viejos:
-                try:
-                    cloudinary.uploader.destroy(public_id)
-                except Exception:
-                    pass
+                        existentes += 1
 
         except Exception as e:
-
-            # eliminar imágenes nuevas si algo falla
-            for public_id in public_ids_nuevos:
-                try:
-                    cloudinary.uploader.destroy(public_id)
-                except Exception:
-                    pass
 
             return Response(
                 {"error": str(e)},
@@ -161,7 +145,8 @@ class PropiedadViewSet(viewsets.ModelViewSet):
             )
 
         return Response(
-            PropiedadSerializer(propiedad).data
+            PropiedadSerializer(propiedad).data,
+            status=status.HTTP_200_OK
         )
     
 class DivisaViewSet(viewsets.ModelViewSet):
@@ -195,6 +180,12 @@ class FavoritoViewSet(viewsets.ModelViewSet):
 class AmenidadViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Amenidad.objects.all().order_by("categoria")
     serializer_class = AmenidadSerializer
+    
+    @action(detail=False, methods=["GET"])
+    def categorias(self, request, pk=None):
+        queryset = CategoriasAmenidad.objects.all()
+        serializer = CategoriaAmenidadSerializer(queryset, many = True)
+        return Response(serializer.data)
 
 class TipoPropiedadViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = TipoPropiedad.objects.all().order_by("tipo")

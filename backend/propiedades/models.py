@@ -2,6 +2,7 @@ from django.db import models
 from cuentas.models import Usuario
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils import timezone
+from django_resized import ResizedImageField
 
 # Create your models here.
 class Amenidad(models.Model):
@@ -84,6 +85,13 @@ class Propiedad(models.Model):
     class Meta:
         managed = False
         db_table = 'propiedad'
+        indexes = [
+            models.Index(fields=["ciudad"]),
+            models.Index(fields=["pais"]),
+            models.Index(fields=["precio_noche"]),
+            models.Index(fields=["tipo_propiedad"]),
+            models.Index(fields=["anfitrion"]),
+        ]
     
     def save(self, *args, **kwargs):
         self.updated_at = timezone.now()
@@ -93,13 +101,16 @@ class Propiedad(models.Model):
 class PropiedadImagen(models.Model):
     prop_ima_id = models.AutoField(primary_key=True)
     propiedad = models.ForeignKey(Propiedad, models.CASCADE, related_name='imagenes')
-    url = models.TextField()
+    url = ResizedImageField(
+        size=[1200, 800],
+        quality=85,
+        upload_to="propiedades/",
+    )
     orden = models.IntegerField(        
         validators=[
             MinValueValidator(1), 
             MaxValueValidator(10) ,
         ],)
-    public_id = models.CharField(max_length=255)
     created_at = models.DateTimeField(blank=True, null=True, auto_now_add= True)
     updated_at = models.DateTimeField(blank=True, null=True, auto_now_add= True)
     updated_by = models.IntegerField(blank=True, null=True)
@@ -124,3 +135,34 @@ class Favorito(models.Model):
         managed = False
         db_table = 'favorito'
         unique_together = (('usuario', 'propiedad'),)
+
+# Vistas SQL generadas con inspectdb
+class CategoriasAmenidad(models.Model):
+    categorias = models.TextField(db_collation='utf8mb4_0900_ai_ci', primary_key= True)
+
+    class Meta:
+        managed = False
+        db_table = 'categorias_amenidad'
+
+class Ubicaciones(models.Model):
+    ciudad = models.CharField(max_length=25, db_collation='utf8mb4_0900_ai_ci', primary_key= True)
+    pais = models.CharField(max_length=25, db_collation='utf8mb4_0900_ai_ci')
+
+    class Meta:
+        managed = False
+        db_table = 'ubicaciones'
+        unique_together = (('ciudad', 'pais'),)
+        
+class PropiedadCard(models.Model):
+    propiedad_id = models.IntegerField(primary_key= True)
+    titulo = models.CharField(max_length=50, db_collation='utf8mb4_0900_ai_ci')
+    precio_noche = models.DecimalField(max_digits=10, decimal_places=2)
+    ciudad = models.CharField(max_length=25, db_collation='utf8mb4_0900_ai_ci')
+    pais = models.CharField(max_length=25, db_collation='utf8mb4_0900_ai_ci')
+    divisa = models.TextField(db_collation='utf8mb4_0900_ai_ci')
+    tipo_propiedad = models.TextField(db_collation='utf8mb4_0900_ai_ci')
+    imagen_principal = models.TextField(db_collation='utf8mb4_0900_ai_ci', blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'propiedad_card'
