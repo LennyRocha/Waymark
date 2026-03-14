@@ -3,7 +3,7 @@ import { Heart, Star } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useNavigate, useLocation } from "react-router-dom";
 
-const MotionHeart = motion(Heart);
+const MotionHeart = motion.create(Heart);
 
 export default function PropiedadCard() {
     const [active, setActive] = React.useState(false);
@@ -11,8 +11,7 @@ export default function PropiedadCard() {
     const location = useLocation();
 
     const goToPropiedad = () => {
-        // Navigate to /about and pass state
-        navigate("/rooms/Tequesquitengo", { state: { from: location.pathname } });
+        navigate("/rooms/24-tequesquitengo", { state: { from: location.pathname } });
     };
     return (
         <div className=' w-[12rem] shrink-0   relative flex flex-col items-start justify-center' >
@@ -26,6 +25,9 @@ export default function PropiedadCard() {
                     size={32}
                     animate={{ scale: active ? 1.2 : 1 }}
                     transition={{ type: "spring", stiffness: 300 }}
+                    whileHover={{
+                        scale: 1.1
+                    }}
                 />
             </button>
             <span className='absolute top-[1rem] left-[1rem] text-left rounded-xl bg-gray-100/75 px-2 py-1 font-bold w-[7rem] text-[12px]' >Favorito entre

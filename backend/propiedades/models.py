@@ -3,6 +3,7 @@ from cuentas.models import Usuario
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils import timezone
 from django_resized import ResizedImageField
+from django.utils.text import slugify
 
 # Create your models here.
 class Amenidad(models.Model):
@@ -81,6 +82,8 @@ class Propiedad(models.Model):
     updated_at = models.DateTimeField(blank=True, null=True, auto_now_add= True)
     updated_by = models.IntegerField(blank=True, null=True)
     amenidades = models.ManyToManyField(Amenidad)
+    #Para mejor búsqueda en vez del id
+    slug = models.SlugField(unique=True, max_length=60, blank=True)
 
     class Meta:
         managed = False
@@ -95,6 +98,15 @@ class Propiedad(models.Model):
     
     def save(self, *args, **kwargs):
         self.updated_at = timezone.now()
+        base_slug = slugify(self.titulo)
+        slug = base_slug
+        contador = 1
+
+        while Propiedad.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+            slug = f"{base_slug}-{contador}"
+            contador += 1
+
+        self.slug = slug
         super().save(self,*args, **kwargs)
 
 

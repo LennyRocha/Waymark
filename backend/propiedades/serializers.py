@@ -88,6 +88,7 @@ class PropiedadSerializer(serializers.ModelSerializer):
             'anfitrion_id',
             'amenidades',
             'amenidades_ids',
+            'slug',
             'imagenes'
         )
         

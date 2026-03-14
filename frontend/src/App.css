@@ -28,7 +28,8 @@
   position: absolute;
   position-anchor: --destinos;
   position-area: bottom span-right;
-  top: calc(anchor(bottom) + 1rem);
+  z-index: 1;
+  margin-top: 8.5rem;
 }
 
 #fechas {
@@ -40,7 +41,8 @@
   position: absolute;
   position-anchor: --fechas;
   position-area: bottom center;
-  top: calc(anchor(bottom) + 1rem);
+  z-index: 1;
+  margin-top: 8.5rem;
 }
 
 #huespedes_div {
@@ -52,17 +54,6 @@
   position: absolute;
   position-anchor: --huespedes;
   position-area: bottom span-left;
-  top: calc(anchor(bottom) + 1rem);
-}
-
-
-#pop_test {
-  anchor-name: --bukkon;
-  position: relative;
-}
-
-#mypopover {
-  position: absolute;
-  position-anchor: --bukkon;
-  position-area: bottom center;
+  z-index: 1;
+  margin-top: 8.5rem;
 }
