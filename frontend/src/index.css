@@ -45,9 +45,15 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  --primario: #BF0603;
+  --secundario: #8D0801;
+  --borde: #EBEBEB;
+  --t_primario: #222222;
+  --t_secundario: #717171;
 }
 
-*{
+* {
   box-sizing: border-box;
 }
 
@@ -58,10 +64,7 @@ body {
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+    overflow-x: hidden;
 }
 
 h1 {
@@ -88,7 +91,8 @@ h6 {
   font-size: clamp(1rem, calc(0.7vw + 0.4rem), 1.125rem);
 }
 
-body, p {
+body,
+p {
   font-size: clamp(0.95rem, calc(0.5vw + 0.7rem), 1rem);
 }
 
@@ -96,7 +100,8 @@ small {
   font-size: clamp(0.8rem, calc(0.3vw + 0.6rem), 0.875rem);
 }
 
-strong, b {
+strong,
+b {
   font-weight: 600;
 }
 
@@ -120,4 +125,29 @@ strong,
 b {
   font-weight: 700;
   line-height: 1.2;
+}
+
+/* width */
+.scroll-no::-webkit-scrollbar {
+  display: none;
+}
+
+.scroll-mini.is_y::-webkit-scrollbar {
+  height: 100%;
+  width: 4px;
+}
+
+/* Track */
+.scroll-mini::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Handle */
+.scroll-mini::-webkit-scrollbar-thumb {
+  background: var(--borde);
+}
+
+/* Handle on hover */
+.scroll-mini::-webkit-scrollbar-thumb:hover {
+  background: var(--t_secundario);
 }
