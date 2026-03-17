@@ -5,7 +5,7 @@ import {
 } from "../schemas/PropiedadZod";
 import FiltrosPropiedades from "../types/FiltrosPropiedad";
 import Propiedad from "../types/Propiedad";
-const prefix = "/propiedades/";
+const prefix = "propiedades/";
 const PropiedadRepository = {
   findAll: async (filters: FiltrosPropiedades = {}) => {
     const res = await api.get(prefix, {

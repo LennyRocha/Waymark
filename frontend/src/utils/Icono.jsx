@@ -1,6 +1,6 @@
 import { DynamicIcon } from 'lucide-react/dynamic';
 
-export default function Icono ({ props }) {
+export default function Icono ({ ...props }) {
   return <DynamicIcon {...props} />
 };
 
