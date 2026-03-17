@@ -10,6 +10,7 @@ import Buscador from './components/Buscador';
 import CustomDropdown from '../../components/CustomDropdown';
 import DropdownParent from '../../components/DropdownParent';
 import BuscadorBoton from './components/BuscadorBoton'
+import Footer from '../../layout/Footer';
 
 export default function Landing() {
   return (
@@ -65,7 +66,7 @@ export default function Landing() {
           <VerMasCard direccion={"/tio_francisco"} />
         </section>
       </main>
-      <footer className='w-full bg-border p-8 text-text-secondary'>2026</footer>
+      <Footer />
     </div>
   );
 }

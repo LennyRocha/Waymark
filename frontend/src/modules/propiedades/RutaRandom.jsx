@@ -33,10 +33,10 @@ export default function RutaRandom() {
       <p>
         Etiqueta p.  Edit <code>src/App.jsx</code> and save to test HMR
       </p>
-      <div className="w-100 border border-border p-2 rounded">
+      <div className="w-auto border border-border p-2 rounded">
         Card con borde
       </div>
-      <div className="w-100 bg-surface p-6 rounded shadow  text-text-secondary">
+      <div className="w-auto bg-surface p-6 rounded shadow  text-text-secondary">
         <h2 className="font-bold">Card</h2>
         <small >Texto pequeño</small>
         <br />
