@@ -28,6 +28,10 @@ npm install framer-motion
 #Floating
 npm install @floating-ui/react
 
-# Formularios con yup
+# Formularios con yup y zod
 npm install @hookform/resolvers
 npm i yup
+npm i zod
+
+#Typescript
+npm install -D typescript @types/react @types/react-dom

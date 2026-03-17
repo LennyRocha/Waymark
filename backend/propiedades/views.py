@@ -1,28 +1,40 @@
 from rest_framework import viewsets, status, mixins
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from .serializers import PropiedadSerializer, DivisaSerializer, FavoritoSerializer, TipoPropSerializer, AmenidadSerializer, CategoriaAmenidadSerializer, PropCardSerializer, UbicacionSerializer
-from .models import Propiedad, Divisa, PropiedadImagen, Favorito, TipoPropiedad,Amenidad, CategoriasAmenidad, PropiedadCard, Ubicaciones
+from .serializers import PropiedadSerializer, DivisaSerializer, FavoritoSerializer, TipoPropSerializer, AmenidadSerializer, CategoriaAmenidadSerializer, UbicacionSerializer
+from .models import Propiedad, Divisa, PropiedadImagen, Favorito, TipoPropiedad,Amenidad, CategoriasAmenidad, Ubicaciones
 from django.db import transaction
+from .filters import PropiedadFilter
+from django_filters.rest_framework import DjangoFilterBackend
+from django_filters.rest_framework import OrderingFilter
 
 # Create your views here.
 method_not_allowed_response = Response({'error': 'Method not allowed'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 class PropiedadViewSet(viewsets.ModelViewSet):
     queryset = Propiedad.objects.select_related(
-        'divisa',
-        'tipo_propiedad'
+        "divisa",
+        "tipo_propiedad"
     ).prefetch_related(
-        'amenidades',
-        'imagenes'
-    )
+        "amenidades",
+        "imagenes"
+    ).filter(activa=1)
+
     serializer_class = PropiedadSerializer
-    
-    @action(detail=False, methods=["GET"])
-    def cards(self, request, pk=None):
-        queryset = PropiedadCard.objects.all()
-        serializer = PropCardSerializer(queryset, many = True)
-        return Response(serializer.data)
+
+    filter_backends = [
+        DjangoFilterBackend,
+        OrderingFilter
+    ]
+
+    ordering_fields = [
+        "precio_noche",
+        "habitaciones",
+        "max_huespedes"
+    ]
+
+    filterset_class = PropiedadFilter
+    serializer_class = PropiedadSerializer
     
     @action(detail=False, methods=["GET"])
     def locations(self, request, pk=None):
@@ -147,12 +159,18 @@ class PropiedadViewSet(viewsets.ModelViewSet):
             PropiedadSerializer(propiedad).data,
             status=status.HTTP_200_OK
         )
+        
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.activa = 0
+        instance.save(update_fields=["activa"])
+        return Response(status=status.HTTP_204_NO_CONTENT)
     
 class DivisaViewSet(viewsets.ModelViewSet):
     queryset = Divisa.objects.all().order_by("nombre")
     serializer_class = DivisaSerializer
     
-class FavoritoViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateModelMixin):
+class FavoritoViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateModelMixin, mixins.DestroyModelMixin):
     queryset = Favorito.objects.all()
     serializer_class = FavoritoSerializer
     

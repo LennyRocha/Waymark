@@ -5,6 +5,9 @@ import RutaRandom from '../modules/propiedades/RutaRandom'
 import Page404 from '../modules/paginas_error/404'
 import PropiedadPage from '../modules/propiedades/PropiedadPage'
 import FiltrosPage from '../modules/propiedades/FiltrosPage'
+import GuestHeader from '../layout/GuestHeader'
+import HostHeader from '../layout/HostHeader'
+import AdminSidebar from '../layout/AdminSidebar'
 
 export default function Router() {
     return (
@@ -16,13 +19,13 @@ export default function Router() {
                 <Route path='ruta' element={<Ejemplo />} >
                     <Route path='subruta' element={<RutaRandom />} />
                 </Route>
-                <Route path='guest' element={<Ejemplo />} >
+                <Route path='guest' element={<GuestHeader />} >
                     <Route index element={<RutaRandom />} />
                 </Route>
-                <Route path='host' element={<Ejemplo />} >
+                <Route path='host' element={<HostHeader />} >
                     <Route index element={<RutaRandom />} />
                 </Route>
-                <Route path='admin' element={<Ejemplo />} >
+                <Route path='admin' element={<AdminSidebar />} >
                     <Route index element={<RutaRandom />} />
                 </Route>
                 <Route path='*' element={<Page404 />} />

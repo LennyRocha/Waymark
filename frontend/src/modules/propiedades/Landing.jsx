@@ -9,11 +9,12 @@ import CustomLink from '../../components/CustomLink';
 import Buscador from './components/Buscador';
 import CustomDropdown from '../../components/CustomDropdown';
 import DropdownParent from '../../components/DropdownParent';
+import BuscadorBoton from './components/BuscadorBoton'
 
 export default function Landing() {
   let size = 0;
 
-  window.addEventListener("resize", () => {
+  window.addEventListener("resize", (e) => {
     size = window.innerWidth;
     // console.log(size);
     // console.log("resize ", document.getElementById("root").clientWidth);
@@ -79,7 +80,7 @@ export default function Landing() {
 
 const VerMasCard = ({ direccion }) => {
   return (
-    <div className=' w-[12rem] shrink-0   relative flex flex-col items-start justify-flex-start' >
+    <div className=' w-[clamp(200px,25%,12rem)]  shrink-0   relative flex flex-col items-start justify-flex-start' >
       <div className='flex flex-col items-center justify-center shadow-xl rounded-2xl w-full h-50 aspect-ratio: 4/3' >
         <GalleryHorizontal size={48} color='var(--color-secondary-500)' />
         <CustomLink to={direccion}>Mostrar todo</CustomLink>
@@ -96,6 +97,13 @@ const Header = () => {
   const scrolledRef = useRef(false);
   const manualOverride = useRef(false);
   const buttonRef = useRef(null);
+
+  const [isSmall, setIsSmall] = useState(false);
+
+  window.addEventListener("resize", () => {
+    setIsSmall(window.innerWidth >= 745);
+    console.log(window.innerWidth >= 745)
+  });
 
   function setScrolledSync(val) {
     scrolledRef.current = val;
@@ -121,29 +129,31 @@ const Header = () => {
   })
   return <motion.header
     className="sticky top-0 z-10 flex flex-col items-center w-full bg-gradient-to-b from-white via-white to-gray-50 to-80% p-[1.25rem] border-b border-border" >
-    <nav className="max-w-[1200px] w-full flex flex-col md:flex-row items-center md:justify-between justify-center">
-      <div className="flex flex-row gap-2 justify-center items-center">
-        <img src={"/logo_white.png"} alt="waymark" className='w-[3.25rem]' />
-        <h6 className='text-primary-500 m-0 rotulo' >WAYMARK</h6>
-      </div>
-      <DropdownParent classes=" flex flex-row gap-2 justify-center items-center" hideFunction={setShow}>
-        <h6 className='font-bold' >Conviertete en anfitrión</h6>
-        <button ref={buttonRef} onClick={() => setShow(!show)} className=' hover:bg-border text-text-secondary  border border-border p-2 rounded-2xl' >
-          <Menu />
-        </button>
-        <CustomDropdown anchorRef={buttonRef} visible={show} align='right' width={"250px"} >
-          <p className="text-xs font-bold text-left px-2 font-[cabin] mb-2">Menú</p>
-          <div className="w-full bg-border h-[1px]"></div>
-          <ul>
-            <li className='py-4 px-2 text-left text-nowrap'><CustomLink to="/">Convierte en anfitrión</CustomLink></li>
+    {!isSmall ? <>
+      <nav className="max-w-[1200px] w-full flex flex-col md:flex-row items-center md:justify-between justify-center">
+        <div className="flex flex-row gap-2 justify-center items-center">
+          <img src={"/logo_white.png"} alt="waymark" className='w-[3.25rem]' />
+          <h6 className='text-primary-500 m-0 rotulo' >WAYMARK</h6>
+        </div>
+        <DropdownParent classes=" flex flex-row gap-2 justify-center items-center" hideFunction={setShow}>
+          <h6 className='font-bold' >Conviertete en anfitrión</h6>
+          <button ref={buttonRef} onClick={() => setShow(!show)} className=' hover:bg-border text-text-secondary  border border-border p-2 rounded-2xl' >
+            <Menu />
+          </button>
+          <CustomDropdown anchorRef={buttonRef} visible={show} align='right' width={"250px"} >
+            <p className="text-xs font-bold text-left px-2 font-[cabin] mb-2">Menú</p>
             <div className="w-full bg-border h-[1px]"></div>
-            <li className='py-4 px-2 text-left text-nowrap'><CustomLink to="/" >Buscar a un anfitrión</CustomLink></li>
-            <div className="w-full bg-border h-[1px]"></div>
-            <li className='py-4 px-2 text-left text-nowrap'><CustomLink to="/login" >Iniciar sesión</CustomLink></li>
-          </ul>
-        </CustomDropdown>
-      </DropdownParent>
-    </nav>
-    <Buscador scrolled={scrolled} setScrolled={setScrolledSync} />
+            <ul>
+              <li className='py-4 px-2 text-left text-nowrap'><CustomLink to="/">Convierte en anfitrión</CustomLink></li>
+              <div className="w-full bg-border h-[1px]"></div>
+              <li className='py-4 px-2 text-left text-nowrap'><CustomLink to="/" >Buscar a un anfitrión</CustomLink></li>
+              <div className="w-full bg-border h-[1px]"></div>
+              <li className='py-4 px-2 text-left text-nowrap'><CustomLink to="/login" >Iniciar sesión</CustomLink></li>
+            </ul>
+          </CustomDropdown>
+        </DropdownParent>
+      </nav>
+      <Buscador scrolled={scrolled} setScrolled={setScrolledSync} />
+    </> : <BuscadorBoton />}
   </motion.header >
 }
