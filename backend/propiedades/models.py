@@ -3,6 +3,7 @@ from cuentas.models import Usuario
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils import timezone
 from django_resized import ResizedImageField
+from django.utils.text import slugify
 
 # Create your models here.
 class Amenidad(models.Model):
@@ -26,8 +27,8 @@ class Amenidad(models.Model):
 
 class Divisa(models.Model):
     divisa_id = models.AutoField(primary_key=True)
-    nombre = models.CharField(max_length=50)
-    acronimo = models.TextField()
+    nombre = models.CharField(max_length=50, blank=False)
+    acronimo = models.TextField(blank= False)
     created_at = models.DateTimeField(blank=True, null=True, auto_now_add= True)
     updated_at = models.DateTimeField(blank=True, null=True, auto_now_add= True)
     created_by = models.IntegerField(blank=True, null=True)
@@ -53,34 +54,96 @@ class TipoPropiedad(models.Model):
         
 class Propiedad(models.Model):
     propiedad_id = models.AutoField(primary_key=True)
-    titulo = models.CharField(max_length=50)
-    descripcion = models.TextField()
-    pais = models.CharField(max_length=25)
-    ciudad = models.CharField(max_length=25)
-    direccion = models.CharField(max_length=100)
+    titulo = models.CharField(max_length=50, blank=False, error_messages={
+        "max_length" : "El título asignado no debe exceder los 50 carácteres",
+        "blank" : "Este campo no puede estar vacío"
+    })
+    descripcion = models.TextField(max_length=500, blank=False, error_messages={
+        "max_length" : "La descripción asignada no debe exceder los 500 carácteres",
+        "blank" : "Este campo no puede estar vacío"
+    })
+    pais = models.CharField(max_length=25, blank=False, error_messages={
+        "max_length" : "El país no debe exceder los 25 carácteres",
+        "blank" : "Este campo no puede estar vacío"
+    })
+    ciudad = models.CharField(max_length=25, blank=False, error_messages={
+        "max_length" : "La ciudad no debe exceder los 25 carácteres",
+        "blank" : "Este campo no puede estar vacío"
+    })
+    direccion = models.CharField(max_length=100, blank=False, unique=True, error_messages={
+        "max_length" : "La dirección asignada no debe exceder los 100 carácteres",
+        "blank" : "Este campo no puede estar vacío",
+        "unique" : "Esa dirección ya fue registrada"
+    })
     activa = models.IntegerField(blank=True, null=True)
-    coordenadas = models.JSONField()
-    precio_noche = models.DecimalField(max_digits=10, decimal_places=2)
-    divisa = models.ForeignKey(Divisa, models.PROTECT)
-    max_huespedes = models.IntegerField()
-    habitaciones = models.IntegerField()
-    camas = models.IntegerField()
-    banos = models.IntegerField()
-    check_in = models.TimeField()
-    check_out = models.TimeField()
-    regla_mascotas = models.IntegerField()
-    regla_ninos = models.IntegerField()
-    regla_fumar = models.IntegerField()
-    regla_fiestas = models.IntegerField()
-    regla_autochecar = models.IntegerField()
-    regla_apagar = models.IntegerField()
+    coordenadas = models.JSONField(blank= False, error_messages={
+        "blank" : "Este campo no puede estar vacío"
+    })
+    precio_noche = models.DecimalField(max_digits=10, decimal_places=2, blank=False, error_messages={
+        "max_digits" : "El precio asignado es demasiado alto",
+        "decimal_places" : "Solo se admiten 2 decimales",
+        "blank" : "Este campo no puede estar vacío"
+    })
+    divisa = models.ForeignKey(Divisa, models.PROTECT, blank=False, error_messages={
+        "blank" : "Este campo no puede estar vacío"
+    })
+    max_huespedes = models.IntegerField( validators=[MinValueValidator(1)], blank=False, error_messages={
+        "min_value" : "No se aceptan numeros menores o iguales a 0",
+        "blank" : "Este campo no puede estar vacío"
+    })
+    habitaciones = models.IntegerField( validators=[MinValueValidator(1), MaxValueValidator(20)], blank=False, error_messages={
+        "min_value" : "No se aceptan numeros menores o iguales a 0",
+        "max_value" : "El límite de habitaciones es 20",
+        "blank" : "Este campo no puede estar vacío"
+    })
+    camas = models.IntegerField( validators=[MinValueValidator(1), MaxValueValidator(20)], blank=False, error_messages={
+        "min_value" : "No se aceptan numeros menores o iguales a 0",
+        "max_value" : "El límite de camas es 20",
+        "blank" : "Este campo no puede estar vacío"
+    })
+    banos = models.IntegerField( validators=[MinValueValidator(1), MaxValueValidator(20)], blank=False, error_messages={
+        "min_value" : "No se aceptan numeros menores o iguales a 0",
+        "max_value" : "El límite de baños es 20",
+        "blank" : "Este campo no puede estar vacío"
+    })
+    check_in = models.TimeField(blank=False, error_messages={
+        "blank" : "Este campo no puede estar vacío"
+    })
+    check_out = models.TimeField(blank=False, error_messages={
+        "blank" : "Este campo no puede estar vacío"
+    })
+    regla_mascotas = models.IntegerField(blank=False, error_messages={
+        "blank" : "Este campo no puede estar vacío"
+    })
+    regla_ninos = models.IntegerField(blank=False, error_messages={
+        "blank" : "Este campo no puede estar vacío"
+    })
+    regla_fumar = models.IntegerField(blank=False, error_messages={
+        "blank" : "Este campo no puede estar vacío"
+    })
+    regla_fiestas = models.IntegerField(blank=False, error_messages={
+        "blank" : "Este campo no puede estar vacío"
+    })
+    regla_autochecar = models.IntegerField(blank=False, error_messages={
+        "blank" : "Este campo no puede estar vacío"
+    })
+    regla_apagar = models.IntegerField(blank=False, error_messages={
+        "blank" : "Este campo no puede estar vacío"
+    })
     reglas_extra = models.JSONField(blank=True, null=True)
-    tipo_propiedad = models.ForeignKey(TipoPropiedad, models.PROTECT, db_column='tipo_propiedad')
-    anfitrion = models.ForeignKey(Usuario, models.PROTECT)
+    tipo_propiedad = models.ForeignKey(TipoPropiedad, models.PROTECT, db_column='tipo_propiedad', blank=False, error_messages={
+        "blank" : "Este campo no puede estar vacío"
+    })
+    anfitrion = models.ForeignKey(Usuario, models.PROTECT, blank=False, error_messages={
+        "blank" : "Este campo no puede estar vacío"
+    })
     created_at = models.DateTimeField(blank=True, null=True, auto_now_add= True)
     updated_at = models.DateTimeField(blank=True, null=True, auto_now_add= True)
     updated_by = models.IntegerField(blank=True, null=True)
-    amenidades = models.ManyToManyField(Amenidad)
+    amenidades = models.ManyToManyField(Amenidad, blank=False, error_messages={
+        "blank" : "Este campo no puede estar vacío"
+    })
+    slug = models.SlugField(unique=True, max_length=60, blank=True)
 
     class Meta:
         managed = False
@@ -95,12 +158,21 @@ class Propiedad(models.Model):
     
     def save(self, *args, **kwargs):
         self.updated_at = timezone.now()
+        base_slug = slugify(self.titulo)
+        slug = base_slug
+        contador = 1
+
+        while Propiedad.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+            slug = f"{base_slug}-{contador}"
+            contador += 1
+
+        self.slug = slug
         super().save(self,*args, **kwargs)
 
 
 class PropiedadImagen(models.Model):
     prop_ima_id = models.AutoField(primary_key=True)
-    propiedad = models.ForeignKey(Propiedad, models.CASCADE, related_name='imagenes')
+    propiedad = models.ForeignKey(Propiedad, models.CASCADE, related_name='imagenes', blank=False)
     url = ResizedImageField(
         size=[1200, 800],
         quality=85,
@@ -152,17 +224,3 @@ class Ubicaciones(models.Model):
         managed = False
         db_table = 'ubicaciones'
         unique_together = (('ciudad', 'pais'),)
-        
-class PropiedadCard(models.Model):
-    propiedad_id = models.IntegerField(primary_key= True)
-    titulo = models.CharField(max_length=50, db_collation='utf8mb4_0900_ai_ci')
-    precio_noche = models.DecimalField(max_digits=10, decimal_places=2)
-    ciudad = models.CharField(max_length=25, db_collation='utf8mb4_0900_ai_ci')
-    pais = models.CharField(max_length=25, db_collation='utf8mb4_0900_ai_ci')
-    divisa = models.TextField(db_collation='utf8mb4_0900_ai_ci')
-    tipo_propiedad = models.TextField(db_collation='utf8mb4_0900_ai_ci')
-    imagen_principal = models.TextField(db_collation='utf8mb4_0900_ai_ci', blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'propiedad_card'

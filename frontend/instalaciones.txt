@@ -25,6 +25,13 @@ npm install lucide-react
 # Framer motion (para animaciones)
 npm install framer-motion
 
-# Formularios con yup
+#Floating
+npm install @floating-ui/react
+
+# Formularios con yup y zod
 npm install @hookform/resolvers
 npm i yup
+npm i zod
+
+#Typescript
+npm install -D typescript @types/react @types/react-dom
