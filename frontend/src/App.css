@@ -18,3 +18,22 @@
   font-weight: bold;
   font-size: 1.25rem;
 }
+
+.modal_body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modal_body::-webkit-scrollbar-track {
+  background: #fff;
+}
+
+.modal_body::-webkit-scrollbar-thumb {
+  background: var(--color-gray-500);
+  border-radius: 1em;
+  transition: all .25s ease;
+  will-change: auto;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-gray-700);
+}

@@ -5,6 +5,30 @@ import { X } from 'lucide-react'
 import { useEffect, useMemo } from "react"
 import { createPortal } from "react-dom"
 
+function ModalHeader({ children }) {
+    return (
+        <div className="w-full flex-shrink-0 pb-4 border-b border-gray-100">
+            {children}
+        </div>
+    )
+}
+
+function ModalBody({ children }) {
+    return (
+        <div className="modal_body  w-full overflow-y-auto flex-1 min-h-0 py-4">
+            {children}
+        </div>
+    )
+}
+
+function ModalFooter({ children }) {
+    return (
+        <div className="w-full flex-shrink-0 pt-4 border-t border-gray-100 flex justify-end gap-2">
+            {children}
+        </div>
+    )
+}
+
 export default function Modal({ open, children, close = () => { }, closeButton = true, closeButtonDirection = "left", width = undefined, height = undefined }) {
     const alignment = useMemo(() => {
         return closeButtonDirection === "left" ? "justify-start" : "justify-end"
@@ -30,7 +54,7 @@ export default function Modal({ open, children, close = () => { }, closeButton =
             {open && (
                 <motion.div
                     layout
-                    className="fixed inset-0 p-2 m-0 border-none bg-black/25 grid place-items-center z-50"
+                    className="fixed inset-0 p-2 m-0 border-none bg-black/25 flex flex-col justify-center items-center z-50"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
@@ -39,10 +63,13 @@ export default function Modal({ open, children, close = () => { }, closeButton =
                     <motion.div
                         layout
                         onClick={(e) => e.stopPropagation()}
-                        className="p-4 bg-white rounded-2xl text-text-primary"
+                        className="flex flex-col p-6 bg-white rounded-4xl text-text-primary overflow-hidden gap-2 xl:max-h-[60vh]"
                         style={{
-                            width: width ?? "auto",
-                            height: height ?? "auto"
+                            width: width ?? "fit-content",
+                            height: height ?? "auto",
+                            maxWidth: "1000px",
+                            maxHeight: "calc(90vh - 1.2rem)",
+                            minWidth: "min(500px, 90vw)"
                         }}
                         initial={{ opacity: 0, y: 15, scale: 0.98 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -64,8 +91,9 @@ export default function Modal({ open, children, close = () => { }, closeButton =
                                 </button>
                             </div>
                         )}
-
-                        {children}
+                        <div className="flex flex-col flex-1 min-h-0">
+                            {children}
+                        </div>
                     </motion.div>
                 </motion.div>
             )}
@@ -74,3 +102,7 @@ export default function Modal({ open, children, close = () => { }, closeButton =
 
     return createPortal(modal, document.body)
 }
+
+Modal.Header = ModalHeader
+Modal.Body = ModalBody
+Modal.Footer = ModalFooter

@@ -1,6 +1,6 @@
 import api from "../../../utils/api";
 import Favorito from "../types/Favorito";
-const prefix = "/favoritos/";
+const prefix = "favoritos/";
 const PropiedadRepository = {
   findAll: async () => {
     const res = await api.get<Favorito[]>(prefix);

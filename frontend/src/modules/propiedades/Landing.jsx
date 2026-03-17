@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, useMemo } from 'react'
 import PropiedadCard from './components/PropiedadCard';
 import { motion } from 'framer-motion';
 import { GalleryHorizontal } from 'lucide-react';
@@ -12,14 +12,6 @@ import DropdownParent from '../../components/DropdownParent';
 import BuscadorBoton from './components/BuscadorBoton'
 
 export default function Landing() {
-  let size = 0;
-
-  window.addEventListener("resize", (e) => {
-    size = window.innerWidth;
-    // console.log(size);
-    // console.log("resize ", document.getElementById("root").clientWidth);
-  });
-
   return (
     <div className="flex flex-col min-h-screen gap-2">
       <Header />
@@ -98,10 +90,22 @@ const Header = () => {
   const manualOverride = useRef(false);
   const buttonRef = useRef(null);
 
-  const [isSmall, setIsSmall] = useState(false);
+  const [isSmall, setIsSmall] = useState(window.innerWidth <= 745);
+  const [showLink, setShowLink] = useState(window.innerWidth >= 1125);
+  const [showBrand, setShowBrand] = useState(window.innerWidth >= 950);
+
+  function updateWidth() {
+    setIsSmall(window.innerWidth <= 745);
+    setShowLink(window.innerWidth >= 1125);
+    setShowBrand(window.innerWidth >= 950)
+  }
+
+  useEffect(() => {
+    window.addEventListener("resize", updateWidth);
+    return () => window.removeEventListener("resize", updateWidth);
+  }, [])
 
   window.addEventListener("resize", () => {
-    setIsSmall(window.innerWidth >= 745);
     console.log(window.innerWidth >= 745)
   });
 
@@ -133,10 +137,16 @@ const Header = () => {
       <nav className="max-w-[1200px] w-full flex flex-col md:flex-row items-center md:justify-between justify-center">
         <div className="flex flex-row gap-2 justify-center items-center">
           <img src={"/logo_white.png"} alt="waymark" className='w-[3.25rem]' />
-          <h6 className='text-primary-500 m-0 rotulo' >WAYMARK</h6>
+          {
+            showBrand &&
+            <h6 className='text-primary-500 m-0 rotulo' >WAYMARK</h6>
+          }
         </div>
         <DropdownParent classes=" flex flex-row gap-2 justify-center items-center" hideFunction={setShow}>
-          <h6 className='font-bold' >Conviertete en anfitrión</h6>
+          {
+            showLink &&
+            <h6 className='font-bold' >Conviertete en anfitrión</h6>
+          }
           <button ref={buttonRef} onClick={() => setShow(!show)} className=' hover:bg-border text-text-secondary  border border-border p-2 rounded-2xl' >
             <Menu />
           </button>

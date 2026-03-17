@@ -1,6 +1,6 @@
 import api from "../../../utils/api";
 import Amenidad from "../types/Amenidad";
-const prefix = "/amenidades/";
+const prefix = "amenidades/";
 const AmenidadRepository = {
   findAll: async () => {
     const res = await api.get<Amenidad[]>(prefix);
