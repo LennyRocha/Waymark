@@ -8,6 +8,9 @@ import FiltrosPage from '../modules/propiedades/FiltrosPage'
 import GuestHeader from '../layout/GuestHeader'
 import HostHeader from '../layout/HostHeader'
 import AdminHeader from '../layout/AdminHeader'
+import AdministrarPropiedad from '../modules/propiedades/AdministrarPropiedad'
+import NuevaPropiedad from '../modules/propiedades/NuevaPropiedad'
+import MisPropiedades from '../modules/propiedades/MisPropiedades'
 
 export default function Router() {
     return (
@@ -31,10 +34,12 @@ export default function Router() {
                     <Route index element={<Navigate to={"today"} />} />
                     <Route path='today' element={<h1 >Vista principal</h1>} />
                     <Route path='calendar' index element={<h1 >Vista de calendario</h1>} />
-                    <Route path='listings' index element={<h1 >Vista de mis propiedades</h1>} />
+                    <Route path='listings' index element={<MisPropiedades />} />
                     <Route path='profile' index element={<h1 >Vista de mi perfil</h1>
                     } />
                     <Route path='explore' index element={<h1 >Vista de alojamientos</h1>} />
+                    <Route path='new-listing' element={<NuevaPropiedad />} />
+                    <Route path='manage-listing/:id' element={<AdministrarPropiedad />} />
                 </Route>
                 <Route path='admin' element={<AdminHeader />} >
                     <Route index element={<Navigate to={"dashboard"} />} />

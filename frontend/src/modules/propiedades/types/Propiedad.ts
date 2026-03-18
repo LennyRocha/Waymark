@@ -51,3 +51,8 @@ export default interface Propiedad {
 
   imagenes: Imagen[];
 }
+
+export type Ubicacion = {
+  pais: string;
+  ciudad: string;
+};

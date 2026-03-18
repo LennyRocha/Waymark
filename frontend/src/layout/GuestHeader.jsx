@@ -33,8 +33,8 @@ export default function GuestHeader() {
                             onClick={() => setOpen(true)}
                             className="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-400">
                             <span className="sr-only">Open main menu</span>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" data-slot="icon" aria-hidden="true" className="size-6">
-                                <path d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" stroke-linecap="round" strokeLineJoin="round" />
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" data-slot="icon" aria-hidden="true" className="size-6">
+                                <path d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" strokeLinecap="round" strokeLineJoin="round" />
                             </svg>
                         </button>
                     </div>
@@ -84,8 +84,8 @@ export default function GuestHeader() {
                                         <button type="button" /*command="close" commandfor="mobile-menu" */ className="-m-2.5 rounded-md p-2.5 text-gray-400"
                                             onClick={() => setOpen(false)}>
                                             <span className="sr-only">Close menu</span>
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" data-slot="icon" aria-hidden="true" className="size-6">
-                                                <path d="M6 18 18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" />
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" data-slot="icon" aria-hidden="true" className="size-6">
+                                                <path d="M6 18 18 6M6 6l12 12" strokeLinecap="round" strokeLinejoin="round" />
                                             </svg>
                                         </button>
                                     </div>

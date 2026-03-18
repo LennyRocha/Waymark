@@ -5,6 +5,7 @@ from .serializers import PropiedadSerializer, DivisaSerializer, FavoritoSerializ
 from .models import Propiedad, Divisa, PropiedadImagen, Favorito, TipoPropiedad,Amenidad, CategoriasAmenidad, Ubicaciones
 from django.db import transaction
 from .filters import PropiedadFilter
+from .paginations import PropiedadPagination
 from django_filters.rest_framework import DjangoFilterBackend
 from django_filters.rest_framework import OrderingFilter
 
@@ -44,13 +45,17 @@ class PropiedadViewSet(viewsets.ModelViewSet):
     
     @action(detail=False, methods=["GET"], url_path="by-host/(?P<host_id>[^/.]+)")
     def by_host(self, request, host_id=None):
+        self.pagination_class = PropiedadPagination  # ← solo aplica aquí
         queryset = Propiedad.objects.select_related(
-            'divisa',
-            'tipo_propiedad'
+            'divisa', 'tipo_propiedad'
         ).prefetch_related(
-            'amenidades',
-            'imagenes'
+            'amenidades', 'imagenes'
         ).filter(anfitrion=host_id)
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = PropiedadSerializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
 
         serializer = PropiedadSerializer(queryset, many=True)
         return Response(serializer.data)
