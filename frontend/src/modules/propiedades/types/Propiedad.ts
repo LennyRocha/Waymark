@@ -32,12 +32,12 @@ export default interface Propiedad {
   check_in: string;
   check_out: string;
 
-  regla_mascotas: number;
-  regla_ninos: number;
-  regla_fumar: number;
-  regla_fiestas: number;
-  regla_autochecar: number;
-  regla_apagar: number;
+  regla_mascotas: boolean;
+  regla_ninos: boolean;
+  regla_fumar: boolean;
+  regla_fiestas: boolean;
+  regla_autochecar: boolean;
+  regla_apagar: boolean;
 
   reglas_extra?: Record<string, any> | null;
 

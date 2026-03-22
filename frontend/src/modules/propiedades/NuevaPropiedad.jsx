@@ -4,11 +4,20 @@ import { AnimatePresence } from "framer-motion"
 import { motion } from 'framer-motion'
 import { useState } from "react"
 import { propiedadPlantilla } from './templates/PropiedadPlantilla'
-import { ChevronLeft, ChevronRight, MapPin } from 'lucide-react'
+import { ChevronLeft, ChevronRight, MapPin, Minus, Plus } from 'lucide-react'
 import Map, { Marker } from 'react-map-gl/mapbox'
 import { SearchBox } from '@mapbox/search-js-react'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import mbxGeocoding from '@mapbox/mapbox-sdk/services/geocoding'
+import useTipos from './hooks/useTipos'
+import { DynamicIcon } from 'lucide-react/dynamic'
+import TiposIconos from './data/TiposIconos'
+import TipoChip from './components/TipoChip'
+import toast from 'react-hot-toast'
+import CustomButton from '../../components/CustomButton'
+import { getUserLocation } from '../../utils/getUserLocation'
+import usePropiedadForm from './hooks/usePropiedadForm'
+import { CustomCheckBox, CustomInput, CustomRadioButton, CustomSelect, CustomSwitch, CustomTextArea } from '../../components/CustomInputs'
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN
 
@@ -16,16 +25,36 @@ const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN
 export default function NuevaPropiedad() {
     const [formData, setFormData] = useState(propiedadPlantilla);
     const [selectedTab, setSelectedTab] = useState(0);
+    const [userCoords, setUserCoords] = useState({ lat: 0, lng: 0 });
+
+    const DEFAULT_LOCATION = {
+        lat: 18.849545093738826,
+        lng: -99.20111345293311
+    };
+
+    const form = usePropiedadForm();
 
     const prevStep = () => setSelectedTab((value) => value - 1);
     const nextStep = () => setSelectedTab((value) => value + 1);
 
     useEffect(() => {
         // TODO: Mientras no esté listo lo del token, usar este useEffect
-        setFormData({
-            ...formData,
-            anfitrion_id: 1
-        });
+        getUserLocation()
+            .then((coords) => {
+                setFormData({
+                    ...formData,
+                    anfitrion_id: 1,
+                    coordenadas: coords
+                });
+                setUserCoords(coords);
+            })
+            .catch(() => {
+                setFormData({
+                    ...formData,
+                    anfitrion_id: 1,
+                    coordenadas: DEFAULT_LOCATION
+                });
+            });
     }, []);
 
     function setCoordenadas(obj = { lat: 0, lng: 0 }) {
@@ -53,42 +82,42 @@ export default function NuevaPropiedad() {
         {
             label: 'Tipo',
             component: Step1,
-            props: { formData: formData, next: nextStep, change: handleChange }
+            props: { formData: formData, next: nextStep, change: handleChange, form }
         },
         {
             label: 'Ubicación',
             component: Step2,
-            props: { formData: formData, next: nextStep, change: handleChange, setCoordenadas: setCoordenadas }
+            props: { formData, next: nextStep, prev: prevStep, change: handleChange, setCoordenadas, userCoords, form }
         },
         {
             label: 'Básicos',
             component: Step3,
-            props: { formData: formData, next: nextStep, prev: prevStep, change: handleChange }
+            props: { formData: formData, next: nextStep, prev: prevStep, change: handleChange, form }
         },
         {
             label: 'Amenidades',
             component: Step4,
-            props: { formData: formData, next: nextStep, prev: prevStep, setAmenidades: setAmenidades, change: handleChange }
+            props: { formData: formData, next: nextStep, prev: prevStep, setAmenidades: setAmenidades, change: handleChange, form }
         },
         {
             label: 'Imágenes',
             component: Step5,
-            props: { formData: formData, next: nextStep, prev: prevStep, setFotos: setFotos, change: handleChange }
+            props: { formData: formData, next: nextStep, prev: prevStep, setFotos: setFotos, change: handleChange, form }
         },
         {
             label: 'Titulo',
             component: Step6,
-            props: { formData: formData, next: nextStep, prev: prevStep, change: handleChange }
+            props: { formData: formData, next: nextStep, prev: prevStep, change: handleChange, form }
         },
         {
             label: 'Precio',
             component: Step7,
-            props: { formData: formData, next: nextStep, prev: prevStep, change: handleChange }
+            props: { formData: formData, next: nextStep, prev: prevStep, change: handleChange, form }
         },
         {
             label: 'Reglas',
             component: Step8,
-            props: { formData: formData, prev: prevStep, submit: handleSubmit, change: handleChange }
+            props: { formData: formData, prev: prevStep, submit: handleSubmit, change: handleChange, form }
         },
     ]
 
@@ -102,7 +131,7 @@ export default function NuevaPropiedad() {
 
     //1. Tipo de propiedad
     //2.  Ubicación
-    //3. Básicos (huespedes, habitaciones, camas, banos)
+    //3. Básicos (huespedes, habitaciones, camas, banos, check_in, check_out)
     //4. Amenidades
     //5. Imágenes
     //6. Título y descripción
@@ -110,10 +139,10 @@ export default function NuevaPropiedad() {
     // 8. Reglas
 
     return (
-        <div className='w-full flex flex-col items-start justify-start'>
-            <h3>Registrar nueva propiedad</h3>
-            <nav className='flex flex-row items-center justify-center gap-2'>
-                <button className='disabled:opacity-50 disabled:cursor-not-allowed p-1 bg-primary-700 rounded-full' onClick={prevStep} disabled={selectedTab === 0}><ChevronLeft color='#fff' size={18} /></button>
+        <div className='w-full flex flex-col items-center lg:items-start justify-center gap-1'>
+            <h4>Registrar nueva propiedad</h4>
+            <nav className='flex flex-row items-center justify-center gap-2 mb-2'>
+                {/* <button className='disabled:opacity-50 disabled:cursor-not-allowed p-1 bg-primary-700 rounded-full' onClick={prevStep} disabled={selectedTab === 0}><ChevronLeft color='#fff' size={18} /></button> */}
                 <p>Paso{" "}
                     <AnimatePresence mode="wait">
                         <motion.b
@@ -129,9 +158,9 @@ export default function NuevaPropiedad() {
                     </AnimatePresence>
                     {" "}de <b>{tabs.length}</b>
                 </p>
-                <button className='disabled:opacity-50 disabled:cursor-not-allowed p-1 bg-primary-700 rounded-full' onClick={nextStep} disabled={selectedTab === tabs.length - 1}><ChevronRight color='#fff' size={18} /></button>
+                {/* <button className='disabled:opacity-50 disabled:cursor-not-allowed p-1 bg-primary-700 rounded-full' onClick={nextStep} disabled={selectedTab === tabs.length - 1}><ChevronRight color='#fff' size={18} /></button> */}
             </nav>
-            <main style={iconContainer}>
+            <main className='flex items-center justify-center flex-1 w-full'>
                 <AnimatePresence mode="wait">
                     <motion.div
                         key={tabs[selectedTab]?.label}
@@ -139,7 +168,6 @@ export default function NuevaPropiedad() {
                         animate={{ y: 0, opacity: 1 }}
                         exit={{ y: -10, opacity: 0 }}
                         transition={{ duration: 0.2 }}
-                        style={icon}
                     >
                         <Tab {...tabProps} label={label} />
                     </motion.div>
@@ -149,29 +177,41 @@ export default function NuevaPropiedad() {
     )
 }
 
-/**
- * ==============   Styles   ================
- */
-
-const iconContainer = {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    flex: 1,
-    width: "100%"
-}
-
-const icon = {
-    fontSize: 128,
+/** @param {{formData: PropiedadForm}} props */
+const Step1 = ({ formData, next, change, label, form }) => {
+    const tipos = useTipos();
+    return <div className='w-full' >
+        <div className="w-auto flex flex-col  gap-4">
+            <h3>¿Qué tipo de alojamiento vas a compartir?</h3>
+            {tipos.isLoading ? (
+                <p>Cargando</p>
+            ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {tipos.data?.map((t) => (
+                        <TipoChip
+                            key={t.id}
+                            t={t}
+                            currId={formData.tipo_id}
+                            onChange={() => {
+                                change({ target: { name: 'tipo_id', value: t.id } });
+                                form.setValue("tipo_id", t.id)
+                            }
+                            }
+                        />
+                    ))}
+                </div>
+            )}
+            <div className='w-full flex flex-row items-center justify-end' >
+                <CustomButton customWidth="w-full lg:w-[225px]" variant='secondary' onClick={next} disabled={formData.tipo_id === 0} isWaiting={tipos.isLoading} >
+                    Siguiente
+                </CustomButton>
+            </div>
+        </div>
+    </div>
 }
 
 /** @param {{formData: PropiedadForm}} props */
-const Step1 = ({ formData, next, change, label }) => {
-    return <h1>Paso 1 {label}</h1>
-}
-
-/** @param {{formData: PropiedadForm}} props */
-const Step2 = ({ formData, next, prev, change, setCoordenadas }) => {
+const Step2 = ({ formData, next, prev, change, setCoordenadas, form }) => {
     const [viewState, setViewState] = useState({
         longitude: formData.coordenadas.lng || -99.1332,  // CDMX por defecto
         latitude: formData.coordenadas.lat || 19.4326,
@@ -182,9 +222,13 @@ const Step2 = ({ formData, next, prev, change, setCoordenadas }) => {
         const feature = res.features[0]
         const [lng, lat] = feature.geometry.coordinates
 
-        // Simulas el evento que espera tu handleChange
+        const ciudad = feature.properties.context.place.name;
+        const pais = feature.properties.context.country.name;
+
         setCoordenadas({ lat, lng })
         change({ target: { name: 'direccion', value: feature.properties.full_address } })
+        change({ target: { name: 'ciudad', value: ciudad } })
+        change({ target: { name: 'pais', value: pais } })
 
         setViewState(prev => ({ ...prev, longitude: lng, latitude: lat, zoom: 15 }))
     }
@@ -206,14 +250,38 @@ const Step2 = ({ formData, next, prev, change, setCoordenadas }) => {
         }).send()
 
         const direccion = res.body.features[0]?.place_name
+        const context = res.body.features[0].context ?? []
+
+        const ciudad = context.find(c => c.id.startsWith('place'))?.text
+        const pais = context.find(c => c.id.startsWith('country'))?.text
+
         if (direccion) {
             change({ target: { name: 'direccion', value: direccion } })
+            change({ target: { name: 'ciudad', value: ciudad } })
+            change({ target: { name: 'pais', value: pais } })
         }
+    }
+
+    async function changeAndNext() {
+        form.setValue("direccion", formData.direccion);
+        form.setValue("ciudad", formData.ciudad);
+        form.setValue("pais", formData.pais);
+        form.setValue("coordenadas", formData.coordenadas, {
+            shouldValidate: true,
+            shouldDirty: true
+        });
+        const valid = await form.trigger(fieldsByStep[1]);
+        if (valid) next();
     }
 
     return (
         <div className='flex flex-col gap-4 w-full'>
-            <h2>¿Dónde está tu propiedad?</h2>
+            <h3>¿Dónde está tu propiedad?</h3>
+
+            {formData.coordenadas.lat > 0 && formData.coordenadas.lng > 0 && (
+                <h6>{formData.coordenadas.lat} - {formData.coordenadas.lng}</h6>
+            )}
+            {formData.direccion && (<h6>Dirección: {formData.direccion}</h6>)}
 
             <SearchBox
                 accessToken={MAPBOX_TOKEN}
@@ -226,7 +294,7 @@ const Step2 = ({ formData, next, prev, change, setCoordenadas }) => {
             <Map
                 {...viewState}
                 onMove={e => setViewState(e.viewState)}
-                style={{ width: '100%', height: 400, borderRadius: 12 }}
+                style={{ width: '100%', minWidth: 250, height: 400, borderRadius: 12 }}
                 mapStyle='mapbox://styles/mapbox/streets-v12'
                 mapboxAccessToken={MAPBOX_TOKEN}
                 onClick={handleMapClick}
@@ -242,41 +310,288 @@ const Step2 = ({ formData, next, prev, change, setCoordenadas }) => {
                     </Marker>
                 )}
             </Map>
-            {formData.coordenadas.lat && formData.coordenadas.lng && (
-                <h6>{formData.coordenadas.lat} - {formData.coordenadas.lng}</h6>
-            )}
-            {formData.direccion && (<h6>Dirección: {formData.direccion}</h6>)}
+
+            <div className='w-full flex flex-row items-center justify-end gap-2' >
+                <CustomButton variant='tertiary' onClick={prev}>
+                    Anterior
+                </CustomButton>
+                <CustomButton variant='secondary' onClick={async () => await changeAndNext()} disabled={formData.direccion === '' && formData.ciudad === '' && formData.pais === ''}>
+                    Siguiente
+                </CustomButton>
+            </div>
         </div>
     )
 }
 
 /** @param {{formData: PropiedadForm}} props */
-const Step3 = ({ formData, prev, next, change, label }) => {
-    return <h1>Paso 3 {label}</h1>
+const Step3 = ({ formData, prev, next, change, label, form }) => {
+    console.log(form.getValues())
+    const maxHuespedes = form.watch("max_huespedes");
+    const camas = form.watch("camas");
+    const banos = form.watch("banos");
+    const habiitaciones = form.watch("habitaciones");
+    return <div className='w-full flex gap-6 flex-col'>
+        <h3>¿A cuantos huéspedes te gustaría recibir?</h3>
+        <nav className='flex justify-between items-center my-1'>
+            <h5>Húespedes</h5>
+            <div className='flex flex-row items-center justify-center gap-2 mb-2'>
+
+                <button
+                    type="button"
+                    disabled={maxHuespedes === 1}
+                    className='disabled:opacity-50 disabled:cursor-not-allowed p-1 bg-transparent disabled:bg-border rounded-full border-1 border-text-secondary'
+                    onClick={() =>
+                        form.setValue(
+                            "max_huespedes",
+                            maxHuespedes - 1,
+                            { shouldValidate: true, shouldDirty: true }
+                        )
+                    }
+                >
+                    <Minus color='var(--color-text-secondary)' size={18} />
+                </button>
+
+                <p>
+                    {maxHuespedes}
+                </p>
+
+                <button
+                    type="button"
+                    disabled={maxHuespedes === 20}
+                    className='disabled:opacity-50 disabled:cursor-not-allowed p-1 bg-transparent disabled:bg-border rounded-full border-1 border-text-secondary'
+                    onClick={() =>
+                        form.setValue(
+                            "max_huespedes",
+                            maxHuespedes + 1,
+                            { shouldValidate: true, shouldDirty: true }
+                        )
+                    }
+                >
+                    <Plus color='var(--color-text-secondary)' size={18} />
+                </button>
+            </div>
+        </nav>
+        <nav className='flex justify-between items-center my-1'>
+            <h5>Recámaras</h5>
+            <div className='flex flex-row items-center justify-center gap-2 mb-2'>
+
+                <button
+                    type="button"
+                    disabled={habiitaciones === 1}
+                    className='disabled:opacity-50 disabled:cursor-not-allowed p-1 bg-transparent disabled:bg-border rounded-full border-1 border-text-secondary'
+                    onClick={() =>
+                        form.setValue(
+                            "habitaciones",
+                            habiitaciones - 1,
+                            { shouldValidate: true, shouldDirty: true }
+                        )
+                    }
+                >
+                    <Minus color='var(--color-text-secondary)' size={18} />
+                </button>
+
+                <p>
+                    {habiitaciones}
+                </p>
+
+                <button
+                    type="button"
+                    disabled={habiitaciones === 20}
+                    className='disabled:opacity-50 disabled:cursor-not-allowed p-1 bg-transparent disabled:bg-border rounded-full border-1 border-text-secondary'
+                    onClick={() =>
+                        form.setValue(
+                            "habitaciones",
+                            habiitaciones + 1,
+                            { shouldValidate: true, shouldDirty: true }
+                        )
+                    }
+                >
+                    <Plus color='var(--color-text-secondary)' size={18} />
+                </button>
+
+            </div>
+        </nav>
+        <nav className='flex justify-between items-center my-1'>
+            <h5>Camas</h5>
+            <div className='flex flex-row items-center justify-center gap-2 mb-2'>
+
+                <button
+                    type="button"
+                    disabled={camas === 1}
+                    className='disabled:opacity-50 disabled:cursor-not-allowed p-1 bg-transparent disabled:bg-border rounded-full border-1 border-text-secondary'
+                    onClick={() =>
+                        form.setValue(
+                            "cams",
+                            camas - 1,
+                            { shouldValidate: true, shouldDirty: true }
+                        )
+                    }
+                >
+                    <Minus color='var(--color-text-secondary)' size={18} />
+                </button>
+
+                <p>
+                    {camas}
+                </p>
+
+                <button
+                    type="button"
+                    disabled={camas === 20}
+                    className='disabled:opacity-50 disabled:cursor-not-allowed p-1 bg-transparent disabled:bg-border rounded-full border-1 border-text-secondary'
+                    onClick={() =>
+                        form.setValue(
+                            "camas",
+                            camas + 1,
+                            { shouldValidate: true, shouldDirty: true }
+                        )
+                    }
+                >
+                    <Plus color='var(--color-text-secondary)' size={18} />
+                </button>
+
+            </div>
+        </nav>
+        <nav className='flex justify-between items-center my-1'>
+            <h5>Baños</h5>
+            <div className='flex flex-row items-center justify-center gap-2 mb-2'>
+
+                <button
+                    type="button"
+                    disabled={banos === 1}
+                    className='disabled:opacity-50 disabled:cursor-not-allowed p-1 bg-transparent disabled:bg-border rounded-full border-1 border-text-secondary'
+                    onClick={() =>
+                        form.setValue(
+                            "banos",
+                            banos - 1,
+                            { shouldValidate: true, shouldDirty: true }
+                        )
+                    }
+                >
+                    <Minus color='var(--color-text-secondary)' size={18} />
+                </button>
+
+                <p>
+                    {banos}
+                </p>
+
+                <button
+                    type="button"
+                    disabled={banos === 20}
+                    className='disabled:opacity-50 disabled:cursor-not-allowed p-1 bg-transparent disabled:bg-border rounded-full border-1 border-text-secondary'
+                    onClick={() =>
+                        form.setValue(
+                            "banos",
+                            banos + 1,
+                            { shouldValidate: true, shouldDirty: true }
+                        )
+                    }
+                >
+                    <Plus color='var(--color-text-secondary)' size={18} />
+                </button>
+
+            </div>
+        </nav>
+
+        <div className='w-full flex flex-row items-center justify-end gap-2' >
+            <CustomButton variant='tertiary' onClick={prev} >
+                Anterior
+            </CustomButton>
+            <CustomButton variant='secondary' onClick={next}>
+                Siguiente
+            </CustomButton>
+        </div>
+    </div>
 }
 
 /** @param {{formData: PropiedadForm}} props */
-const Step4 = ({ formData, prev, next, setAmenidades, change, label }) => {
-    return <h1>Paso 4 {label}</h1>
+const Step4 = ({ formData, prev, next, setAmenidades, change, label, form }) => {
+    return <div className='w-full flex gap-2 flex-col'>
+        <h3>¿Qué es lo que ofrece tu propiedad?</h3>
+        <div className='w-full flex flex-row items-center justify-end gap-2' >
+            <CustomButton variant='secondary' onClick={prev} >
+                Anterior
+            </CustomButton>
+            <CustomButton variant='secondary' onClick={next}>
+                Siguiente
+            </CustomButton>
+        </div>
+    </div>
 }
 
 /** @param {{formData: PropiedadForm}} props */
-const Step5 = ({ formData, prev, next, setFotos, change, label }) => {
-    return <h1>Paso 5 {label}</h1>
+const Step5 = ({ formData, prev, next, setFotos, change, label, form }) => {
+    return <div className='w-full flex gap-2 flex-col'>
+        <h3>Compartenos unas imágenes de tu propiedad</h3>
+        <div className='w-full flex flex-row items-center justify-end gap-2' >
+            <CustomButton variant='secondary' onClick={prev} >
+                Anterior
+            </CustomButton>
+            <CustomButton variant='secondary' onClick={next}>
+                Siguiente
+            </CustomButton>
+        </div>
+    </div>
 }
 
 /** @param {{formData: PropiedadForm}} props */
-const Step6 = ({ formData, prev, next, change, label }) => {
-    return <h1>Paso 6 {label}</h1>
+const Step6 = ({ formData, prev, next, change, label, form }) => {
+    return <div className='w-full flex gap-2 flex-col'>
+        <h3>Dale identidad a tu propiedad</h3>
+        <CustomInput label='Título' placeholder='Ingresa el título' icon='calendar' helperText='Hola' />
+        <CustomTextArea label='Descripción' rows={4} placeholder='Ingresa el título' helperText='Hola' icon='calendar' />
+        <div className='w-full flex flex-row items-center justify-end gap-2' >
+            <CustomButton variant='tertiary' onClick={prev} >
+                Anterior
+            </CustomButton>
+            <CustomButton variant='secondary' onClick={next}>
+                Siguiente
+            </CustomButton>
+        </div>
+    </div>
 }
 
 /** @param {{formData: PropiedadForm}} props */
-const Step7 = ({ formData, prev, next, change, label }) => {
-    return <h1>Paso 7 {label}</h1>
+const Step7 = ({ formData, prev, next, change, label, form }) => {
+    return <div className='w-full flex gap-2 flex-col'>
+        <h3>¡Define tu precio!</h3>
+        <CustomSelect label='Selecciona' helperText='Ayuda' options={[
+            { label: "Casa", value: "casa" },
+            { label: "Departamento", value: "depto" },
+            { label: "Cabaña", value: "cabana" }
+        ]}  />
+        <div className='w-full flex flex-row items-center justify-end gap-2' >
+            <CustomButton variant='secondary' onClick={prev} >
+                Anterior
+            </CustomButton>
+            <CustomButton variant='secondary' onClick={next}>
+                Siguiente
+            </CustomButton>
+        </div>
+    </div>
 }
 
 /** @param {{formData: PropiedadForm}} props */
-const Step8 = ({ formData, prev, submit, change, label }) => {
-    return <h1>Paso 8 {label}</h1>
+const Step8 = ({ formData, prev, submit, change, label, form }) => {
+    return <div className='w-full flex gap-2 flex-col'>
+        <h3>Sólo unas preguntas mas...</h3>
+        <div className='w-full flex flex-row items-center justify-end gap-2' >
+            <CustomCheckBox />
+            <CustomRadioButton />
+            <CustomSwitch />
+            <CustomButton variant='secondary' onClick={prev} >
+                Anterior
+            </CustomButton>
+        </div>
+    </div>
 }
 
+const fieldsByStep = {
+    0: ["tipo_id"],
+    1: ["coordenadas", "direccion", "ciudad", "pais"],
+    2: ["max_huespedes", "camas", "habitaciones", "banos", "check_in", "check_out"],
+    3: ["amenidades_ids"],
+    4: ["imagenes"],
+    5: ["titulo", "descripcion"],
+    6: ["precio_noche"],
+    7: ["reglas_extra", "regla_mascotas", "regla_ninos", "regla_fumar", "regla_fiestas", "regla_autochecar", "regla_apagar"],
+};

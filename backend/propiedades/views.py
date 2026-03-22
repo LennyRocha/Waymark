@@ -7,7 +7,7 @@ from django.db import transaction
 from .filters import PropiedadFilter
 from .paginations import PropiedadPagination
 from django_filters.rest_framework import DjangoFilterBackend
-from django_filters.rest_framework import OrderingFilter
+from rest_framework.filters import OrderingFilter
 
 # Create your views here.
 method_not_allowed_response = Response({'error': 'Method not allowed'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
@@ -78,13 +78,16 @@ class PropiedadViewSet(viewsets.ModelViewSet):
             with transaction.atomic():
 
                 propiedad = serializer.save()
+                #Cuando ya esté el token
+                # propiedad = serializer.save(usuario=self.request.user)
 
                 for i, imagen in enumerate(imagenes):
 
                     PropiedadImagen.objects.create(
                         propiedad=propiedad,
                         url=imagen,
-                        orden=i
+                        orden=i,
+                        updated_by = propiedad.anfitrion
                     )
 
         except Exception as e:
@@ -95,7 +98,7 @@ class PropiedadViewSet(viewsets.ModelViewSet):
             )
 
         return Response(
-            PropiedadSerializer(propiedad).data,
+            self.get_serializer(propiedad).data,
             status=status.HTTP_201_CREATED
         )
     
@@ -161,7 +164,7 @@ class PropiedadViewSet(viewsets.ModelViewSet):
             )
 
         return Response(
-            PropiedadSerializer(propiedad).data,
+            self.get_serializer(propiedad).data,
             status=status.HTTP_200_OK
         )
         

@@ -40,7 +40,7 @@ const PropiedadRepository = {
     return res.data;
   },
   update: async (data: PropiedadUpdate, id: number) => {
-    const res = await api.put<Propiedad>(
+    const res = await api.patch<Propiedad>(
       `${prefix}${id}`,
       data,
     );

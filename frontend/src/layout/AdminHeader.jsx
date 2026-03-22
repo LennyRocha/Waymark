@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Link, Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
+import { Menu } from 'lucide-react';
 
 export default function AdminHeader() {
     const navigate = useNavigate();
@@ -45,7 +46,7 @@ export default function AdminHeader() {
         <div>
             <header className='w-full'>
                 <nav className="bg-white border-gray-200 px-4 lg:px-6 py-2.5">
-                    <div className="flex flex-wrap justify-center md:justify-between items-center mx-auto max-w-screen-xl">
+                    <div className="flex flex-wrap justify-center md:justify-between items-center mx-auto max-w-screen-xl gap-2">
                         <Link to="/" className="flex items-center">
                             <img src="/logo_white.png" className="mr-3 h-6 sm:h-10" alt="Flowbite Logo" />
                             <span className="self-center text-xl font-semibold whitespace-nowrap rotulo text-primary-500">WAYMARK</span>
@@ -57,8 +58,8 @@ export default function AdminHeader() {
                             <button onClick={() => setOpen(!open)}
                                 type="button" className="inline-flex items-center p-2 ml-1 text-sm text-gray-500 rounded-lg lg:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600" >
                                 <span className="sr-only">Open main menu</span>
-                                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"></path></svg>
-                                <svg className="hidden w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                                <Menu className="w-6 h-6" fill="currentColor" />
+                                <Menu className="hidden w-6 h-6" fill="currentColor" />
                             </button>
                         </div>
                         <AnimatePresence>
@@ -68,7 +69,7 @@ export default function AdminHeader() {
                                     animate={{ height: "auto", opacity: 1 }}
                                     exit={{ height: 0, opacity: 0 }}
                                     transition={{ duration: 0.25 }}
-                                    className="flex flex-col w-full lg:flex lg:flex-row lg:w-auto lg:order-1 overflow-hidden"
+                                    className="flex flex-col w-full lg:flex lg:flex-row lg:w-auto lg:order-1"
                                 >
                                     <ul className="flex flex-col mt-4 font-medium lg:flex-row lg:space-x-8 lg:mt-0">
                                         {links.map((l, index) => (
@@ -78,7 +79,7 @@ export default function AdminHeader() {
                                                 <NavLink
                                                     to={l.to}
                                                     className={({ isActive }) =>
-                                                        `-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold transition duration-200 ease hover:bg-black/5 font-[montserrat]  ${isActive
+                                                        `-mx-3 block rounded-lg px-3 py-2 text-base/5 font-semibold transition duration-200 ease hover:bg-black/5 font-[montserrat]  ${isActive
                                                             ? "text-secondary-500"
                                                             : "text-text-primary hover:text-text-secondary"
                                                         }`
