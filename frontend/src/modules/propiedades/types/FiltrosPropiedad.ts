@@ -8,6 +8,8 @@ type FiltrosPropiedades = {
   camas?: number;
   tipo_id?: number;
   amenidades?: number[];
+  page?: number,
+  size?: number
 };
 //Enviar amenidades: filters.amenidades?.join(",")
 export default FiltrosPropiedades;

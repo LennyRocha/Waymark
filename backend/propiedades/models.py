@@ -1,6 +1,6 @@
 from django.db import models
 from cuentas.models import Usuario
-from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator, URLValidator, DecimalValidator, FileExtensionValidator, BaseValidator
 from django.utils import timezone
 from django_resized import ResizedImageField
 from django.utils.text import slugify
@@ -27,7 +27,7 @@ class Amenidad(models.Model):
 
 class Divisa(models.Model):
     divisa_id = models.AutoField(primary_key=True)
-    nombre = models.CharField(max_length=50, blank=False)
+    nombre = models.CharField(max_length=50, blank=False,  validators=[RegexValidator(f'^[a-zA-ZáéíóúÁÉÍÓÚ ]$', "No puedes incluir números")])
     acronimo = models.TextField(blank= False)
     created_at = models.DateTimeField(blank=True, null=True, auto_now_add= True)
     updated_at = models.DateTimeField(blank=True, null=True, auto_now_add= True)
@@ -54,7 +54,7 @@ class TipoPropiedad(models.Model):
         
 class Propiedad(models.Model):
     propiedad_id = models.AutoField(primary_key=True)
-    titulo = models.CharField(max_length=50, blank=False, error_messages={
+    titulo = models.CharField(max_length=50, blank=False, validators=[RegexValidator(f'^[a-zA-ZáéíóúÁÉÍÓÚ ]+$', "No puedes incluir números")] , error_messages={
         "max_length" : "El título asignado no debe exceder los 50 carácteres",
         "blank" : "Este campo no puede estar vacío"
     })
@@ -83,7 +83,8 @@ class Propiedad(models.Model):
         "max_digits" : "El precio asignado es demasiado alto",
         "decimal_places" : "Solo se admiten 2 decimales",
         "blank" : "Este campo no puede estar vacío"
-    })
+    },
+    validators=[MaxValueValidator(9999999.99,"El precio dado es demasiado grande"),MinValueValidator(1.00, "El precio asignado no debe ser menor o igual a 0")])
     divisa = models.ForeignKey(Divisa, models.PROTECT, blank=False, error_messages={
         "blank" : "Este campo no puede estar vacío"
     })
@@ -112,24 +113,12 @@ class Propiedad(models.Model):
     check_out = models.TimeField(blank=False, error_messages={
         "blank" : "Este campo no puede estar vacío"
     })
-    regla_mascotas = models.IntegerField(blank=False, error_messages={
-        "blank" : "Este campo no puede estar vacío"
-    })
-    regla_ninos = models.IntegerField(blank=False, error_messages={
-        "blank" : "Este campo no puede estar vacío"
-    })
-    regla_fumar = models.IntegerField(blank=False, error_messages={
-        "blank" : "Este campo no puede estar vacío"
-    })
-    regla_fiestas = models.IntegerField(blank=False, error_messages={
-        "blank" : "Este campo no puede estar vacío"
-    })
-    regla_autochecar = models.IntegerField(blank=False, error_messages={
-        "blank" : "Este campo no puede estar vacío"
-    })
-    regla_apagar = models.IntegerField(blank=False, error_messages={
-        "blank" : "Este campo no puede estar vacío"
-    })
+    regla_mascotas = models.BooleanField()
+    regla_ninos = models.BooleanField()
+    regla_fumar = models.BooleanField()
+    regla_fiestas = models.BooleanField()
+    regla_autochecar = models.BooleanField()
+    regla_apagar = models.BooleanField()
     reglas_extra = models.JSONField(blank=True, null=True)
     tipo_propiedad = models.ForeignKey(TipoPropiedad, models.PROTECT, db_column='tipo_propiedad', blank=False, error_messages={
         "blank" : "Este campo no puede estar vacío"
