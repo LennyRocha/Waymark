@@ -22,6 +22,7 @@ import CustomLoader from '../../layout/CustomLoader'
 import Chip from '../../components/Chip'
 import useAmenidades from './hooks/useAmenidades'
 import { useWatch } from 'react-hook-form'
+import Accordion from '../../components/Accordion'
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN
 
@@ -592,7 +593,7 @@ const Step3 = ({ prev, next, change, form }) => {
 }
 
 /** @param {{formData: PropiedadForm}} props */
-const Step4 = ({ formData, prev, next, setAmenidades, form, validateStep }) => {
+const Step4 = ({ prev, next, setAmenidades, form }) => {
     const list = useWatch({
         control: form.control,
         name: "amenidades_ids"
@@ -743,8 +744,22 @@ const Step7 = ({ formData, prev, next, change, label, form }) => {
 
 /** @param {{formData: PropiedadForm}} props */
 const Step8 = ({ formData, prev, submit, change, label, form }) => {
+    const items = [{
+        title: "Hola",
+        content: <h2>Hola</h2>
+    }, {
+        title: "Hola",
+        content: <h2>Hola</h2>
+    }, {
+        title: "Hola",
+        content: <h2>Hola</h2>
+    }, {
+        title: "Hola",
+        content: <h2>Hola</h2>
+    }]
     return <div className='w-full flex gap-2 flex-col'>
         <h3>Sólo unas preguntas mas...</h3>
+        <Accordion items={items} />
         <div className='w-full flex flex-row items-center justify-end gap-2' >
             <CustomCheckBox />
             <CustomRadioButton />
