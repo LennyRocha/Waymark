@@ -91,7 +91,7 @@ export const CustomInput: React.FC<InputProps> = ({
           </label>
           <input
             {...props}
-            className={`w-full h-auto p-4  ${label !== "" && "pt-8"} ${isError ? "border-orange-50 bg-orange-50" : "border-border"} border-2 rounded-xl ${icon && "pr-8"}  disabled:bg-gray-100 ${sizeClass} transition ease focus:outline-none focus:border-text-primary`}
+            className={`w-full h-auto p-4  ${label !== "" && "pt-8"} ${isError ? "border-orange-500 bg-orange-50" : "border-border"} border-2 rounded-xl ${icon && "pr-8"}  disabled:bg-gray-100 ${sizeClass} transition ease focus:outline-none focus:border-text-primary`}
             disabled={props.disabled || isWaiting}
           />
           {icon && (
