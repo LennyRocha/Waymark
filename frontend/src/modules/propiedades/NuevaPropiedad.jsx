@@ -757,15 +757,54 @@ const Step8 = ({ formData, prev, submit, change, label, form }) => {
         title: "Hola",
         content: <h2>Hola</h2>
     }]
+    const mascotas = useWatch({
+        control: form.control,
+        name: "regla_mascotas"
+    });
+    const fumar = useWatch({
+        control: form.control,
+        name: "regla_fumar"
+    });
+    const ninos = useWatch({
+        control: form.control,
+        name: "regla_ninos"
+    });
+    const fiestas = useWatch({
+        control: form.control,
+        name: "regla_fiestas"
+    });
+    const reglasJson = useWatch({
+        control: form.control,
+        name: "reglas_extra"
+    });
     return <div className='w-full flex gap-2 flex-col'>
         <h3>Sólo unas preguntas mas...</h3>
+        <div className="flex justify-between items-center">
+            <h5>¿Permites mascotas?</h5>
+            <CustomCheckBox checked={mascotas} />
+        </div>
+        <div className="flex justify-between items-center">
+            <h5>¿Permites niños?</h5>
+            <CustomCheckBox checked={ninos} />
+        </div>
+        <div className="flex justify-between items-center">
+            <h5>¿Permites fiestas?</h5>
+            <CustomCheckBox checked={fiestas} />
+        </div>
+        <div className="flex justify-between items-center">
+            <h5>¿Cuentas con área para fumar?</h5>
+            <CustomCheckBox checked={fumar} />
+        </div>
         <Accordion items={items} />
         <div className='w-full flex flex-row items-center justify-end gap-2' >
             <CustomCheckBox />
             <CustomRadioButton />
             <CustomSwitch />
-            <CustomButton variant='secondary' onClick={prev} >
+            <CustomButton variant='tertiary' onClick={prev} >
                 Anterior
+            </CustomButton>
+            <CustomButton variant='secondary' onClick={prev}>
+                Guardar
             </CustomButton>
         </div>
     </div>

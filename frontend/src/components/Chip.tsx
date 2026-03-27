@@ -23,7 +23,7 @@ export default function Chip({
   selected,
   label,
   icon,
-}: Props) {
+}: Readonly<Props>) {
   return (
     <motion.div
       animate={{
@@ -37,7 +37,7 @@ export default function Chip({
       onClick={onClick}
     >
       <MotionIcon
-        name={icon ? icon : "circle-question-mark"}
+        name={icon ?? "circle-question-mark"}
         size={32}
         strokeWidth={selected ? 2 : 1}
         color="var(--color-text-primary)"

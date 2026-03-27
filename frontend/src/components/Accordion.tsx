@@ -21,7 +21,7 @@ type Props = {
 };
 const MotionChevron = motion.create(ChevronDown);
 
-export default function Accordion({ items }: Props) {
+export default function Accordion({ items }: Readonly<Props>) {
   const [openIndex, setOpenIndex] = React.useState<
     number | null
   >(null);
@@ -34,7 +34,7 @@ export default function Accordion({ items }: Props) {
     <div className="min-w-[250px] shadow-sm rounded-xl w-full">
       {items.map((item, idx) => (
         <AccoridonItem
-          key={idx}
+          key={item.title}
           title={item.title}
           isOpen={openIndex === idx}
           content={item.content}

@@ -5,7 +5,8 @@ import {
 } from "lucide-react/dynamic";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, ChevronDown } from "lucide-react";
-import { any } from "zod";
+
+type size = "small" | "medium" | "large";
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label: string;
@@ -15,7 +16,7 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   isWaiting: boolean;
   fullWidth: boolean;
   isError: boolean;
-  inpSize: "small" | "medium" | "large";
+  inpSize: size;
   onIconPress?: () => void;
   ErrorElement?: React.ReactNode;
 }
@@ -28,7 +29,7 @@ interface TextProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   isWaiting: boolean;
   fullWidth: boolean;
   isError: boolean;
-  inpSize: "small" | "medium" | "large";
+  inpSize: size;
   onIconPress?: () => void;
   ErrorElement?: React.ReactNode;
 }
@@ -41,7 +42,7 @@ type Option = {
 interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   isWaiting: boolean;
   fullWidth: boolean;
-  inpSize: "small" | "medium" | "large";
+  inpSize: size;
   ErrorElement?: React.ReactNode;
   options: Option[];
   value?: string;
@@ -103,9 +104,8 @@ export const CustomInput: React.FC<InputProps> = ({
             />
           )}
         </div>
-        {isError && ErrorElement ? (
-          ErrorElement
-        ) : isError && errorMessage ? (
+        {isError && ErrorElement && ErrorElement}
+        {isError && errorMessage && (
           <motion.p
             key="error"
             initial={{ opacity: 0, y: -4 }}
@@ -120,11 +120,12 @@ export const CustomInput: React.FC<InputProps> = ({
             />
             {errorMessage}
           </motion.p>
-        ) : helperText ? (
+        )}
+        {!isError && helperText && (
           <p className="text-sm text-text-secondary mt-1 w-full text-left">
             {helperText}
           </p>
-        ) : null}
+        )}
       </div>
     </AnimatePresence>
   );
@@ -275,7 +276,7 @@ export const CustomSelect: React.FC<SelectProps> = ({
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className={` w-full p-4 h-auto pr-10 text-left border-2 rounded-xl ${label && "pt-8"} ${sizeClass} ${isError? "border-orange-500 bg-orange-50" : "border-border"} transition`}
+        className={` w-full p-4 h-auto pr-10 text-left border-2 rounded-xl ${label && "pt-8"} ${sizeClass} ${isError ? "border-orange-500 bg-orange-50" : "border-border"} transition`}
       >
         {selected?.label || placeholder}
 
@@ -338,9 +339,8 @@ export const CustomSelect: React.FC<SelectProps> = ({
 
       {/* Error */}
 
-      {isError && ErrorElement ? (
-        ErrorElement
-      ) : isError && errorMessage ? (
+      {isError && ErrorElement && ErrorElement}
+      {isError && errorMessage && (
         <motion.p
           key="error"
           initial={{ opacity: 0, y: -4 }}
@@ -355,11 +355,12 @@ export const CustomSelect: React.FC<SelectProps> = ({
           />
           {errorMessage}
         </motion.p>
-      ) : helperText ? (
+      )}
+      {!isError && helperText && (
         <p className="text-sm text-text-secondary mt-1 w-full text-left">
           {helperText}
         </p>
-      ) : null}
+      )}
     </div>
   );
 };
@@ -453,9 +454,8 @@ export const CustomTextArea: React.FC<TextProps> = ({
             />
           )}
         </div>
-        {isError && ErrorElement ? (
-          ErrorElement
-        ) : isError && errorMessage ? (
+        {isError && ErrorElement && ErrorElement}
+        {isError && errorMessage && (
           <motion.p
             key="error"
             initial={{ opacity: 0, y: -4 }}
@@ -470,11 +470,12 @@ export const CustomTextArea: React.FC<TextProps> = ({
             />
             {errorMessage}
           </motion.p>
-        ) : helperText ? (
+        )}
+        {!isError && helperText && (
           <p className="text-sm text-text-secondary mt-1 w-full text-left">
             {helperText}
           </p>
-        ) : null}
+        )}
       </div>
     </AnimatePresence>
   );

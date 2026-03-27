@@ -25,16 +25,34 @@ const CustomButton: React.FC<ButtonProps> = ({
   const Defclass = React.useMemo<string>(() => {
     switch (variant) {
       case "primary":
-        return `text-white 
-        bg-gradient-to-r 
-        from-primary-500 to-secondary-500 
-        hover:from-secondary-500 hover:to-primary-500 
-        active:from-secondary-600 active:to-secondary-600
-        disabled:from-gray-300 disabled:to-gray-300`;
+        return [
+          "text-white",
+          "bg-gradient-to-r",
+          "from-primary-500 to-secondary-500",
+          "hover:from-secondary-500 hover:to-primary-500",
+          "active:from-secondary-600 active:to-secondary-600",
+          "disabled:from-gray-300 disabled:to-gray-300",
+        ].join(" ");
       case "secondary":
-        return `text-white bg-text-primary active:bg-black hover:bg-[#111111]  disabled:bg-gray-400`;
+        return [
+          "text-white",
+          "bg-text-primary",
+          "active:bg-black",
+          "hover:bg-[#111111]",
+          "disabled:bg-gray-400",
+        ].join(" ");
       case "tertiary":
-        return `text-text-primary border-2 border-text-primary  hover:bg-gray-100 active:bg-border bg-transparent  disabled:bg-gray-400 disabled:text-white disabled:bg-gray-400 disabled:border-0 focus:ring-offset-1`;
+        return [
+          "text-text-primary",
+          "border-2 border-text-primary",
+          "hover:bg-gray-100",
+          "active:bg-border",
+          "bg-transparent",
+          "disabled:bg-gray-400 disabled:text-white disabled:border-0",
+          "focus:ring-offset-1",
+        ].join(" ");
+      default:
+        return "";
     }
   }, [variant]);
   const sizeClass = React.useMemo(() => {
