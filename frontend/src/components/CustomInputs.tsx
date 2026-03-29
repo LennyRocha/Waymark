@@ -19,6 +19,7 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   inpSize: size;
   onIconPress?: () => void;
   ErrorElement?: React.ReactNode;
+  useMinWidth?: boolean;
 }
 
 interface TextProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
@@ -36,22 +37,30 @@ interface TextProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
 
 type Option = {
   label: string;
-  value: string;
+  value: string | number;
 };
 
-interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
-  isWaiting: boolean;
-  fullWidth: boolean;
-  inpSize: size;
-  ErrorElement?: React.ReactNode;
+type SelectProps = {
   options: Option[];
-  value?: string;
-  label?: string;
+
+  value?: string | number | null;
+
+  onChange?: (value: string | number) => void;
+
   placeholder?: string;
+
+  label?: string;
+
   isError?: boolean;
-  errorMessage?: string;
+
   helperText?: string;
-}
+
+  errorMessage?: string;
+
+  ErrorElement?: React.ReactNode;
+
+  inpSize?: "small" | "medium" | "large";
+};
 
 interface OtherInputProps extends React.InputHTMLAttributes<HTMLInputElement> {}
 
@@ -67,8 +76,10 @@ export const CustomInput: React.FC<InputProps> = ({
   ErrorElement = undefined,
   errorMessage = undefined,
   onIconPress = () => {},
+  useMinWidth = true,
   ...props
 }) => {
+  const currentLength = props.value?.toString().length || 0;
   const sizeClass = React.useMemo(() => {
     switch (inpSize) {
       case "small":
@@ -82,11 +93,12 @@ export const CustomInput: React.FC<InputProps> = ({
   return (
     <AnimatePresence mode="wait">
       <div
-        className={`min-w-[250px] ${fullWidth ? "w-full" : "w-auto"}`}
+        className={`z-10 ${useMinWidth ? "min-w-[250px]" : "w-auto"} ${fullWidth ? "w-full" : "w-auto"}`}
       >
         <div className="relative w-full">
           <label
             className={`text-sm font-semibold absolute top-3 left-4 ${isError ? "text-orange-500" : "text-text-secondary"}`}
+            htmlFor={props.id}
           >
             {label}
           </label>
@@ -104,6 +116,11 @@ export const CustomInput: React.FC<InputProps> = ({
             />
           )}
         </div>
+        {props.maxLength && (
+          <p className="text-xs text-text-secondary mt-1 text-right">
+            {currentLength}/{props.maxLength}
+          </p>
+        )}
         {isError && ErrorElement && ErrorElement}
         {isError && errorMessage && (
           <motion.p
@@ -220,24 +237,24 @@ export const CustomRadioButton: React.FC<
 };
 
 export const CustomSelect: React.FC<SelectProps> = ({
-  children,
-  isWaiting = false,
-  fullWidth = false,
-  isError = false,
-  inpSize = "medium",
-  helperText = undefined,
-  label = "",
-  ErrorElement = undefined,
-  errorMessage = undefined,
   options,
   value,
+  onChange,
   placeholder = "Seleccionar...",
+  label = "",
+  isError = false,
+  helperText,
+  errorMessage,
+  ErrorElement,
+  inpSize = "medium",
   ...props
 }) => {
   const [open, setOpen] = React.useState(false);
 
-  const [selected, setSelected] =
-    React.useState<Option | null>(null);
+  // Buscar opción seleccionada desde value
+  const selected = React.useMemo(() => {
+    return options.find((o) => o.value === value) || null;
+  }, [value, options]);
 
   const sizeClass = React.useMemo(() => {
     switch (inpSize) {
@@ -250,10 +267,36 @@ export const CustomSelect: React.FC<SelectProps> = ({
     }
   }, [inpSize]);
 
-  return (
-    <div className="relative w-full min-w-[250px]">
-      {/* Label */}
+  const containerRef = React.useRef<HTMLDivElement>(null);
 
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener(
+      "mousedown",
+      handleClickOutside,
+    );
+
+    return () => {
+      document.removeEventListener(
+        "mousedown",
+        handleClickOutside,
+      );
+    };
+  }, []);
+
+  return (
+    <div
+      ref={containerRef}
+      className="relative w-full min-w-[250px]"
+    >
       {label && (
         <label
           className={`
@@ -276,7 +319,7 @@ export const CustomSelect: React.FC<SelectProps> = ({
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className={` w-full p-4 h-auto pr-10 text-left border-2 rounded-xl ${label && "pt-8"} ${sizeClass} ${isError ? "border-orange-500 bg-orange-50" : "border-border"} transition`}
+        className={` w-full p-4 pr-10 text-left border-2 rounded-xl ${label && "pt-8"} ${sizeClass} ${isError ? "border-orange-500 bg-orange-50" : "border-border"} transition`}
       >
         {selected?.label || placeholder}
 
@@ -309,7 +352,6 @@ export const CustomSelect: React.FC<SelectProps> = ({
               border-border
               rounded-xl
               shadow-lg
-              overflow-hidden
               z-50
               max-h-60
               overflow-y-auto
@@ -319,7 +361,7 @@ export const CustomSelect: React.FC<SelectProps> = ({
               <motion.li
                 key={option.value}
                 onClick={() => {
-                  setSelected(option);
+                  onChange?.(option.value);
                   setOpen(false);
                 }}
                 className="
@@ -340,6 +382,7 @@ export const CustomSelect: React.FC<SelectProps> = ({
       {/* Error */}
 
       {isError && ErrorElement && ErrorElement}
+
       {isError && errorMessage && (
         <motion.p
           key="error"
@@ -356,8 +399,9 @@ export const CustomSelect: React.FC<SelectProps> = ({
           {errorMessage}
         </motion.p>
       )}
+
       {!isError && helperText && (
-        <p className="text-sm text-text-secondary mt-1 w-full text-left">
+        <p className="text-sm text-text-secondary mt-1 text-left">
           {helperText}
         </p>
       )}
@@ -419,6 +463,7 @@ export const CustomTextArea: React.FC<TextProps> = ({
   onIconPress = () => {},
   ...props
 }) => {
+  const currentLength = props.value?.toString().length || 0;
   const sizeClass = React.useMemo(() => {
     switch (inpSize) {
       case "small":
@@ -432,11 +477,12 @@ export const CustomTextArea: React.FC<TextProps> = ({
   return (
     <AnimatePresence mode="wait">
       <div
-        className={`min-w-[250px] ${fullWidth ? "w-full" : "w-auto"}`}
+        className={`z-50 min-w-[250px] ${fullWidth ? "w-full" : "w-auto"}`}
       >
         <div className="relative w-full">
           <label
             className={`text-sm font-semibold absolute top-3 left-4 ${isError ? "text-orange-500" : "text-text-secondary"}`}
+            htmlFor={props.id}
           >
             {label}
           </label>
@@ -454,6 +500,11 @@ export const CustomTextArea: React.FC<TextProps> = ({
             />
           )}
         </div>
+        {props.maxLength && (
+          <p className="text-xs text-text-secondary mt-1 text-right">
+            {currentLength}/{props.maxLength}
+          </p>
+        )}
         {isError && ErrorElement && ErrorElement}
         {isError && errorMessage && (
           <motion.p

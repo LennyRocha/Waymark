@@ -1,10 +1,8 @@
 /* eslint-disable no-unused-vars */
 import React, { useState, useRef, useEffect, useMemo } from 'react'
 import PropiedadCard from './components/PropiedadCard';
-import { motion } from 'framer-motion';
-import { GalleryHorizontal } from 'lucide-react';
-import { useScroll, useMotionValueEvent } from "framer-motion"
-import { Menu } from 'lucide-react';
+import { GalleryHorizontal, Menu } from 'lucide-react';
+import { useScroll, useMotionValueEvent, motion } from "framer-motion"
 import CustomLink from '../../components/CustomLink';
 import Buscador from './components/Buscador';
 import CustomDropdown from '../../components/CustomDropdown';
@@ -135,7 +133,7 @@ const Header = () => {
   return <motion.header
     className="sticky top-0 z-10 flex flex-col items-center w-full bg-gradient-to-b from-white via-white to-gray-50 to-80% p-[1.25rem] border-b border-border" >
     {!isSmall ? <>
-      <nav className="max-w-[1200px] w-full flex flex-col md:flex-row items-center md:justify-between justify-center">
+      <nav className="max-w-[1280px] w-full flex flex-col md:flex-row items-center md:justify-between justify-center">
         <div className="flex flex-row gap-2 justify-center items-center">
           <img src={"/logo_white.png"} alt="waymark" className='w-[3.25rem]' />
           {

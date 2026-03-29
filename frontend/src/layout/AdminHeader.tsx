@@ -82,18 +82,23 @@ export default function AdminHeader() {
                                 <Menu className="w-6 h-6" fill="currentColor" />
                             </button>
                         </div>
-                        <AnimatePresence>
+                        <AnimatePresence mode='wait'>
                             {open && (
                                 <motion.div
-                                    initial={{ height: 0, opacity: 0 }}
-                                    animate={{ height: 'auto', opacity: 1 }}
-                                    exit={{ height: 0, opacity: 0 }}
+                                        initial={{ height: 0, opacity: 0 }}
+                                        animate={{ height: 'auto', opacity: 1 }}
+                                        exit={{ height: 0, opacity: 0 }}
                                     transition={{ duration: 0.25 }}
                                     className="flex flex-col w-full lg:flex lg:flex-row lg:w-auto lg:order-1"
                                 >
                                     <ul className="flex flex-col mt-4 font-medium lg:flex-row lg:space-x-8 lg:mt-0">
                                         {links.map((l) => (
-                                            <li key={l.name}>
+                                            <motion.li key={l.name}
+                                                initial={{ opacity: 0, x: -20 }}
+                                                animate={{ opacity: 1, x: 0 }}
+                                                exit={{ opacity: 0, x: -20 }}
+                                                transition={{ duration: 0.2, delay: 0.1 }}
+                                            >
                                                 <NavLink
                                                     to={l.to}
                                                     className={({ isActive }) =>
@@ -106,7 +111,7 @@ export default function AdminHeader() {
                                                 >
                                                     {l.text}
                                                 </NavLink>
-                                            </li>
+                                            </motion.li>
                                         ))}
                                     </ul>
                                 </motion.div>
@@ -115,9 +120,9 @@ export default function AdminHeader() {
                     </div>
                 </nav>
             </header>
-            <div className="w-full p-[1rem] h-full">
+            <main className="w-full h-full">
                 <Outlet />
-            </div>
+            </main>
         </div>
     );
 }

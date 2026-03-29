@@ -9,7 +9,7 @@ const MotionHeart = motion.create(Heart);
 
 /** @param {{propiedad: Propiedad}} props */
 export default function PropiedadCard({ propiedad }) {
-    if(propiedad) console.log(propiedad)
+    if (propiedad) console.log(propiedad)
     const [active, setActive] = React.useState(false);
     const navigate = useNavigate();
     const location = useLocation();
@@ -19,8 +19,10 @@ export default function PropiedadCard({ propiedad }) {
     };
     return (
         <div className=' w-[clamp(200px,25%,12rem)] shrink-0   relative flex flex-col items-start justify-center' >
-            <img src="https://a0.muscache.com/im/pictures/225729b8-a72d-4048-89a3-92000e80086a.jpg?im_w=960" alt="si" className='rounded-2xl w-full h-50 aspect-ratio: 4/3'
-                title='Hotel en Tequesquitengo' onClick={() => goToPropiedad()} draggable="false" />
+            <div role='button' onClick={() => goToPropiedad()}>
+                <img src="https://a0.muscache.com/im/pictures/225729b8-a72d-4048-89a3-92000e80086a.jpg?im_w=960" alt="si" className='rounded-2xl w-full h-50 aspect-ratio: 4/3'
+                    title='Hotel en Tequesquitengo' draggable="false" />
+            </div>
             <button onClick={() => setActive(!active)} className='absolute top-[1rem] right-[1rem]'>
                 <MotionHeart
                     style={{ color: active ? "var(--primario)" : "#fff" }}

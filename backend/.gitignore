@@ -8,3 +8,5 @@ backend/settings.py
 models.txt
 
 venv
+
+media/*

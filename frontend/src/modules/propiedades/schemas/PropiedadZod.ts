@@ -66,7 +66,7 @@ export const PropiedadSchema = z
         "El precio asignado no debe ser menor o igual a 0",
       )
       .max(9999999.99, "El precio dado es demasiado grande")
-      .default(1.0),
+      .default(1.00),
 
     divisa_id: z.coerce
       .number()
@@ -134,8 +134,6 @@ export const PropiedadSchema = z
       .min(1, "Este campo no puede estar vacío")
       .default(0),
 
-    anfitrion_id: z.coerce.number().min(1).default(1),
-
     amenidades_ids: z
       .array(z.coerce.number())
       .min(1, "Debe seleccionar al menos una amenidad")
@@ -148,9 +146,7 @@ export const PropiedadSchema = z
 
           orden: z.number().min(1).max(10),
 
-          url: z.string().optional(),
-
-          foto: z.instanceof(File).optional(),
+          url: z.instanceof(File).optional(),
         }),
       )
       .max(10, "Solo se permiten máximo 10 imágenes")

@@ -1,7 +1,7 @@
 from rest_framework import viewsets, status, mixins
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from .serializers import PropiedadSerializer, DivisaSerializer, FavoritoSerializer, TipoPropSerializer, AmenidadSerializer, CategoriaAmenidadSerializer, UbicacionSerializer
+from .serializers import PropiedadSerializer, DivisaSerializer, FavoritoSerializer, TipoPropSerializer, AmenidadSerializer, CategoriaAmenidadSerializer, UbicacionSerializer, ImagenSerializer
 from .models import Propiedad, Divisa, PropiedadImagen, Favorito, TipoPropiedad,Amenidad, CategoriasAmenidad, Ubicaciones
 from django.db import transaction
 from .filters import PropiedadFilter
@@ -63,6 +63,8 @@ class PropiedadViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
 
         imagenes = request.FILES.getlist('imagenes')
+        
+        anfitrion = request.user
 
         if len(imagenes) > 10:
             return Response(
@@ -77,9 +79,9 @@ class PropiedadViewSet(viewsets.ModelViewSet):
 
             with transaction.atomic():
 
-                propiedad = serializer.save()
-                #Cuando ya esté el token
-                # propiedad = serializer.save(usuario=self.request.user)
+                propiedad = serializer.save(anfitrion = 1)
+                #TODO: Cuando ya esté el token descomentar esto
+                # propiedad = serializer.save(anfitrion=anfitrion)
 
                 for i, imagen in enumerate(imagenes):
 
@@ -215,3 +217,7 @@ class AmenidadViewSet(viewsets.ReadOnlyModelViewSet):
 class TipoPropiedadViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = TipoPropiedad.objects.all().order_by("tipo")
     serializer_class = TipoPropSerializer
+    
+class ImagenViewSet(mixins.UpdateModelMixin, viewsets.GenericViewSet):
+    queryset = PropiedadImagen.objects.all()
+    serializer_class = ImagenSerializer

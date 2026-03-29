@@ -1,5 +1,5 @@
 import Amenidad from "./Amenidad";
-import Divisa from "./Divisa";
+import Divisa from "../../divisas/types/Divisa";
 import Imagen from "./Imagen";
 import TipoPropiedad from "./TipoPropiedad";
 

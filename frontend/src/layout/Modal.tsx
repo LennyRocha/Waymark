@@ -78,7 +78,7 @@ const Modal: ModalComponent = ({
             {open && (
                 <motion.div
                     layout
-                    className="fixed inset-0 p-2 m-0 border-none bg-black/25 flex flex-col justify-center items-center z-50"
+                    className="fixed inset-0 p-2 m-0 border-none bg-black/25 flex flex-col justify-center items-center z-[9999] "
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}

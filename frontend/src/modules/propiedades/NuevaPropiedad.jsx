@@ -23,11 +23,23 @@ import Chip from '../../components/Chip'
 import useAmenidades from './hooks/useAmenidades'
 import { useWatch } from 'react-hook-form'
 import Accordion from '../../components/Accordion'
+import useDivisas from '../divisas/hooks/useDivisas'
+import useSetPageTitle from '../../utils/setPageTitle'
+import usePropiedadMutation from './hooks/usePropiedadMutation'
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN
 
-/** @typedef {import("./schemas/PropiedadZod").PropiedadForm} PropiedadForm */
+/** 
+ *  @typedef {import("./schemas/PropiedadZod").PropiedadForm} PropiedadForm 
+ *  @typedef {import("./types/Imagen").default} Imagen
+ *  @typedef {import("react-hook-form").Use}   
+ *  @typedef {import("react-hook-form").UseFormReturn<any>} Form
+*/
 export default function NuevaPropiedad() {
+    useSetPageTitle("Registrar nueva propiedad"):
+
+    const mutation = usePropiedadMutation()
+
     const [formData, setFormData] = useState(propiedadPlantilla);
     const [selectedTab, setSelectedTab] = useState(0);
 
@@ -61,7 +73,6 @@ export default function NuevaPropiedad() {
                 const coords = await getUserLocation();
                 setFormData((prev) => ({
                     ...prev,
-                    anfitrion_id: 1,
                     coordenadas: coords
                 }));
                 console.log("Coordenadas obtenidas", coords)
@@ -70,13 +81,12 @@ export default function NuevaPropiedad() {
                 console.error(error)
                 setFormData((prev) => ({
                     ...prev,
-                    anfitrion_id: 1,
                     coordenadas: DEFAULT_LOCATION
                 }));
             }
         }
         load();
-    }, []);
+    });
 
     async function setCoordenadas(obj = { lat: 0, lng: 0 }) {
         setFormData(prev => ({ ...prev, coordenadas: obj }))
@@ -111,8 +121,9 @@ export default function NuevaPropiedad() {
         });
     }
 
-    function onSubmit(e) {
-        e.preventDefautl();
+    function onSubmit(data) {
+        console.log("Datos a enviar")
+        console.table({ ...data, amenidades_ids: data.amenidades_ids.join("-"), coordenadas: JSON.stringify(data.coordenadas) })
         //Después, ya me cansé
     }
 
@@ -120,7 +131,7 @@ export default function NuevaPropiedad() {
         {
             label: 'Tipo',
             component: Step1,
-            props: { formData: formData, next: nextStep, change: doChange, form, validateStep }
+            props: { next: nextStep, change: doChange, form, validateStep }
         },
         {
             label: 'Ubicación',
@@ -135,12 +146,12 @@ export default function NuevaPropiedad() {
         {
             label: 'Amenidades',
             component: Step4,
-            props: { formData: formData, next: nextStep, prev: prevStep, setAmenidades: setAmenidades, change: handleChange, form, validateStep }
+            props: { formData: formData, next: nextStep, prev: prevStep, setAmenidades: setAmenidades, form, validateStep }
         },
         {
             label: 'Imágenes',
             component: Step5,
-            props: { formData: formData, next: nextStep, prev: prevStep, setFotos: setFotos, change: handleChange, form, validateStep }
+            props: { formData: formData, next: nextStep, prev: prevStep, setFotos: setFotos, form, validateStep }
         },
         {
             label: 'Titulo',
@@ -150,18 +161,23 @@ export default function NuevaPropiedad() {
         {
             label: 'Precio',
             component: Step7,
-            props: { formData: formData, next: nextStep, prev: prevStep, change: handleChange, form, validateStep }
+            props: { formData: formData, next: nextStep, prev: prevStep, form, validateStep }
+        },
+        {
+            label: 'Horarios',
+            component: Step8,
+            props: { formData: formData, prev: prevStep, next: nextStep, change: doChange, form, validateStep }
         },
         {
             label: 'Reglas',
-            component: Step8,
-            props: { formData: formData, prev: prevStep, submit: form.handleSubmit(onSubmit), change: handleChange, form, validateStep }
+            component: Step9,
+            props: { formData: formData, prev: prevStep, submit: form.handleSubmit(onSubmit), change: doChange, form, validateStep }
         },
     ]
 
-    const [tipo, ubicacion, basicos, amenidades, fotos, titulo, precio, reglas] = allTabs
+    const [tipo, ubicacion, basicos, amenidades, fotos, titulo, precio, horarios, reglas] = allTabs
 
-    const tabs = [tipo, ubicacion, basicos, amenidades, fotos, titulo, precio, reglas];
+    const tabs = [tipo, ubicacion, basicos, amenidades, fotos, titulo, precio, horarios, reglas];
 
     const Tab = tabs[selectedTab]?.component
     const tabProps = tabs[selectedTab]?.props ?? {}
@@ -174,10 +190,11 @@ export default function NuevaPropiedad() {
     //5. Imágenes
     //6. Título y descripción
     //7. Precio por noche
-    // 8. Reglas
+    // 8. Horarios de entrada y salida
+    //9. Reglas
 
     return (
-        <div className='w-full flex flex-col items-center lg:items-start justify-center gap-1'>
+        <div className='w-full flex flex-col items-center lg:items-start justify-center gap-1 content'>
             <h4>Registrar nueva propiedad</h4>
             <nav className='flex flex-row items-center justify-center gap-2 mb-2'>
                 {/* <button className='disabled:opacity-50 disabled:cursor-not-allowed p-1 bg-primary-700 rounded-full' onClick={prevStep} disabled={selectedTab === 0}><ChevronLeft color='#fff' size={18} /></button> */}
@@ -215,8 +232,15 @@ export default function NuevaPropiedad() {
     )
 }
 
-/** @param {{formData: PropiedadForm}} props */
-const Step1 = ({ next, change, form, validateStep }) => {
+/**
+ * @param {{
+ *  next?: () => void,
+ *  change?: (tag:string, value: any) => Promise<void>,
+ *  form: Form,
+ * validateStep: (step: number) => boolean,
+ * }} props
+ */
+const Step1 = ({ next = () => { }, change = async () => { }, form, validateStep = () => { } }) => {
     const tipos = useTipos();
     const currTip = useWatch({
         control: form.control,
@@ -252,7 +276,16 @@ const Step1 = ({ next, change, form, validateStep }) => {
     </div>
 }
 
-/** @param {{formData: PropiedadForm}} props */
+/**
+ * @param {{
+ *  next?: () => void,
+ * prev?: () => void
+ *  change?: (tag:string, value: any) => Promise<void>,
+ *  form: Form,
+ * setCoordenadas: ({ lat: number, lng: number }) => Promise<void>, 
+ * validateStep: (step: number) => boolean,
+ * }} props
+ */
 const Step2 = ({ next, prev, change, setCoordenadas, form, userCoords, validateStep }) => {
     const mapRef = useRef(null);
     const coords = useWatch({
@@ -409,7 +442,14 @@ const Step2 = ({ next, prev, change, setCoordenadas, form, userCoords, validateS
     )
 }
 
-/** @param {{formData: PropiedadForm}} props */
+/**
+ * @param {{
+ *  next?: () => void,
+ * prev?: () => void
+ *  change?: (tag:string, value: any) => Promise<void>,
+ *  form: Form
+ * }} props
+ */
 const Step3 = ({ prev, next, change, form }) => {
     const maxHuespedes = useWatch({
         control: form.control,
@@ -429,158 +469,30 @@ const Step3 = ({ prev, next, change, form }) => {
     });
     return <div className='w-full flex gap-6 flex-col'>
         <h3>¿A cuantos huéspedes te gustaría recibir?</h3>
-        <nav className='flex justify-between items-center my-1'>
-            <h5>Húespedes</h5>
-            <div className='flex flex-row items-center justify-center gap-2 mb-2'>
-
-                <button
-                    type="button"
-                    disabled={maxHuespedes === 1}
-                    className='disabled:opacity-50 disabled:cursor-not-allowed p-1 bg-transparent disabled:bg-border rounded-full border-1 border-text-secondary'
-                    onClick={async () =>
-                        await change(
-                            "max_huespedes",
-                            maxHuespedes - 1
-                        )
-                    }
-                >
-                    <Minus color='var(--color-text-secondary)' size={18} />
-                </button>
-
-                <p>
-                    {maxHuespedes}
-                </p>
-
-                <button
-                    type="button"
-                    disabled={maxHuespedes === 20}
-                    className='disabled:opacity-50 disabled:cursor-not-allowed p-1 bg-transparent disabled:bg-border rounded-full border-1 border-text-secondary'
-                    onClick={async () =>
-                        await change(
-                            "max_huespedes",
-                            maxHuespedes + 1
-                        )
-                    }
-                >
-                    <Plus color='var(--color-text-secondary)' size={18} />
-                </button>
-            </div>
-        </nav>
-        <nav className='flex justify-between items-center my-1'>
-            <h5>Recámaras</h5>
-            <div className='flex flex-row items-center justify-center gap-2 mb-2'>
-
-                <button
-                    type="button"
-                    disabled={habiitaciones === 1}
-                    className='disabled:opacity-50 disabled:cursor-not-allowed p-1 bg-transparent disabled:bg-border rounded-full border-1 border-text-secondary'
-                    onClick={async () =>
-                        await change(
-                            "habitaciones",
-                            habiitaciones - 1
-                        )
-                    }
-                >
-                    <Minus color='var(--color-text-secondary)' size={18} />
-                </button>
-
-                <p>
-                    {habiitaciones}
-                </p>
-
-                <button
-                    type="button"
-                    disabled={habiitaciones === 20}
-                    className='disabled:opacity-50 disabled:cursor-not-allowed p-1 bg-transparent disabled:bg-border rounded-full border-1 border-text-secondary'
-                    onClick={async () =>
-                        await change(
-                            "habitaciones",
-                            habiitaciones + 1
-                        )
-                    }
-                >
-                    <Plus color='var(--color-text-secondary)' size={18} />
-                </button>
-
-            </div>
-        </nav>
-        <nav className='flex justify-between items-center my-1'>
-            <h5>Camas</h5>
-            <div className='flex flex-row items-center justify-center gap-2 mb-2'>
-
-                <button
-                    type="button"
-                    disabled={camas === 1}
-                    className='disabled:opacity-50 disabled:cursor-not-allowed p-1 bg-transparent disabled:bg-border rounded-full border-1 border-text-secondary'
-                    onClick={async () =>
-                        await change(
-                            "camas",
-                            camas - 1
-                        )
-                    }
-                >
-                    <Minus color='var(--color-text-secondary)' size={18} />
-                </button>
-
-                <p>
-                    {camas}
-                </p>
-
-                <button
-                    type="button"
-                    disabled={camas === 20}
-                    className='disabled:opacity-50 disabled:cursor-not-allowed p-1 bg-transparent disabled:bg-border rounded-full border-1 border-text-secondary'
-                    onClick={async () =>
-                        await change(
-                            "camas",
-                            camas + 1
-                        )
-                    }
-                >
-                    <Plus color='var(--color-text-secondary)' size={18} />
-                </button>
-
-            </div>
-        </nav>
-        <nav className='flex justify-between items-center my-1'>
-            <h5>Baños</h5>
-            <div className='flex flex-row items-center justify-center gap-2 mb-2'>
-
-                <button
-                    type="button"
-                    disabled={banos === 1}
-                    className='disabled:opacity-50 disabled:cursor-not-allowed p-1 bg-transparent disabled:bg-border rounded-full border-1 border-text-secondary'
-                    onClick={async () =>
-                        await change(
-                            "banos",
-                            banos - 1
-                        )
-                    }
-                >
-                    <Minus color='var(--color-text-secondary)' size={18} />
-                </button>
-
-                <p>
-                    {banos}
-                </p>
-
-                <button
-                    type="button"
-                    disabled={banos === 20}
-                    className='disabled:opacity-50 disabled:cursor-not-allowed p-1 bg-transparent disabled:bg-border rounded-full border-1 border-text-secondary'
-                    onClick={async () =>
-                        await change(
-                            "banos",
-                            banos + 1
-                        )
-                    }
-                >
-                    <Plus color='var(--color-text-secondary)' size={18} />
-                </button>
-
-            </div>
-        </nav>
-
+        <SelectNav
+            label="Huéspedes"
+            value={maxHuespedes}
+            change={change}
+            field="max_huespedes"
+        />
+        <SelectNav
+            label="Recámaras"
+            value={habiitaciones}
+            change={change}
+            field="habitaciones"
+        />
+        <SelectNav
+            label="Camas"
+            value={camas}
+            change={change}
+            field="camas"
+        />
+        <SelectNav
+            label="Baños"
+            value={banos}
+            change={change}
+            field="banos"
+        />
         <div className='w-full flex flex-row items-center justify-end gap-2' >
             <CustomButton variant='tertiary' onClick={prev} >
                 Anterior
@@ -592,7 +504,15 @@ const Step3 = ({ prev, next, change, form }) => {
     </div>
 }
 
-/** @param {{formData: PropiedadForm}} props */
+/**
+ * @param {{
+ *  next?: () => void,
+ * prev?: () => void
+ *  change?: (tag:string, value: any) => Promise<void>,
+ *  form: Form,
+ * setAmenidades: (list: number[]) => Promise<void>
+ * }} props
+ */
 const Step4 = ({ prev, next, setAmenidades, form }) => {
     const list = useWatch({
         control: form.control,
@@ -663,7 +583,7 @@ const Step4 = ({ prev, next, setAmenidades, form }) => {
             <CustomButton variant='tertiary' onClick={prev} >
                 Anterior
             </CustomButton>
-            <CustomButton variant='secondary' onClick={next} disabled={!canContinue}>
+            <CustomButton variant='secondary' onClick={next} disabled={!canContinue} isWaiting={amenidades.isLoading}>
                 Siguiente
             </CustomButton>
         </div>
@@ -672,6 +592,10 @@ const Step4 = ({ prev, next, setAmenidades, form }) => {
 
 /** @param {{formData: PropiedadForm}} props */
 const Step5 = ({ formData, prev, next, setFotos, change, label, form }) => {
+    const list = useWatch({
+        control: form.control,
+        name: "imagenes"
+    });
     return <div className='w-full flex gap-2 flex-col'>
         <h3>Compartenos unas imágenes de tu propiedad</h3>
         <div className='w-full flex flex-row items-center justify-end gap-2' >
@@ -685,17 +609,19 @@ const Step5 = ({ formData, prev, next, setFotos, change, label, form }) => {
     </div>
 }
 
-/** @param {{formData: PropiedadForm}} props */
-const Step6 = ({ formData, prev, next, change, label, form }) => {
-    const fields = fieldsByStep[5];
+/**
+ * @param {{
+ *  next?: () => void,
+ * prev?: () => void
+ *  change?: (tag:string, value: any) => Promise<void>,
+ *  form: Form,
+ * validateStep: (step: number) => boolean,
+ * }} props
+ */
+const Step6 = ({ prev, next, form, validateStep }) => {
+    const canContinue = validateStep(5);
 
-    const canContinue = fields.every(
-        (field) =>
-            form.formState.dirtyFields[field] &&
-            !form.formState.errors[field]
-    );
-
-    return <div className='w-full flex gap-2 flex-col'>
+    return <section className='w-full flex gap-2 flex-col'>
         <h3>Dale identidad a tu propiedad</h3>
         <CustomInput label='Título' placeholder='Define un título para tu propiedad.' {...form.register("titulo")} name='titulo'
             isError={
@@ -718,32 +644,121 @@ const Step6 = ({ formData, prev, next, change, label, form }) => {
                 Siguiente
             </CustomButton>
         </div>
-    </div>
+    </section>
 }
 
-/** @param {{formData: PropiedadForm}} props */
-const Step7 = ({ formData, prev, next, change, label, form }) => {
-    return <div className='w-full flex gap-2 flex-col'>
+/**
+ * @param {{
+ *  next?: () => void,
+ *  change?: (tag:string, value: any) => Promise<void>,
+ *  form: Form,
+ * validateStep: (step: number) => boolean,
+ * }} props
+ */
+const Step7 = ({ prev, next, change, form, validateStep }) => {
+    const divisas = useDivisas();
+    const divisa = useWatch({
+        control: form.control,
+        name: "divisa_id"
+    });
+    const canContinue = validateStep(6)
+    return <section className='w-full md:min-w-[350px] flex gap-2 flex-col'>
         <h3>¡Define tu precio!</h3>
-        <CustomSelect label='Selecciona' helperText='Ayuda' options={[
-            { label: "Casa", value: "casa" },
-            { label: "Departamento", value: "depto" },
-            { label: "Cabaña", value: "cabana" }
-        ]} />
-        <CustomLoader />
+        {divisas.isLoading ? (
+            <CustomLoader />
+        ) : (
+            <>
+                <CustomInput label='Precio por noche' placeholder=' Ingresa el precio que vas a cobrar.'   {...form.register("precio_noche", {
+                    pattern: {
+                        value: /^\d+(\.\d{0,2})?$/,
+                        message: "Máximo 2 decimales",
+                    },
+                })} name='precio_noche' type='number' inputMode='decimal' min={1.00} step={0.01} max={9999999.99}
+                    isError={
+                        !!form.formState.errors.precio_noche &&
+                        form.formState.touchedFields.precio_noche
+                    }
+                    ErrorElement={<FieldErrors errors={form.formState.errors} name="precio_noche" />}
+                    pattern='^[0-9]+$' />
+                <CustomSelect label='Divisa de cambio'
+                    helperText='Selecciona un tipo de cambio para tu precio.'
+                    value={divisa}
+                    onChange={async (val) => await change("divisa_id", val)}
+                    options={
+                        divisas.data?.map(d => ({ label: d.acronimo + " - " + d.nombre, value: d.divisa_id })) ?? []} />
+            </>
+        )}
         <div className='w-full flex flex-row items-center justify-end gap-2' >
-            <CustomButton variant='secondary' onClick={prev} >
+            <CustomButton variant='tertiary' onClick={prev} >
                 Anterior
             </CustomButton>
-            <CustomButton variant='secondary' onClick={next}>
+            <CustomButton variant='secondary' onClick={next} disabled={!canContinue} isWaiting={divisas.isLoading}>
                 Siguiente
             </CustomButton>
         </div>
-    </div>
+    </section>
 }
 
-/** @param {{formData: PropiedadForm}} props */
-const Step8 = ({ formData, prev, submit, change, label, form }) => {
+/**
+ * @param {{
+ *  next?: () => void,
+ *  change?: (tag:string, value: any) => Promise<void>,
+ *  form: Form,
+ * validateStep: (step: number) => boolean,
+ * }} props
+ */
+const Step8 = ({ prev, next, form, validateStep }) => {
+    const canContinue = validateStep(7);
+    return <section className='w-full flex gap-2 flex-col'>
+        <h3 className='md:text-left'>¿Cuáles son tus horarios de entrada y salida?</h3>
+        <div className='flex flex-col md:flex-row w-full gap-2'>
+            <CustomInput label='Entrada' type="time" name="appt" step="60" min="00:00" placeholder='Ej. 00:00' max="23:59" {...form.register("check_in")}
+                fullWidth
+                isError={
+                    !!form.formState.errors.check_in &&
+                    form.formState.touchedFields.check_in
+                }
+                ErrorElement={<FieldErrors errors={form.formState.errors} name="check_in" />}
+                useMinWidth={false}
+            />
+
+            <CustomInput label='Salida' type="time" name="appt" step="60" min="00:00" placeholder='Ej. 00:00' max="23:59" {...form.register("check_out")}
+                fullWidth
+                isError={
+                    !!form.formState.errors.check_out &&
+                    form.formState.touchedFields.check_out
+                }
+                ErrorElement={<FieldErrors errors={form.formState.errors} name="check_out" />}
+                useMinWidth={false}
+            />
+        </div>
+        <p className='text-text-secondary md:text-left'>Formato de 24 horas</p>
+        <div className='w-full flex flex-row items-center justify-end gap-2' >
+            <CustomButton variant='tertiary' onClick={prev} >
+                Anterior
+            </CustomButton>
+            <CustomButton variant='secondary' onClick={next} disabled={!canContinue}>
+                Siguiente
+            </CustomButton>
+        </div>
+    </section >
+}
+
+/**
+ * @param {{
+ *  next?: () => void,
+ *  change?: (tag:string, value: any) => Promise<void>,
+ *  form: Form,
+ *  submit: () => void
+ * }} props
+ */
+const Step9 = ({ prev, submit, change, form }) => {
+    React.useEffect(() => {
+        async function load() {
+            await form.trigger("regla_mascotas", "regla_ninos", "regla_fiestas", "regla_fumar");
+        }
+        load();
+    });
     const items = [{
         title: "Hola",
         content: <h2>Hola</h2>
@@ -777,57 +792,45 @@ const Step8 = ({ formData, prev, submit, change, label, form }) => {
         control: form.control,
         name: "reglas_extra"
     });
-    return <div className='w-full flex gap-2 flex-col'>
+    return <section className='w-full flex gap-2 flex-col'>
         <h3>Sólo unas preguntas mas...</h3>
-        <div className="flex justify-between items-center">
-            <h5>¿Permites mascotas?</h5>
-            <CustomCheckBox checked={mascotas} />
-        </div>
-        <div className="flex justify-between items-center">
-            <h5>¿Permites niños?</h5>
-            <CustomCheckBox checked={ninos} />
-        </div>
-        <div className="flex justify-between items-center">
-            <h5>¿Permites fiestas?</h5>
-            <CustomCheckBox checked={fiestas} />
-        </div>
-        <div className="flex justify-between items-center">
-            <h5>¿Cuentas con área para fumar?</h5>
-            <CustomCheckBox checked={fumar} />
-        </div>
-        <Accordion items={items} />
+        <CheckRow question='¿Permites mascotas?' checked={mascotas} onChange={change} field="regla_mascotas" />
+        <CheckRow question='¿Permites niños?' checked={ninos} onChange={change} field="regla_ninos" />
+        <CheckRow question='¿Permites fiestas?' checked={fiestas} onChange={change} field="regla_fiestas" />
+        <CheckRow question='¿Cuentas con área para fumar?' checked={fumar} onChange={change} field="regla_fumar" />
+        {/* <Accordion items={items} /> */}
         <div className='w-full flex flex-row items-center justify-end gap-2' >
-            <CustomCheckBox />
+            {/* <CustomCheckBox />
             <CustomRadioButton />
-            <CustomSwitch />
+            <CustomSwitch /> */}
             <CustomButton variant='tertiary' onClick={prev} >
                 Anterior
             </CustomButton>
-            <CustomButton variant='secondary' onClick={prev}>
+            <CustomButton variant='secondary' disabled={!form.formState.isValid} onClick={submit}>
                 Guardar
             </CustomButton>
         </div>
-    </div>
+    </section>
 }
 
 const fieldsByStep = {
     0: ["tipo_id"],
     1: ["coordenadas", "direccion", "ciudad", "pais"],
-    2: ["max_huespedes", "camas", "habitaciones", "banos", "check_in", "check_out"],
+    2: ["max_huespedes", "camas", "habitaciones", "banos"],
     3: ["amenidades_ids"],
     4: ["imagenes"],
     5: ["titulo", "descripcion"],
     6: ["precio_noche"],
-    7: ["reglas_extra", "regla_mascotas", "regla_ninos", "regla_fumar", "regla_fiestas", "regla_autochecar", "regla_apagar"],
+    7: ["check_in", "check_out"],
+    8: ["reglas_extra", "regla_mascotas", "regla_ninos", "regla_fumar", "regla_fiestas", "regla_autochecar", "regla_apagar"],
 };
 
-const FieldErrors = ({ errors, name }) => {
+const FieldErrors = ({ errors = {}, name = "" }) => {
 
     const fieldError = errors[name];
 
     if (!fieldError) return null;
 
-    // múltiples errores
     if (fieldError.types) {
         return (
             <ul className="text-orange-500 text-sm mt-1  text-left ">
@@ -838,7 +841,6 @@ const FieldErrors = ({ errors, name }) => {
         );
     }
 
-    // error único
     return (
         <p className="text-red-500 text-sm mt-1 text-left flex gap-1 items-center">
             <AlertCircle fill='var(--color-orange-500)' color='#fff' />
@@ -846,3 +848,54 @@ const FieldErrors = ({ errors, name }) => {
         </p>
     );
 };
+
+const SelectNav = ({ label = "", value = 0, change = () => { }, field = "" }) => {
+    return (
+        <nav className='flex justify-between items-center my-1'>
+            <h5>{label}</h5>
+            <div className='flex flex-row items-center justify-center gap-2 mb-2'>
+
+                <button
+                    type="button"
+                    disabled={value === 1}
+                    className='disabled:opacity-50 disabled:cursor-not-allowed p-1 bg-transparent disabled:bg-border rounded-full border-1 border-text-secondary'
+                    onClick={async () =>
+                        await change(
+                            field,
+                            value - 1
+                        )
+                    }
+                >
+                    <Minus color='var(--color-text-secondary)' size={18} />
+                </button>
+
+                <p>
+                    {value}
+                </p>
+
+                <button
+                    type="button"
+                    disabled={value === 20}
+                    className='disabled:opacity-50 disabled:cursor-not-allowed p-1 bg-transparent disabled:bg-border rounded-full border-1 border-text-secondary'
+                    onClick={async () =>
+                        await change(
+                            field,
+                            value + 1
+                        )
+                    }
+                >
+                    <Plus color='var(--color-text-secondary)' size={18} />
+                </button>
+            </div>
+        </nav>
+    )
+}
+
+const CheckRow = ({ question = "¿?", checked = false, onChange = async () => { }, field = "" }) => {
+    return (
+        <div className="flex justify-between items-center my-2 gap-4">
+            <h5>{question}</h5>
+            <CustomCheckBox checked={checked} onChange={async (e) => await onChange(field, (e.target.checked))} />
+        </div>
+    )
+}

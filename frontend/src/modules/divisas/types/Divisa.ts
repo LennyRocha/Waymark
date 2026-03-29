@@ -3,5 +3,3 @@ export default interface Divisa {
   nombre: string
   acronimo: string
 }
-
-//Mover a su módulo
