@@ -84,7 +84,7 @@ class Propiedad(models.Model):
         "decimal_places" : "Solo se admiten 2 decimales",
         "blank" : "Este campo no puede estar vacío"
     },
-    validators=[MaxValueValidator(9999999.99,"El precio dado es demasiado grande"),MinValueValidator(1.00, "El precio asignado no debe ser menor o igual a 0")])
+    validators=[MaxValueValidator(9999999,"El precio dado es demasiado grande"),MinValueValidator(1, "El precio asignado no debe ser menor o igual a 0")])
     divisa = models.ForeignKey(Divisa, models.PROTECT, blank=False, error_messages={
         "blank" : "Este campo no puede estar vacío"
     })
@@ -156,7 +156,7 @@ class Propiedad(models.Model):
             contador += 1
 
         self.slug = slug
-        super().save(self,*args, **kwargs)
+        super().save(*args, **kwargs)
 
 
 class PropiedadImagen(models.Model):

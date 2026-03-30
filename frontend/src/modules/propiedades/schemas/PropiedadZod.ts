@@ -1,4 +1,13 @@
 import { z } from "zod";
+import Imagen from "../types/Imagen";
+
+const defaultImages: Imagen[] = Array.from(
+  { length: 10 },
+  (_, i) => ({
+    prop_ima_id: 0,
+    orden: i + 1,
+  }),
+);
 
 export const PropiedadSchema = z
   .object({
@@ -56,17 +65,17 @@ export const PropiedadSchema = z
       })
       .default({
         lat: 0,
-        lng:  0,
+        lng: 0,
       }),
 
     precio_noche: z.coerce
       .number()
       .min(
-        1.0,
+        1,
         "El precio asignado no debe ser menor o igual a 0",
       )
       .max(9999999.99, "El precio dado es demasiado grande")
-      .default(1.00),
+      .default(1),
 
     divisa_id: z.coerce
       .number()
@@ -144,13 +153,15 @@ export const PropiedadSchema = z
         z.object({
           prop_ima_id: z.number().optional(),
 
-          orden: z.number().min(1).max(10),
+          orden: z.number().min(1).max(10).optional(),
 
-          url: z.instanceof(File).optional(),
+          url: z
+            .union([z.instanceof(File), z.string()])
+            .optional(),
         }),
       )
       .max(10, "Solo se permiten máximo 10 imágenes")
-      .default([]),
+      .default(() => defaultImages),
   })
 
   .refine((data) => data.check_out > data.check_in, {

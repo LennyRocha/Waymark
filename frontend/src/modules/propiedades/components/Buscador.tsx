@@ -96,11 +96,13 @@ const MenuHuespedes = ({
 type BuscadorProps = {
   scrolled: boolean;
   setScrolled: (value: boolean) => void;
+  isWaiting: boolean;
 };
 
 const Buscador = ({
   scrolled,
   setScrolled,
+  isWaiting,
 }: Readonly<BuscadorProps>) => {
   const [focus, setFocus] = useState(false);
   const [inputIdx, setInputIdx] = useState(0);
@@ -153,6 +155,7 @@ const Buscador = ({
           open={open}
           close={close}
           refProp={input1Ref}
+          isWaiting={isWaiting}
         />
 
         <Divider />
@@ -166,6 +169,7 @@ const Buscador = ({
           open={open}
           close={close}
           refProp={input2Ref}
+          isWaiting={isWaiting}
         />
 
         <Divider />
@@ -182,6 +186,7 @@ const Buscador = ({
           value={huespedes}
           onChange={setHuespedes}
           hasButton
+          isWaiting={isWaiting}
         >
           <SearchButton
             focus={focus}
@@ -230,6 +235,7 @@ type SectionProps = {
   onChange?: (v: string) => void;
   children?: React.ReactNode;
   hasButton?: boolean;
+  isWaiting?: boolean;
 };
 
 const SearchSection = ({
@@ -245,6 +251,7 @@ const SearchSection = ({
   onChange,
   children,
   hasButton = false,
+  isWaiting = false,
 }: SectionProps) => {
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -262,8 +269,8 @@ const SearchSection = ({
       ref={refProp}
       onClick={handleClick}
       className={`w-auto transition delay-150 duration-300 ease 
-            ${!scrolled && inputIdx !== idx ? "hover:bg-border" : ""}
-            ${inputIdx === idx ? "bg-white" : "bg-transparent"} ${hasButton ? "flex-2" : "flex-1"}
+            ${!scrolled && inputIdx !== idx && !isWaiting ? "hover:bg-border" : ""}
+            ${inputIdx === idx ? "bg-white" : "bg-transparent"} ${hasButton ? "flex-2" : "flex-1"} ${isWaiting && "opacity-50"}
             rounded-full px-6 py-2 h-full flex flex-col justify-center flex-1 relative`}
     >
       <label
@@ -285,7 +292,7 @@ const SearchSection = ({
         onChange={(e) => onChange?.(e.target.value)}
         onFocus={handleFocus}
         onBlur={close}
-        disabled={scrolled}
+        disabled={scrolled || isWaiting}
       />
       {children}
     </motion.div>
@@ -296,12 +303,14 @@ type SearchButtonProps = {
   focus: boolean;
   scrolled: boolean;
   onClick: () => void;
+  isWaiting?: boolean;
 };
 
 const SearchButton = ({
   focus,
   scrolled,
   onClick,
+  isWaiting = false,
 }: SearchButtonProps) => {
   return (
     <motion.button
@@ -313,7 +322,7 @@ const SearchButton = ({
           : "var(--color-primary-500)",
         padding: scrolled ? "2px" : "12px",
       }}
-      disabled={scrolled}
+      disabled={scrolled || isWaiting}
       transition={{ duration: 0.4 }}
       onClick={onClick}
     >

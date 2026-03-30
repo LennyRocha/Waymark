@@ -9,14 +9,17 @@ import CustomDropdown from '../../components/CustomDropdown';
 import DropdownParent from '../../components/DropdownParent';
 import BuscadorBoton from './components/BuscadorBoton'
 import Footer from '../../layout/Footer';
+import Skeleton from 'react-loading-skeleton';
+import useSetPageTitle from '../../utils/setPageTitle';
 
 export default function Landing() {
+  useSetPageTitle("Waymark - Encuentra el lugar perfecto para tu próxima aventura");
   return (
     <div className="flex flex-col min-h-screen gap-2">
       <Header />
       <main className="content">
-        <h5 className='w-full text-left mt-[1rem] mb-2'>Encabezado h5</h5>
-        <section className='inline-flex w-full overflow-x-auto gap-4 scroll-smooth scroll-no mb-5'>
+        <h4 className='w-full text-left mt-[1rem] mb-2'>Encabezado h5</h4>
+        <section className='inline-flex w-full overflow-x-auto gap-[.75rem] md:gap-3 scroll-smooth scroll-no mb-5'>
           <PropiedadCard />
           <PropiedadCard />
           <PropiedadCard />
@@ -27,8 +30,8 @@ export default function Landing() {
           <PropiedadCard />
           <VerMasCard direccion={"/juan"} />
         </section>
-        <h5 className='w-full text-left mt-[1rem] mb-2'>Encabezado h5</h5>
-        <section className='inline-flex w-full overflow-x-auto gap-4 scroll-smooth scroll-no mb-5'>
+        <h4 className='w-full text-left mt-[1rem] mb-2'>Encabezado h5</h4>
+        <section className='inline-flex w-full overflow-x-auto gap-[.75rem] md:gap-3 scroll-smooth scroll-no mb-5'>
           <PropiedadCard />
           <PropiedadCard />
           <PropiedadCard />
@@ -39,8 +42,8 @@ export default function Landing() {
           <PropiedadCard />
           <VerMasCard direccion={"/marcelo"} />
         </section>
-        <h5 className='w-full text-left mt-[1rem] mb-2'>Encabezado h5</h5>
-        <section className='inline-flex w-full overflow-x-auto gap-4 scroll-smooth scroll-no mb-5'>
+        <h4 className='w-full text-left mt-[1rem] mb-2'>Encabezado h5</h4>
+        <section className='inline-flex w-full overflow-x-auto gap-[.75rem] md:gap-3 scroll-smooth scroll-no mb-5'>
           <PropiedadCard />
           <PropiedadCard />
           <PropiedadCard />
@@ -51,8 +54,8 @@ export default function Landing() {
           <PropiedadCard />
           <VerMasCard direccion={"/beto"} />
         </section>
-        <h5 className='w-full text-left mt-[1rem] mb-2'>Encabezado h5</h5>
-        <section className='inline-flex w-full overflow-x-auto gap-4 scroll-smooth scroll-no mb-5'>
+        <h4 className='w-full text-left mt-[1rem] mb-2'>Encabezado h5</h4>
+        <section className='inline-flex w-full overflow-x-auto gap-[.75rem] md:gap-3 scroll-smooth scroll-no mb-5'>
           <PropiedadCard />
           <PropiedadCard />
           <PropiedadCard />
@@ -69,9 +72,14 @@ export default function Landing() {
   );
 }
 
-const VerMasCard = ({ direccion }) => {
+/**
+ * @param {{
+ *  direccion: string
+ * }} props
+ */
+const VerMasCard = ({ direccion = "" }) => {
   return (
-    <div className=' w-[clamp(200px,25%,12rem)]  shrink-0   relative flex flex-col items-start justify-flex-start' >
+    <div className='w-[clamp(138px,13.5%,250px)]   shrink-0   relative flex flex-col items-start justify-flex-start' >
       <div className='flex flex-col items-center justify-center shadow-xl rounded-2xl w-full h-50 aspect-ratio: 4/3' >
         <GalleryHorizontal size={48} color='var(--color-secondary-500)' />
         <CustomLink to={direccion}>Mostrar todo</CustomLink>
@@ -80,7 +88,7 @@ const VerMasCard = ({ direccion }) => {
   )
 }
 
-const Header = () => {
+const Header = ({  isWaiting = false }) => {
   const { scrollY } = useScroll()
   const [scrolled, setScrolled] = useState(false)
   const [show, setShow] = useState(false)
@@ -133,7 +141,7 @@ const Header = () => {
   return <motion.header
     className="sticky top-0 z-10 flex flex-col items-center w-full bg-gradient-to-b from-white via-white to-gray-50 to-80% p-[1.25rem] border-b border-border" >
     {!isSmall ? <>
-      <nav className="max-w-[1280px] w-full flex flex-col md:flex-row items-center md:justify-between justify-center">
+      <nav className="max-w-[1450px] w-full flex flex-col md:flex-row items-center md:justify-between justify-center">
         <div className="flex flex-row gap-2 justify-center items-center">
           <img src={"/logo_white.png"} alt="waymark" className='w-[3.25rem]' />
           {
@@ -162,7 +170,7 @@ const Header = () => {
           </CustomDropdown>
         </DropdownParent>
       </nav>
-      <Buscador scrolled={scrolled} setScrolled={setScrolledSync} />
-    </> : <BuscadorBoton />}
+      <Buscador scrolled={scrolled} setScrolled={setScrolledSync} isWaiting={isWaiting} />
+    </> : <BuscadorBoton isWaiting={isWaiting} />}
   </motion.header >
 }

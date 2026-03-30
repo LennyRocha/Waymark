@@ -24,7 +24,7 @@ const PropiedadRepository = {
     return res.data;
   },
   findAllByHost: async (
-    filters: FiltrosPropiedades = {},
+    filters: FiltrosPropiedades,
     id: number,
   ) => {
     const res = await api.get<PaginatedResponse<Propiedad>>(

@@ -39,3 +39,10 @@ npm install -D typescript @types/react @types/react-dom
 #Mapbox
 npm install react-map-gl mapbox-gl @mapbox/search-js-react
 npm install @mapbox/mapbox-sdk
+
+#Skeleton
+react-layout-skeletonizer
+
+#Imágenes
+npm install react-dropzone
+npm install react-loading-skeleton

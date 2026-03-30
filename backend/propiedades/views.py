@@ -8,6 +8,10 @@ from .filters import PropiedadFilter
 from .paginations import PropiedadPagination
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import OrderingFilter
+import traceback
+from cuentas.models import Usuario
+from django.db import IntegrityError
+from rest_framework.exceptions import ValidationError
 
 # Create your views here.
 method_not_allowed_response = Response({'error': 'Method not allowed'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
@@ -61,10 +65,13 @@ class PropiedadViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
     
     def create(self, request, *args, **kwargs):
+        print("Datos recibidos en el backend", request.data)
 
         imagenes = request.FILES.getlist('imagenes')
         
         anfitrion = request.user
+        #TODO: Cuando ya esté el token quitar esto
+        debug_anfitrion = Usuario.objects.get(pk=1)
 
         if len(imagenes) > 10:
             return Response(
@@ -72,16 +79,19 @@ class PropiedadViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        serializer = self.get_serializer(data=request.data)
+        #TODO: Usar anfitrion en vez de debug_anfitrion cuando ya esté el token
+        serializer = PropiedadSerializer(data=request.data, context={'anfitrion': debug_anfitrion})
+        # print("Serializer creado, validando...")
+        # if not serializer.is_valid():
+        #     print("Errores de validación:", serializer.errors)
+        #     return Response(serializer.errors, status=400)
         serializer.is_valid(raise_exception=True)
 
         try:
 
             with transaction.atomic():
 
-                propiedad = serializer.save(anfitrion = 1)
-                #TODO: Cuando ya esté el token descomentar esto
-                # propiedad = serializer.save(anfitrion=anfitrion)
+                propiedad = serializer.save()
 
                 for i, imagen in enumerate(imagenes):
 
@@ -91,9 +101,19 @@ class PropiedadViewSet(viewsets.ModelViewSet):
                         orden=i,
                         updated_by = propiedad.anfitrion
                     )
+                    
+        except ValidationError as ve:
+            # Devuelve los errores de validación como JSON
+            return Response({'errores': ve.detail}, status=status.HTTP_400_BAD_REQUEST)
+        
+        except IntegrityError as ie:
+            if 'propiedad.direccion' in str(ie):
+                return Response({'direccion': ['Esa dirección ya fue registrada']}, status=400)
+            return Response({'error': 'Error de integridad'}, status=400)
 
         except Exception as e:
 
+            print(traceback.format_exc())
             return Response(
                 {'error': str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -157,9 +177,19 @@ class PropiedadViewSet(viewsets.ModelViewSet):
                         )
 
                         existentes += 1
+                        
+        except ValidationError as ve:
+            # Devuelve los errores de validación como JSON
+            return Response({'errores': ve.detail}, status=status.HTTP_400_BAD_REQUEST)
+        
+        except IntegrityError as ie:
+            if 'propiedad.direccion' in str(ie):
+                return Response({'direccion': ['Esa dirección ya fue registrada']}, status=400)
+            return Response({'error': 'Error de integridad'}, status=400)
 
         except Exception as e:
 
+            print(traceback.format_exc())
             return Response(
                 {"error": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -191,13 +221,19 @@ class FavoritoViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.Cre
         return Response(serializer.data)
     
     def create(self, request, *args, **kwargs):
-        usuario_ = request.data.get("usuario")
+        usuario_  = request.user
         propiedad_ = request.data.get("propiedad")
 
         favorito, created = Favorito.objects.get_or_create(
-            usuario=usuario_,
+            usuario=1,
             propiedad=propiedad_
         )
+        
+        #TODO: Cuando ya esté el token descomentar esto
+        # favorito, created = Favorito.objects.get_or_create(
+        #     usuario=usuario_,
+        #     propiedad=propiedad_
+        # )
 
         return Response(
             {"created": created, "id": favorito.id},
@@ -218,6 +254,15 @@ class TipoPropiedadViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = TipoPropiedad.objects.all().order_by("tipo")
     serializer_class = TipoPropSerializer
     
-class ImagenViewSet(mixins.UpdateModelMixin, viewsets.GenericViewSet):
+class ImagenViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
     queryset = PropiedadImagen.objects.all()
     serializer_class = ImagenSerializer
+
+    def create(self, request, *args, **kwargs):
+        propiedad_id = request.data.get('propiedad')
+        if PropiedadImagen.objects.filter(propiedad_id=propiedad_id).count() >= 10:
+            return Response(
+                {"error": "Máximo 10 imágenes por propiedad"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        return super().create(request, *args, **kwargs)

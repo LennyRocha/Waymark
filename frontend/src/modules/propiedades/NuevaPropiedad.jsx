@@ -1,10 +1,9 @@
 import React, { useEffect, useRef } from 'react'
-"use client"
 import { AnimatePresence } from "framer-motion"
 import { motion } from 'framer-motion'
 import { useState } from "react"
 import { propiedadPlantilla } from './templates/PropiedadPlantilla'
-import { AlertCircle, ChevronLeft, ChevronRight, MapPin, Minus, Plus } from 'lucide-react'
+import { AlertCircle, ChevronLeft, ChevronRight, ImagePlus, MapPin, Minus, Plus, X } from 'lucide-react'
 import Map, { Marker } from 'react-map-gl/mapbox'
 import { SearchBox } from '@mapbox/search-js-react'
 import 'mapbox-gl/dist/mapbox-gl.css'
@@ -26,6 +25,10 @@ import Accordion from '../../components/Accordion'
 import useDivisas from '../divisas/hooks/useDivisas'
 import useSetPageTitle from '../../utils/setPageTitle'
 import usePropiedadMutation from './hooks/usePropiedadMutation'
+import { useDropzone } from 'react-dropzone'
+import { useQueryClient } from '@tanstack/react-query'
+import { getAxiosErrorMessage } from '../../utils/getAxiosErrorMessage'
+import { useNavigate } from 'react-router-dom'
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN
 
@@ -36,9 +39,32 @@ const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN
  *  @typedef {import("react-hook-form").UseFormReturn<any>} Form
 */
 export default function NuevaPropiedad() {
-    useSetPageTitle("Registrar nueva propiedad"):
+    useSetPageTitle("Registrar nueva propiedad");
+    const navigate = useNavigate();
+    const queryClient = useQueryClient();
 
-    const mutation = usePropiedadMutation()
+    const toastRef = useRef(null);
+
+    const mutation = usePropiedadMutation({
+        onMutate: async (payload) => {
+            console.log("Preparando envío:", payload);
+            toastRef.current = toast.loading("Guardando...");
+            // Opcional: guardar snapshot para rollback
+            const previousData = queryClient.getQueryData(["propiedades"]);
+            return { previousData };
+        },
+        onError: (err, variables, context) => {
+            const errorMessage = getAxiosErrorMessage(err);
+            console.log("Falló la mutación", err, context?.previousData, errorMessage);
+            toast.error(errorMessage || "¡Error al guardar propiedad!", { id: toastRef.current, duration: 5000 });
+        },
+        onSuccess: () => {
+            toast.success("Propiedad guardada!", { id: toastRef.current, duration: 3000 });
+            setTimeout(() => {
+                navigate("/host/listings");
+            }, 3000);
+        }
+    })
 
     const [formData, setFormData] = useState(propiedadPlantilla);
     const [selectedTab, setSelectedTab] = useState(0);
@@ -71,22 +97,14 @@ export default function NuevaPropiedad() {
         const load = async () => {
             try {
                 const coords = await getUserLocation();
-                setFormData((prev) => ({
-                    ...prev,
-                    coordenadas: coords
-                }));
                 console.log("Coordenadas obtenidas", coords)
                 setUserCoords(coords);
             } catch (error) {
                 console.error(error)
-                setFormData((prev) => ({
-                    ...prev,
-                    coordenadas: DEFAULT_LOCATION
-                }));
             }
         }
         load();
-    });
+    }, []);
 
     async function setCoordenadas(obj = { lat: 0, lng: 0 }) {
         setFormData(prev => ({ ...prev, coordenadas: obj }))
@@ -121,10 +139,20 @@ export default function NuevaPropiedad() {
         });
     }
 
-    function onSubmit(data) {
-        console.log("Datos a enviar")
-        console.table({ ...data, amenidades_ids: data.amenidades_ids.join("-"), coordenadas: JSON.stringify(data.coordenadas) })
-        //Después, ya me cansé
+    async function onSubmit(data) {
+        const reglasMap = new Object();
+        Object.entries(data.reglas_extra).forEach(([key, value]) => {
+            if (value !== "") {
+                reglasMap[key] = value;
+            }
+        });
+        const payload = {
+            ...data,
+            imagenes: data.imagenes.filter(img => img.url),
+            reglas_extra: Object.entries(reglasMap).length === 0 ? null : reglasMap
+        }
+        console.log("Datos a enviar", payload)
+        mutation.mutate(payload);
     }
 
     const allTabs = [
@@ -161,7 +189,7 @@ export default function NuevaPropiedad() {
         {
             label: 'Precio',
             component: Step7,
-            props: { formData: formData, next: nextStep, prev: prevStep, form, validateStep }
+            props: { formData: formData, next: nextStep, prev: prevStep, form, validateStep, change: doChange }
         },
         {
             label: 'Horarios',
@@ -171,7 +199,7 @@ export default function NuevaPropiedad() {
         {
             label: 'Reglas',
             component: Step9,
-            props: { formData: formData, prev: prevStep, submit: form.handleSubmit(onSubmit), change: doChange, form, validateStep }
+            props: { formData: formData, prev: prevStep, submit: form.handleSubmit(onSubmit), change: doChange, form, validateStep, loading: mutation.isLoading }
         },
     ]
 
@@ -183,21 +211,10 @@ export default function NuevaPropiedad() {
     const tabProps = tabs[selectedTab]?.props ?? {}
     const label = tabs[selectedTab]?.label ?? ""
 
-    //1. Tipo de propiedad
-    //2.  Ubicación
-    //3. Básicos (huespedes, habitaciones, camas, banos, check_in, check_out)
-    //4. Amenidades
-    //5. Imágenes
-    //6. Título y descripción
-    //7. Precio por noche
-    // 8. Horarios de entrada y salida
-    //9. Reglas
-
     return (
         <div className='w-full flex flex-col items-center lg:items-start justify-center gap-1 content'>
             <h4>Registrar nueva propiedad</h4>
             <nav className='flex flex-row items-center justify-center gap-2 mb-2'>
-                {/* <button className='disabled:opacity-50 disabled:cursor-not-allowed p-1 bg-primary-700 rounded-full' onClick={prevStep} disabled={selectedTab === 0}><ChevronLeft color='#fff' size={18} /></button> */}
                 <p>Paso{" "}
                     <AnimatePresence mode="wait">
                         <motion.b
@@ -213,7 +230,6 @@ export default function NuevaPropiedad() {
                     </AnimatePresence>
                     {" "}de <b>{tabs.length}</b>
                 </p>
-                {/* <button className='disabled:opacity-50 disabled:cursor-not-allowed p-1 bg-primary-700 rounded-full' onClick={nextStep} disabled={selectedTab === tabs.length - 1}><ChevronRight color='#fff' size={18} /></button> */}
             </nav>
             <main className='flex items-center justify-center flex-1 w-full'>
                 <AnimatePresence mode="wait">
@@ -240,17 +256,17 @@ export default function NuevaPropiedad() {
  * validateStep: (step: number) => boolean,
  * }} props
  */
-const Step1 = ({ next = () => { }, change = async () => { }, form, validateStep = () => { } }) => {
+const Step1 = ({ next, change, form, validateStep }) => {
     const tipos = useTipos();
     const currTip = useWatch({
         control: form.control,
         name: "tipo_id"
     });
     const canContinue = validateStep(0);
-    return <div className='w-full' >
+    return <section className='w-full' >
         <div className="w-auto flex flex-col  gap-4">
             <h3>¿Qué tipo de alojamiento vas a compartir?</h3>
-            {tipos.isLoading ? (
+            {tipos.isLoading && !tipos.isError ? (
                 <CustomLoader />
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -273,7 +289,7 @@ const Step1 = ({ next = () => { }, change = async () => { }, form, validateStep 
                 </CustomButton>
             </div>
         </div>
-    </div>
+    </section>
 }
 
 /**
@@ -391,7 +407,7 @@ const Step2 = ({ next, prev, change, setCoordenadas, form, userCoords, validateS
             : userCoords.lat;
 
     return (
-        <div className='flex flex-col gap-4 w-full'>
+        <section className='flex flex-col gap-4 w-full'>
             <h3>¿Dónde está tu propiedad?</h3>
 
             <AnimatePresence>
@@ -438,7 +454,7 @@ const Step2 = ({ next, prev, change, setCoordenadas, form, userCoords, validateS
                     Siguiente
                 </CustomButton>
             </div>
-        </div>
+        </section>
     )
 }
 
@@ -467,7 +483,7 @@ const Step3 = ({ prev, next, change, form }) => {
         control: form.control,
         name: "habitaciones"
     });
-    return <div className='w-full flex gap-6 flex-col'>
+    return <section className='w-full flex gap-6 flex-col'>
         <h3>¿A cuantos huéspedes te gustaría recibir?</h3>
         <SelectNav
             label="Huéspedes"
@@ -501,7 +517,7 @@ const Step3 = ({ prev, next, change, form }) => {
                 Siguiente
             </CustomButton>
         </div>
-    </div>
+    </section>
 }
 
 /**
@@ -509,8 +525,8 @@ const Step3 = ({ prev, next, change, form }) => {
  *  next?: () => void,
  * prev?: () => void
  *  change?: (tag:string, value: any) => Promise<void>,
- *  form: Form,
- * setAmenidades: (list: number[]) => Promise<void>
+ * setAmenidades: (list: number[]) => Promise<void>,
+ * form: Form
  * }} props
  */
 const Step4 = ({ prev, next, setAmenidades, form }) => {
@@ -518,7 +534,7 @@ const Step4 = ({ prev, next, setAmenidades, form }) => {
         control: form.control,
         name: "amenidades_ids"
     });
-    const amenidades = useAmenidades()
+    const amenidades = useAmenidades();
     const grouped = (amenidades.data ?? []).reduce((acc, a) => {
         if (!acc[a.categoria]) {
             acc[a.categoria] = [];
@@ -527,9 +543,9 @@ const Step4 = ({ prev, next, setAmenidades, form }) => {
         return acc;
     }, {});
     const canContinue = list.length > 0;
-    return <div className='w-full flex gap-2 flex-col'>
+    return <section className='w-full flex gap-2 flex-col'>
         <h3>¿Qué es lo que ofrece tu propiedad?</h3>
-        {amenidades.isLoading ? (
+        {amenidades.isLoading && !amenidades.isError ? (
             <CustomLoader />
         ) : (
             <div className="flex flex-col gap-4 max-w-[800px]">
@@ -587,26 +603,149 @@ const Step4 = ({ prev, next, setAmenidades, form }) => {
                 Siguiente
             </CustomButton>
         </div>
-    </div>
+    </section>
 }
 
-/** @param {{formData: PropiedadForm}} props */
-const Step5 = ({ formData, prev, next, setFotos, change, label, form }) => {
+/**
+ * @param {{
+ *  next?: () => void,
+ * prev?: () => void
+ * setAmenidades: (list: number[]) => Promise<void>,
+ * setFotos: (list: Imagen[]) => Promise<void>,
+ * form: Form,
+ * validateStep: (step: number) => boolean,
+ * }} props
+ */
+/** @param {Imagen[]} list */
+const Step5 = ({ prev, next, setFotos, form, validateStep }) => {
     const list = useWatch({
         control: form.control,
         name: "imagenes"
     });
-    return <div className='w-full flex gap-2 flex-col'>
+
+    const hasCover = !!list?.[0]?.url;
+
+    const canContinue = validateStep(4);
+
+    const getImageSrc = (img) => {
+        if (!img?.url) return;
+        if (img.url instanceof File)
+            return img.preview;
+        return img.url;
+    };
+
+    const removeImage = (index) => {
+        const newList = [...list];
+        newList[index] = {
+            prop_ima_id: 0,
+            orden: index + 1,
+        };
+        setFotos(newList);
+    };
+
+    useEffect(() => {
+        return () => {
+            list.forEach(img => {
+                if (img.url && img.url instanceof File) {
+                    URL.revokeObjectURL(
+                        URL.createObjectURL(img.url)
+                    );
+                }
+            });
+        };
+    });
+    const onDropToIndex = (acceptedFiles, index) => {
+        if (!acceptedFiles.length) return;
+        const file = acceptedFiles[0];
+        const newList = [...list];
+        newList[index] = {
+            ...newList[index],
+            url: file,
+            preview: URL.createObjectURL(file),
+        };
+        setFotos(newList);
+    };
+
+    function MakeDropZone(index = 0) {
+        const {
+            getRootProps,
+            getInputProps,
+            isDragActive
+        } = useDropzone({
+            onDrop: (files) =>
+                onDropToIndex(files, index),
+            accept: { "image/*": [] },
+            maxFiles: 1,
+        });
+
+        return {
+            getRootProps,
+            getInputProps,
+            isDragActive
+        }
+    }
+    return <section className='w-full flex gap-2 flex-col'>
         <h3>Compartenos unas imágenes de tu propiedad</h3>
+
+        <div
+            className={`grid grid-cols-2 max-sm:grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-2 place-items-center p-2 transition`}
+        >
+            {list.map((img, index) => {
+                const src = getImageSrc(img);
+                const {
+                    getRootProps,
+                    getInputProps,
+                } = MakeDropZone(index);
+                return (
+                    <div
+                        {...getRootProps()}
+                        key={img.orden}
+                        className="w-full aspect-video min-h-[150px] rounded-xl overflow-hidden relative bg-transparent md:min-w-[120px] lg:min-w-[175px] cursor-pointer border-2 border-dashed border-border flex items-center justify-center"
+                    >
+                        <input {...getInputProps()} />
+                        {src ? (
+                            <>
+                                <img
+                                    src={src}
+                                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                                    alt={`Imagen #${img.orden} de la propiedad`}
+                                />
+
+                                <button
+                                    type="button"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        removeImage(index);
+                                    }}
+                                    className="absolute top-1 right-1 bg-white rounded-full p-2 "
+                                >
+                                    <X size={18} />
+                                </button>
+                            </>
+                        ) : (
+                            <div className="w-full h-full flex  flex-col items-center justify-center text-text-secondary text-xl">
+                                <ImagePlus size={32} />
+                                <span className='text-sm'>{index === 0 ? "Agregar o arrastrar portada" : "Agregar o arrastrar imagen"}</span>
+                            </div>
+                        )}
+                    </div>
+                );
+            })}
+        </div>
+        <small className='font-[montserrat] text-sm text-text-secondary block'>
+            <b className='text-primary-500'>NOTA:</b>
+            {" "}
+            Debes adjuntar al menos una imagen de portada para tu propiedad. Puedes agregar más imágenes si lo deseas, pero la primera imagen será la que se muestre como portada.
+        </small>
         <div className='w-full flex flex-row items-center justify-end gap-2' >
-            <CustomButton variant='secondary' onClick={prev} >
+            <CustomButton variant='tertiary' onClick={prev} >
                 Anterior
             </CustomButton>
-            <CustomButton variant='secondary' onClick={next}>
+            <CustomButton variant='secondary' onClick={next} disabled={!canContinue || !hasCover}>
                 Siguiente
             </CustomButton>
         </div>
-    </div>
+    </section>
 }
 
 /**
@@ -664,7 +803,7 @@ const Step7 = ({ prev, next, change, form, validateStep }) => {
     const canContinue = validateStep(6)
     return <section className='w-full md:min-w-[350px] flex gap-2 flex-col'>
         <h3>¡Define tu precio!</h3>
-        {divisas.isLoading ? (
+        {divisas.isLoading && !divisas.isError ? (
             <CustomLoader />
         ) : (
             <>
@@ -679,7 +818,7 @@ const Step7 = ({ prev, next, change, form, validateStep }) => {
                         form.formState.touchedFields.precio_noche
                     }
                     ErrorElement={<FieldErrors errors={form.formState.errors} name="precio_noche" />}
-                    pattern='^[0-9]+$' />
+                />
                 <CustomSelect label='Divisa de cambio'
                     helperText='Selecciona un tipo de cambio para tu precio.'
                     value={divisa}
@@ -708,11 +847,14 @@ const Step7 = ({ prev, next, change, form, validateStep }) => {
  * }} props
  */
 const Step8 = ({ prev, next, form, validateStep }) => {
+    React.useEffect(() => {
+        form.trigger(["check_in", "check_out"]);
+    }, []);
     const canContinue = validateStep(7);
     return <section className='w-full flex gap-2 flex-col'>
         <h3 className='md:text-left'>¿Cuáles son tus horarios de entrada y salida?</h3>
         <div className='flex flex-col md:flex-row w-full gap-2'>
-            <CustomInput label='Entrada' type="time" name="appt" step="60" min="00:00" placeholder='Ej. 00:00' max="23:59" {...form.register("check_in")}
+            <CustomInput label='Entrada' type="time" name="check_in" step="60" min="00:00" placeholder='Ej. 00:00' max="23:59" {...form.register("check_in")}
                 fullWidth
                 isError={
                     !!form.formState.errors.check_in &&
@@ -722,7 +864,7 @@ const Step8 = ({ prev, next, form, validateStep }) => {
                 useMinWidth={false}
             />
 
-            <CustomInput label='Salida' type="time" name="appt" step="60" min="00:00" placeholder='Ej. 00:00' max="23:59" {...form.register("check_out")}
+            <CustomInput label='Salida' type="time" name='check_out' step="60" min="00:00" placeholder='Ej. 00:00' max="23:59" {...form.register("check_out")}
                 fullWidth
                 isError={
                     !!form.formState.errors.check_out &&
@@ -746,72 +888,143 @@ const Step8 = ({ prev, next, form, validateStep }) => {
 
 /**
  * @param {{
- *  next?: () => void,
+ *  prev?: () => void,
  *  change?: (tag:string, value: any) => Promise<void>,
  *  form: Form,
- *  submit: () => void
+ *  submit: () => Promise<void>,
+ * loading: boolean,
  * }} props
  */
-const Step9 = ({ prev, submit, change, form }) => {
-    React.useEffect(() => {
-        async function load() {
-            await form.trigger("regla_mascotas", "regla_ninos", "regla_fiestas", "regla_fumar");
+const Step9 = ({ prev, submit, change, form, loading }) => {
+    const [showReglas, setShowReglas] = useState(false);
+
+    // Checkboxes principales
+    const mascotas = useWatch({ control: form.control, name: "regla_mascotas" });
+    const ninos = useWatch({ control: form.control, name: "regla_ninos" });
+    const fiestas = useWatch({ control: form.control, name: "regla_fiestas" });
+    const fumar = useWatch({ control: form.control, name: "regla_fumar" });
+
+    // Reglas extra dinámicas como JSON
+    const reglasJson = useWatch({ control: form.control, name: "reglas_extra" });
+    const [extraReglas, setExtraReglas] = useState(reglasJson ?? { regla_1: "" });
+
+    // Agregar nueva regla
+    const addRegla = () => {
+        const nextKey = `regla_${Object.keys(extraReglas).length + 1}`;
+        setExtraReglas({ ...extraReglas, [nextKey]: "" });
+    };
+
+    // Eliminar regla
+    const removeRegla = (key) => {
+        const copy = { ...extraReglas };
+        delete copy[key];
+        setExtraReglas(copy);
+    };
+
+    // Actualizar valor de regla
+    const updateRegla = (key, value) => {
+        setExtraReglas({ ...extraReglas, [key]: value });
+    };
+
+    // Sincronizar con RHF cada vez que cambie extraReglas o showReglas
+    useEffect(() => {
+        change("reglas_extra", extraReglas);
+    }, [extraReglas]);
+
+    useEffect(() => {
+        if (!showReglas) {
+            change("reglas_extra", null);
+            setExtraReglas({ regla_1: "" });
         }
-        load();
-    });
-    const items = [{
-        title: "Hola",
-        content: <h2>Hola</h2>
-    }, {
-        title: "Hola",
-        content: <h2>Hola</h2>
-    }, {
-        title: "Hola",
-        content: <h2>Hola</h2>
-    }, {
-        title: "Hola",
-        content: <h2>Hola</h2>
-    }]
-    const mascotas = useWatch({
-        control: form.control,
-        name: "regla_mascotas"
-    });
-    const fumar = useWatch({
-        control: form.control,
-        name: "regla_fumar"
-    });
-    const ninos = useWatch({
-        control: form.control,
-        name: "regla_ninos"
-    });
-    const fiestas = useWatch({
-        control: form.control,
-        name: "regla_fiestas"
-    });
-    const reglasJson = useWatch({
-        control: form.control,
-        name: "reglas_extra"
-    });
-    return <section className='w-full flex gap-2 flex-col'>
-        <h3>Sólo unas preguntas mas...</h3>
-        <CheckRow question='¿Permites mascotas?' checked={mascotas} onChange={change} field="regla_mascotas" />
-        <CheckRow question='¿Permites niños?' checked={ninos} onChange={change} field="regla_ninos" />
-        <CheckRow question='¿Permites fiestas?' checked={fiestas} onChange={change} field="regla_fiestas" />
-        <CheckRow question='¿Cuentas con área para fumar?' checked={fumar} onChange={change} field="regla_fumar" />
-        {/* <Accordion items={items} /> */}
-        <div className='w-full flex flex-row items-center justify-end gap-2' >
-            {/* <CustomCheckBox />
-            <CustomRadioButton />
-            <CustomSwitch /> */}
-            <CustomButton variant='tertiary' onClick={prev} >
-                Anterior
-            </CustomButton>
-            <CustomButton variant='secondary' disabled={!form.formState.isValid} onClick={submit}>
-                Guardar
-            </CustomButton>
-        </div>
-    </section>
-}
+    }, [showReglas]);
+
+    // Trigger inicial para los checkboxes
+    useEffect(() => {
+        form.trigger(["regla_mascotas", "regla_ninos", "regla_fiestas", "regla_fumar"]);
+    }, []);
+
+    return (
+        <section className="w-full flex flex-col gap-4">
+            <h3>Sólo unas preguntas más...</h3>
+
+            <CheckRow
+                question="¿Permites mascotas?"
+                checked={mascotas}
+                onChange={change}
+                field="regla_mascotas"
+            />
+            <CheckRow
+                question="¿Permites niños?"
+                checked={ninos}
+                onChange={change}
+                field="regla_ninos"
+            />
+            <CheckRow
+                question="¿Permites fiestas?"
+                checked={fiestas}
+                onChange={change}
+                field="regla_fiestas"
+            />
+            <CheckRow
+                question="¿Cuentas con área para fumar?"
+                checked={fumar}
+                onChange={change}
+                field="regla_fumar"
+            />
+
+            <CheckRow
+                question="¿Deseas adjuntar reglas específicas?"
+                checked={showReglas}
+                onChange={() => setShowReglas(!showReglas)}
+                field=""
+            />
+
+            {showReglas && (
+                <div className="flex flex-col gap-2">
+                    {Object.entries(extraReglas).map(([key, value]) => (
+                        <div key={key} className="flex gap-2 items-center">
+                            <CustomInput
+                                placeholder={`Regla #${key.split("_")[1]}`}
+                                value={value}
+                                onChange={(e) => updateRegla(key, e.target.value)}
+                                fullWidth
+                                inpSize="small"
+                            />
+                            {key === "regla_1" ? (
+                                <button
+                                    type="button"
+                                    onClick={addRegla}
+                                    className="bg-green-500 text-white rounded px-2 py-2 flex items-center justify-center h-full"
+                                >
+                                    <Plus size={18} />
+                                </button>
+                            ) : (
+                                <button
+                                    type="button"
+                                    onClick={() => removeRegla(key)}
+                                    className="bg-red-500 text-white rounded px-2 py-2 flex items-center justify-center h-full"
+                                >
+                                    <Minus size={18} />
+                                </button>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            <div className="flex justify-end gap-2 mt-4">
+                {prev && (
+                    <CustomButton variant="tertiary" onClick={prev}>
+                        Anterior
+                    </CustomButton>
+                )}
+                <CustomButton variant="secondary" onClick={submit} isWaiting={loading}>
+                    Guardar
+                </CustomButton>
+            </div>
+        </section>
+    );
+};
 
 const fieldsByStep = {
     0: ["tipo_id"],
@@ -825,6 +1038,12 @@ const fieldsByStep = {
     8: ["reglas_extra", "regla_mascotas", "regla_ninos", "regla_fumar", "regla_fiestas", "regla_autochecar", "regla_apagar"],
 };
 
+/**
+ * @param {{
+ * name: string,
+ * errors: Record<string, any>
+ * }} props
+ */
 const FieldErrors = ({ errors = {}, name = "" }) => {
 
     const fieldError = errors[name];
@@ -849,6 +1068,14 @@ const FieldErrors = ({ errors = {}, name = "" }) => {
     );
 };
 
+/**
+ * @param {{
+ * value: number,
+ *  change?: (tag:string, value: any) => Promise<void>,
+ *  field: string,
+ *  label: string,
+ * }} props
+ */
 const SelectNav = ({ label = "", value = 0, change = () => { }, field = "" }) => {
     return (
         <nav className='flex justify-between items-center my-1'>
@@ -891,6 +1118,14 @@ const SelectNav = ({ label = "", value = 0, change = () => { }, field = "" }) =>
     )
 }
 
+/**
+ * @param {{
+ *  question: string,
+ *  checked: boolean,
+ *  onChange: (tag:string, value: any) => Promise<void>,
+ *  field: string,
+ * }} props
+ */
 const CheckRow = ({ question = "¿?", checked = false, onChange = async () => { }, field = "" }) => {
     return (
         <div className="flex justify-between items-center my-2 gap-4">

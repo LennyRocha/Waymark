@@ -90,6 +90,24 @@ class PropiedadSerializer(serializers.ModelSerializer):
             'slug',
             'imagenes'
         )
+    
+    def create(self, validated_data):
+        anfitrion = self.context.get('anfitrion')
+        if not anfitrion:
+            raise serializers.ValidationError("Se requiere anfitrion")
+        
+        tipo = validated_data.pop('tipo', None)  # si existe, lo sacamos
+        if not tipo:
+            raise serializers.ValidationError("Se requiere tipo_propiedad")
+        
+        # eliminar campos read-only
+        validated_data.pop("amenidades", None)
+
+        # reasignar campos correctos para el modelo
+        validated_data['anfitrion'] = anfitrion
+        validated_data['tipo_propiedad'] = tipo  # <- aquí está la clave
+
+        return super().create(validated_data)
         
 class CategoriaAmenidadSerializer (serializers.ModelSerializer):
     class Meta:
