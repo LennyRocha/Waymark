@@ -3,12 +3,11 @@ import PropiedadRepository from "../repositories/PropiedadRepository";
 import FiltrosPropiedades from "../types/FiltrosPropiedad";
 
 export default function useHostPropiedades(
-  filters: FiltrosPropiedades = {},
-  hostId: number,
+  filters: FiltrosPropiedades,
 ) {
   return useQuery({
     queryKey: ["propiedades_host", filters],
-    queryFn: () =>PropiedadRepository.findAllByHost(filters, hostId),
+    queryFn: () =>PropiedadRepository.findAllByHost(filters),
     enabled: !!filters,
   });
 }

@@ -105,7 +105,8 @@ class PropiedadSerializer(serializers.ModelSerializer):
 
         # reasignar campos correctos para el modelo
         validated_data['anfitrion'] = anfitrion
-        validated_data['tipo_propiedad'] = tipo  # <- aquí está la clave
+        validated_data['tipo_propiedad'] = tipo
+        validated_data['activa'] = 1
 
         return super().create(validated_data)
         

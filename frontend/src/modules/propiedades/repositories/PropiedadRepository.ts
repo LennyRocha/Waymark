@@ -25,10 +25,9 @@ const PropiedadRepository = {
   },
   findAllByHost: async (
     filters: FiltrosPropiedades,
-    id: number,
   ) => {
     const res = await api.get<PaginatedResponse<Propiedad>>(
-      `${prefix}by-host/${id}`,
+      `${prefix}by_host/`,
       {
         params: filters,
       },
@@ -52,7 +51,7 @@ const PropiedadRepository = {
   },
   findUbicaciones: async () => {
     const res = await api.get<Ubicacion[]>(
-      `${prefix}locations`,
+      `${prefix}locations/`,
     );
     return res.data;
   },

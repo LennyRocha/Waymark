@@ -3,3 +3,9 @@ export default interface Imagen {
     url?: string | File,
     orden: number,
 }
+
+export type Payload = {
+  propiedad: number;
+  imagenes: File[];
+  ordenes: number[];
+};

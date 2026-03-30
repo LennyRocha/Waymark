@@ -1,27 +1,21 @@
-import React, { useEffect, useRef } from 'react'
-import { AnimatePresence } from "framer-motion"
-import { motion } from 'framer-motion'
-import { useState } from "react"
-import { propiedadPlantilla } from './templates/PropiedadPlantilla'
-import { AlertCircle, ChevronLeft, ChevronRight, ImagePlus, MapPin, Minus, Plus, X } from 'lucide-react'
+import React, { useEffect, useRef, useState } from 'react'
+import { AnimatePresence, motion } from "framer-motion"
+import { AlertCircle, ImagePlus, MapPin, Minus, Plus, X } from 'lucide-react'
 import Map, { Marker } from 'react-map-gl/mapbox'
 import { SearchBox } from '@mapbox/search-js-react'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import mbxGeocoding from '@mapbox/mapbox-sdk/services/geocoding'
 import useTipos from './hooks/useTipos'
-import { DynamicIcon } from 'lucide-react/dynamic'
-import TiposIconos from './data/TiposIconos'
 import TipoChip from './components/TipoChip'
 import toast from 'react-hot-toast'
 import CustomButton from '../../components/CustomButton'
 import { getUserLocation } from '../../utils/getUserLocation'
 import usePropiedadForm from './hooks/usePropiedadForm'
-import { CustomCheckBox, CustomInput, CustomRadioButton, CustomSelect, CustomSwitch, CustomTextArea } from '../../components/CustomInputs'
+import { CustomCheckBox, CustomInput, CustomSelect, CustomTextArea } from '../../components/CustomInputs'
 import CustomLoader from '../../layout/CustomLoader'
 import Chip from '../../components/Chip'
 import useAmenidades from './hooks/useAmenidades'
 import { useWatch } from 'react-hook-form'
-import Accordion from '../../components/Accordion'
 import useDivisas from '../divisas/hooks/useDivisas'
 import useSetPageTitle from '../../utils/setPageTitle'
 import usePropiedadMutation from './hooks/usePropiedadMutation'
@@ -29,13 +23,13 @@ import { useDropzone } from 'react-dropzone'
 import { useQueryClient } from '@tanstack/react-query'
 import { getAxiosErrorMessage } from '../../utils/getAxiosErrorMessage'
 import { useNavigate } from 'react-router-dom'
+import useImagenMutation from './hooks/useImagenMutation'
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN
 
 /** 
  *  @typedef {import("./schemas/PropiedadZod").PropiedadForm} PropiedadForm 
  *  @typedef {import("./types/Imagen").default} Imagen
- *  @typedef {import("react-hook-form").Use}   
  *  @typedef {import("react-hook-form").UseFormReturn<any>} Form
 */
 export default function NuevaPropiedad() {
@@ -45,20 +39,36 @@ export default function NuevaPropiedad() {
 
     const toastRef = useRef(null);
 
+    const imgMutation = useImagenMutation({
+        onSuccess: (data) => {
+            console.log("Imágenes guardadas", data)
+        },
+        onError: (err) => {
+            const errorMessage = getAxiosErrorMessage(err);
+            console.log("Error al guardar imágenes", err, errorMessage);
+        }
+    })
+
     const mutation = usePropiedadMutation({
         onMutate: async (payload) => {
-            console.log("Preparando envío:", payload);
             toastRef.current = toast.loading("Guardando...");
             // Opcional: guardar snapshot para rollback
             const previousData = queryClient.getQueryData(["propiedades"]);
             return { previousData };
         },
-        onError: (err, variables, context) => {
-            const errorMessage = getAxiosErrorMessage(err);
-            console.log("Falló la mutación", err, context?.previousData, errorMessage);
+        onError: (error, variables, context) => {
+            console.warn(variables, context)
+            const errorMessage = getAxiosErrorMessage(error);
+            const backendErrors = error.response?.data;
+            console.log("Errores backend:", backendErrors);
+            if(backendErrors.direccion) {
+                return toast.error(backendErrors.direccion[0], { id: toastRef.current, duration: 5000 });
+            }
             toast.error(errorMessage || "¡Error al guardar propiedad!", { id: toastRef.current, duration: 5000 });
         },
-        onSuccess: () => {
+        onSuccess: async (data, variables) => {
+            const payload = makeImgenPayload(data.propiedad_id, variables.imagenes);
+            await imgMutation.mutateAsync(payload);
             toast.success("Propiedad guardada!", { id: toastRef.current, duration: 3000 });
             setTimeout(() => {
                 navigate("/host/listings");
@@ -66,7 +76,19 @@ export default function NuevaPropiedad() {
         }
     })
 
-    const [formData, setFormData] = useState(propiedadPlantilla);
+    function makeImgenPayload(propiedadId, imgs) {
+        const formData = new FormData();
+
+        formData.append("propiedad", propiedadId);
+
+        imgs.forEach((img) => {
+            formData.append("imagenes", img.url);
+            formData.append("ordenes", img.orden);
+        });
+
+        return formData;
+    }
+
     const [selectedTab, setSelectedTab] = useState(0);
 
     const DEFAULT_LOCATION = {
@@ -107,7 +129,6 @@ export default function NuevaPropiedad() {
     }, []);
 
     async function setCoordenadas(obj = { lat: 0, lng: 0 }) {
-        setFormData(prev => ({ ...prev, coordenadas: obj }))
         await form.setValue("coordenadas", obj, {
             shouldValidate: true,
             shouldDirty: true
@@ -126,10 +147,6 @@ export default function NuevaPropiedad() {
             shouldValidate: true,
             shouldDirty: true
         });
-    }
-
-    const handleChange = (e) => {
-        setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }))
     }
 
     async function doChange(tag, value) {
@@ -151,7 +168,6 @@ export default function NuevaPropiedad() {
             imagenes: data.imagenes.filter(img => img.url),
             reglas_extra: Object.entries(reglasMap).length === 0 ? null : reglasMap
         }
-        console.log("Datos a enviar", payload)
         mutation.mutate(payload);
     }
 
@@ -164,42 +180,42 @@ export default function NuevaPropiedad() {
         {
             label: 'Ubicación',
             component: Step2,
-            props: { formData, next: nextStep, prev: prevStep, change: doChange, setCoordenadas, userCoords, form, validateStep }
+            props: { next: nextStep, prev: prevStep, change: doChange, setCoordenadas, userCoords, form, validateStep }
         },
         {
             label: 'Básicos',
             component: Step3,
-            props: { formData: formData, next: nextStep, prev: prevStep, change: doChange, form, validateStep }
+            props: { next: nextStep, prev: prevStep, change: doChange, form, validateStep }
         },
         {
             label: 'Amenidades',
             component: Step4,
-            props: { formData: formData, next: nextStep, prev: prevStep, setAmenidades: setAmenidades, form, validateStep }
+            props: { next: nextStep, prev: prevStep, setAmenidades: setAmenidades, form, validateStep }
         },
         {
             label: 'Imágenes',
             component: Step5,
-            props: { formData: formData, next: nextStep, prev: prevStep, setFotos: setFotos, form, validateStep }
+            props: { next: nextStep, prev: prevStep, setFotos: setFotos, form, validateStep }
         },
         {
             label: 'Titulo',
             component: Step6,
-            props: { formData: formData, next: nextStep, prev: prevStep, change: handleChange, form, validateStep }
+            props: { next: nextStep, prev: prevStep, form, validateStep }
         },
         {
             label: 'Precio',
             component: Step7,
-            props: { formData: formData, next: nextStep, prev: prevStep, form, validateStep, change: doChange }
+            props: { next: nextStep, prev: prevStep, form, validateStep, change: doChange }
         },
         {
             label: 'Horarios',
             component: Step8,
-            props: { formData: formData, prev: prevStep, next: nextStep, change: doChange, form, validateStep }
+            props: { prev: prevStep, next: nextStep, change: doChange, form, validateStep }
         },
         {
             label: 'Reglas',
             component: Step9,
-            props: { formData: formData, prev: prevStep, submit: form.handleSubmit(onSubmit), change: doChange, form, validateStep, loading: mutation.isLoading }
+            props: { prev: prevStep, submit: form.handleSubmit(onSubmit), change: doChange, form, validateStep, loading: mutation.isLoading || imgMutation.isLoading }
         },
     ]
 
