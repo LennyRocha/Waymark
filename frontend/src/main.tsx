@@ -7,6 +7,7 @@ import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App";
 import toast from "react-hot-toast";
+import { getAxiosErrorMessage } from "./utils/getAxiosErrorMessage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -18,9 +19,9 @@ const queryClient = new QueryClient({
         Math.min(1000 * 2 ** attempt, 5000),
       staleTime: 1000 * 60 * 5, // 5 min
       cacheTime: 1000 * 60 * 10, // 10 min
-      onError: () => {
+      onError: (error) => {
         toast.error(
-          "Ocurrió un error al cargar los datos. Por favor, intenta de nuevo.",
+         getAxiosErrorMessage(error) || "Ocurrió un error al cargar los datos. Por favor, intenta de nuevo.",
           { duration: 5000 },
         );
       },

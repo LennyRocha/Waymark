@@ -191,7 +191,7 @@ const Buscador = ({
           <SearchButton
             focus={focus}
             scrolled={scrolled}
-            onClick={() => navigate("/s/guadalajara/homes")}
+            onClick={() => navigate("/s/guadalajara-jalisco/homes?checkin=2024-10-10&checkout=2024-10-15&adults=2&allow_pets=true&allow_children=true")}
           />
         </SearchSection>
       </motion.nav>

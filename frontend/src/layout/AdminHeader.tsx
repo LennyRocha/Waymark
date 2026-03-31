@@ -14,7 +14,6 @@ const links: AdminLink[] = [
     { name: 'users', text: 'Usuarios', to: '/admin/users' },
     { name: 'documents', text: 'Documentos', to: '/admin/documents' },
     { name: 'currencys', text: 'Divisas', to: '/admin/currencys' },
-    { name: 'listings', text: 'Alojamientos', to: '/admin/listings' },
     { name: 'calendar', text: 'Calendario', to: '/admin/calendar' },
 ];
 
@@ -48,9 +47,9 @@ export default function AdminHeader() {
 
     return (
         <div>
-            <header className="w-full">
-                <nav className="bg-white border-gray-200 px-4 lg:px-6 py-2.5">
-                    <div className="flex flex-wrap justify-center md:justify-between items-center mx-auto max-w-screen-xl gap-2">
+            <header className="w-full border-border border-1">
+                <nav className="bg-white max-w-[1450px] mx-auto border-gray-200 px-4 lg:px-6 py-5">
+                    <div className="flex flex-wrap justify-center md:justify-between items-center -xl gap-2">
                         <Link to="/" className="flex items-center">
                             <img src="/logo_white.png" className="mr-3 h-6 sm:h-10" alt="WAYMARK" />
                             <span className="self-center text-xl font-semibold whitespace-nowrap rotulo text-primary-500">

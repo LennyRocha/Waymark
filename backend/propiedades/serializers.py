@@ -53,6 +53,8 @@ class PropiedadSerializer(serializers.ModelSerializer):
         source='amenidades'
     )
     
+    updated_at = serializers.DateTimeField(read_only=True)
+    
     imagenes = ImagenSerializer(many=True, read_only=True)
 
     class Meta:
@@ -86,6 +88,7 @@ class PropiedadSerializer(serializers.ModelSerializer):
             'tipo_id',
             'anfitrion_id',
             'amenidades',
+            'updated_at',
             'amenidades_ids',
             'slug',
             'imagenes'

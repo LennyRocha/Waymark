@@ -47,7 +47,7 @@ export default function GuestHeader() {
       <header className="bg-white border-border border-1">
         <nav
           aria-label="Global"
-          className="mx-auto flex max-w-7xl items-center justify-between px-6 lg:px-8 py-4"
+          className="mx-auto flex max-w-[1450px] xl items-center justify-between px-6 lg:px-8 py-4"
         >
           <div className="flex lg:flex-1">
             <Link to="/" className="-m-1.5 p-1.5">

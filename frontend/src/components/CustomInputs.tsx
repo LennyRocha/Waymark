@@ -148,6 +148,153 @@ export const CustomInput: React.FC<InputProps> = ({
   );
 };
 
+export const MediumInput: React.FC<InputProps> = ({
+  children,
+  isWaiting = false,
+  fullWidth = false,
+  isError = false,
+  icon = undefined,
+  helperText = undefined,
+  label = "",
+  ErrorElement = undefined,
+  errorMessage = undefined,
+  onIconPress = () => {},
+  useMinWidth = true,
+  ...props
+}) => {
+  const currentLength = props.value?.toString().length || 0;
+  return (
+    <AnimatePresence mode="wait">
+      <div
+        className={`z-10 ${useMinWidth ? "min-w-[250px]" : "w-auto"} ${fullWidth ? "w-full" : "w-auto"}`}
+      >
+        <div className="relative w-full">
+          <label
+            className={`text-sm font-semibold absolute -top-5 left-1 ${isError ? "text-orange-500" : "text-text-secondary"}`}
+            htmlFor={props.id}
+          >
+            {label}
+          </label>
+          <input
+            {...props}
+            className={`w-full h-[44px]  p-4  ${isError ? "border-orange-500 bg-orange-50" : "border-border"} border-2 rounded-md ${icon && "pr-10"}  disabled:bg-gray-100 transition ease focus:outline-none focus:border-text-primary`}
+            disabled={props.disabled || isWaiting}
+          />
+          {icon && (
+            <DynamicIcon
+              name={icon}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2"
+              color="var(--color-text-primary)"
+              onClick={onIconPress}
+            />
+          )}
+        </div>
+        {props.maxLength && (
+          <p className="text-xs text-text-secondary mt-1 text-right">
+            {currentLength}/{props.maxLength}
+          </p>
+        )}
+        {isError && ErrorElement && ErrorElement}
+        {isError && errorMessage && (
+          <motion.p
+            key="error"
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            className="text-sm text-orange-500 mt-1 w-full text-left flex gap-1 items-center"
+          >
+            <DynamicIcon
+              fill="var(--color-orange-500)"
+              color="#fff"
+              name="alert-circle"
+            />
+            {errorMessage}
+          </motion.p>
+        )}
+        {!isError && helperText && (
+          <p className="text-sm text-text-secondary mt-1 w-full text-left">
+            {helperText}
+          </p>
+        )}
+      </div>
+    </AnimatePresence>
+  );
+};
+
+
+export const SmallInput: React.FC<InputProps> = ({
+  children,
+  isWaiting = false,
+  fullWidth = false,
+  isError = false,
+  icon = undefined,
+  helperText = undefined,
+  label = "",
+  ErrorElement = undefined,
+  errorMessage = undefined,
+  onIconPress = () => {},
+  useMinWidth = true,
+  ...props
+}) => {
+  const currentLength = props.value?.toString().length || 0;
+  return (
+    <AnimatePresence mode="wait">
+      <div
+        className={`z-10 ${useMinWidth ? "min-w-[250px]" : "w-auto"} ${fullWidth ? "w-full" : "w-auto"}`}
+      >
+        <div className="relative w-full">
+          <label
+            className={`text-sm font-semibold absolute -top-5 left-1 ${isError ? "text-orange-500" : "text-text-secondary"}`}
+            htmlFor={props.id}
+          >
+            {label}
+          </label>
+          <input
+            {...props}
+            className={`w-full h-[40px]  p-4  ${isError ? "border-orange-500 bg-orange-50" : "border-border"} border-2 rounded-md ${icon && "pr-10"}  disabled:bg-gray-100 transition ease focus:outline-none focus:border-text-primary`}
+            disabled={props.disabled || isWaiting}
+          />
+          {icon && (
+            <DynamicIcon
+              name={icon}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2"
+              color="var(--color-text-primary)"
+              onClick={onIconPress}
+            />
+          )}
+        </div>
+        {props.maxLength && (
+          <p className="text-xs text-text-secondary mt-1 text-right">
+            {currentLength}/{props.maxLength}
+          </p>
+        )}
+        {isError && ErrorElement && ErrorElement}
+        {isError && errorMessage && (
+          <motion.p
+            key="error"
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            className="text-sm text-orange-500 mt-1 w-full text-left flex gap-1 items-center"
+          >
+            <DynamicIcon
+              fill="var(--color-orange-500)"
+              color="#fff"
+              name="alert-circle"
+            />
+            {errorMessage}
+          </motion.p>
+        )}
+        {!isError && helperText && (
+          <p className="text-sm text-text-secondary mt-1 w-full text-left">
+            {helperText}
+          </p>
+        )}
+      </div>
+    </AnimatePresence>
+  );
+};
+
 export const CustomCheckBox: React.FC<OtherInputProps> = ({
   children,
   checked,

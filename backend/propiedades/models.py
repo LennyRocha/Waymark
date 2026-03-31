@@ -12,6 +12,8 @@ from django.core.validators import (
 from django.utils import timezone
 from django_resized import ResizedImageField
 from django.utils.text import slugify
+import os
+from django.conf import settings
 
 non_empty_message = "Este campo no puede estar vacío"
 non_zero_message = "No se aceptan numeros menores o iguales a 0"
@@ -34,7 +36,7 @@ class Amenidad(models.Model):
 
     def save(self, *args, **kwargs):
         self.updated_at = timezone.now()
-        super().save( *args, **kwargs)
+        super().save(*args, **kwargs)
 
 
 class Divisa(models.Model):
@@ -59,7 +61,7 @@ class Divisa(models.Model):
 
     def save(self, *args, **kwargs):
         self.updated_at = timezone.now()
-        super().save( *args, **kwargs)
+        super().save(*args, **kwargs)
 
 
 class TipoPropiedad(models.Model):
@@ -69,6 +71,24 @@ class TipoPropiedad(models.Model):
         managed = False
         db_table = "tipo_propiedad"
         ordering = ["tipo"]
+        
+def upload_propiedad_imagen(instance, filename):
+
+    extension = filename.split(".")[-1]
+
+    slug = instance.propiedad.slug
+    orden = str(instance.orden).zfill(2)
+
+    nuevo_nombre = f"{slug}-imagen-{orden}.{extension}"
+
+    ruta = f"propiedades/{nuevo_nombre}"
+
+    full_path = os.path.join(settings.MEDIA_ROOT, ruta)
+
+    if os.path.exists(full_path):
+        os.remove(full_path)
+
+    return ruta
 
 
 class Propiedad(models.Model):
@@ -239,7 +259,8 @@ class PropiedadImagen(models.Model):
     url = ResizedImageField(
         size=[1200, 800],
         quality=85,
-        upload_to="propiedades/",
+        #upload_to="propiedades/",
+        upload_to=upload_propiedad_imagen,
     )
     orden = models.IntegerField(
         validators=[
@@ -259,8 +280,7 @@ class PropiedadImagen(models.Model):
 
     def save(self, *args, **kwargs):
         self.updated_at = timezone.now()
-        super().save( *args, **kwargs)
-
+        super().save(*args, **kwargs)
 
 class Favorito(models.Model):
     favorito_id = models.AutoField(primary_key=True)
