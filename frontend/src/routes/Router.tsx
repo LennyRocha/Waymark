@@ -19,6 +19,7 @@ export default function Router() {
                 <Route path="/" element={<Landing />} />
                 <Route path="rooms/:idSlug" element={<PropiedadPage />} />
                 <Route path="s/:ciudad_pais/homes" element={<FiltrosPage />} />
+                <Route path="s/homes" element={<FiltrosPage />} />
                 <Route path="ruta" element={<Ejemplo />}>
                     <Route path="subruta" element={<RutaRandom />} />
                 </Route>
