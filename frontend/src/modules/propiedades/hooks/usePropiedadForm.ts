@@ -17,25 +17,3 @@ export default function usePropiedadForm(
   });
   return propiedadFormState;
 }
-
-/*
-const {
-    register,
-    control,
-    handleSubmit,
-    trigger,
-    setValue,
-    getValues,
-    watch,
-    reset,
-    setError,
-    clearErrors,
-
-    formState: {
-        errors,
-        isValid,
-        isDirty,
-        dirtyFields,
-    },
-} = methods;
- */

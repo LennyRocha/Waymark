@@ -33,6 +33,7 @@ export default function Chip({
       whileHover={{
         scale: 1.025,
       }}
+      layoutId={label}
       className="flex items-center gap-2 p-2 rounded-xl border-1 border-black w-fit cursor-pointer shrink-0"
       onClick={onClick}
     >

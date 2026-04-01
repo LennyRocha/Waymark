@@ -13,7 +13,7 @@ export default interface Propiedad {
   ciudad: string;
   direccion: string;
 
-  activa: number | null;
+  activa: boolean;
 
   coordenadas: {
     lat: number;

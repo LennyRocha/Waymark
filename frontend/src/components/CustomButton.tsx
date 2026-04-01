@@ -68,7 +68,7 @@ const CustomButton: React.FC<ButtonProps> = ({
   return (
     <button
       className={`cursor-pointer flex items-center justify-center gap-2 ${sizeClass} px-[24px] font-semibold rounded-lg hover:inset-shadow-2xl inset-shadow-gray-500 focus:outline-none focus:ring-2  focus:ring-text-primary  transition delay-150 duration-300 ease-in-out disabled:cursor-not-allowed
-        disabled:opacity-70 ${customWidth === "" ? "w-auto" : customWidth} ${Defclass}`}
+        disabled:opacity-70 ${fullWidth && "w-full" } ${customWidth === "" ? "w-auto" : customWidth} ${Defclass}`}
       {...props}
       disabled={props.disabled || isWaiting}
     >

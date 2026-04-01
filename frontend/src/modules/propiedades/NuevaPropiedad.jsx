@@ -1,4 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react'
+/* eslint-disable react-hooks/set-state-in-effect */
+import React, { useEffect, useRef, useState, useMemo } from 'react'
 import { AnimatePresence, motion } from "framer-motion"
 import { AlertCircle, ImagePlus, MapPin, Minus, Plus, X } from 'lucide-react'
 import Map, { Marker } from 'react-map-gl/mapbox'
@@ -11,7 +12,7 @@ import toast from 'react-hot-toast'
 import CustomButton from '../../components/CustomButton'
 import { getUserLocation } from '../../utils/getUserLocation'
 import usePropiedadForm from './hooks/usePropiedadForm'
-import { CustomCheckBox, CustomInput, CustomSelect, CustomTextArea } from '../../components/CustomInputs'
+import { CustomCheckBox, CustomInput, CustomSelect, CustomTextArea, SmallInput } from '../../components/CustomInputs'
 import CustomLoader from '../../layout/CustomLoader'
 import Chip from '../../components/Chip'
 import useAmenidades from './hooks/useAmenidades'
@@ -24,13 +25,16 @@ import { useQueryClient } from '@tanstack/react-query'
 import { getAxiosErrorMessage } from '../../utils/getAxiosErrorMessage'
 import { useNavigate } from 'react-router-dom'
 import useImagenMutation from './hooks/useImagenMutation'
+import Breadcrumb from '../../components/Breadcrumb'
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN
 
 /** 
- *  @typedef {import("./schemas/PropiedadZod").PropiedadForm} PropiedadForm 
- *  @typedef {import("./types/Imagen").default} Imagen
- *  @typedef {import("react-hook-form").UseFormReturn<any>} Form
+ * @typedef {import("./schemas/PropiedadZod").PropiedadForm} PropiedadForm 
+ * @typedef {import("./types/Imagen").default} Imagen
+ * @typedef {import("react-hook-form").UseFormReturn<any>} Form
+ * @typedef {import("react-hook-form").RegisterOptions} Register
+ * @typedef {import("react-hook-form").FormState} FormState
 */
 export default function NuevaPropiedad() {
     useSetPageTitle("Registrar nueva propiedad");
@@ -50,7 +54,7 @@ export default function NuevaPropiedad() {
     })
 
     const mutation = usePropiedadMutation({
-        onMutate: async (payload) => {
+        onMutate: async () => {
             toastRef.current = toast.loading("Guardando...");
             // Opcional: guardar snapshot para rollback
             const previousData = queryClient.getQueryData(["propiedades"]);
@@ -61,7 +65,7 @@ export default function NuevaPropiedad() {
             const errorMessage = getAxiosErrorMessage(error);
             const backendErrors = error.response?.data;
             console.log("Errores backend:", backendErrors);
-            if(backendErrors.direccion) {
+            if (backendErrors.direccion) {
                 return toast.error(backendErrors.direccion[0], { id: toastRef.current, duration: 5000 });
             }
             toast.error(errorMessage || "¡Error al guardar propiedad!", { id: toastRef.current, duration: 5000 });
@@ -75,19 +79,6 @@ export default function NuevaPropiedad() {
             }, 3000);
         }
     })
-
-    function makeImgenPayload(propiedadId, imgs) {
-        const formData = new FormData();
-
-        formData.append("propiedad", propiedadId);
-
-        imgs.forEach((img) => {
-            formData.append("imagenes", img.url);
-            formData.append("ordenes", img.orden);
-        });
-
-        return formData;
-    }
 
     const [selectedTab, setSelectedTab] = useState(0);
 
@@ -107,7 +98,6 @@ export default function NuevaPropiedad() {
 
         const canContinue = fields.every(
             (field) =>
-                form.formState.dirtyFields[field] &&
                 !form.formState.errors[field]
         );
 
@@ -128,8 +118,8 @@ export default function NuevaPropiedad() {
         load();
     }, []);
 
-    async function setCoordenadas(obj = { lat: 0, lng: 0 }) {
-        await form.setValue("coordenadas", obj, {
+    function setCoordenadas(obj = { lat: 0, lng: 0 }) {
+        form.setValue("coordenadas", obj, {
             shouldValidate: true,
             shouldDirty: true
         });
@@ -142,19 +132,43 @@ export default function NuevaPropiedad() {
         });
     }
 
-    async function setAmenidades(list) {
-        await form.setValue("amenidades_ids", list, {
+    function setAmenidades(list) {
+        form.setValue("amenidades_ids", list, {
             shouldValidate: true,
             shouldDirty: true
         });
     }
 
-    async function doChange(tag, value) {
-        await form.setValue(tag, value, {
+    function doChange(tag, value) {
+        form.setValue(tag, value, {
             shouldValidate: true,
             shouldDirty: true
         });
     }
+
+    const useWatchKey = (key) => useWatch({
+        control: form.control,
+        name: key
+    })
+
+    const register = (key) => {
+        return form.register(key)
+    }
+
+    function triggerStep() {
+        form.trigger(fieldsByStep[selectedTab]);
+    }
+
+    const defaultProps = useMemo(() => ({
+        watchKey: useWatchKey,
+        next: nextStep,
+        prev: prevStep,
+        change: doChange,
+        validateStep,
+        form,
+        register,
+        formState: form.formState
+    }), [form.formState]);
 
     async function onSubmit(data) {
         const reglasMap = new Object();
@@ -175,48 +189,64 @@ export default function NuevaPropiedad() {
         {
             label: 'Tipo',
             component: Step1,
-            props: { next: nextStep, change: doChange, form, validateStep }
+            props: defaultProps
         },
         {
             label: 'Ubicación',
             component: Step2,
-            props: { next: nextStep, prev: prevStep, change: doChange, setCoordenadas, userCoords, form, validateStep }
+            props: { ...defaultProps, setCoordenadas, userCoords }
         },
         {
             label: 'Básicos',
             component: Step3,
-            props: { next: nextStep, prev: prevStep, change: doChange, form, validateStep }
+            props: defaultProps
         },
         {
             label: 'Amenidades',
             component: Step4,
-            props: { next: nextStep, prev: prevStep, setAmenidades: setAmenidades, form, validateStep }
+            props: { ...defaultProps, setAmenidades }
         },
         {
             label: 'Imágenes',
             component: Step5,
-            props: { next: nextStep, prev: prevStep, setFotos: setFotos, form, validateStep }
+            props: { ...defaultProps, setFotos }
         },
         {
             label: 'Titulo',
             component: Step6,
-            props: { next: nextStep, prev: prevStep, form, validateStep }
+            props: defaultProps
         },
         {
             label: 'Precio',
             component: Step7,
-            props: { next: nextStep, prev: prevStep, form, validateStep, change: doChange }
+            props: defaultProps
         },
         {
             label: 'Horarios',
             component: Step8,
-            props: { prev: prevStep, next: nextStep, change: doChange, form, validateStep }
+            props: { ...defaultProps, triggerStep }
         },
         {
             label: 'Reglas',
             component: Step9,
-            props: { prev: prevStep, submit: form.handleSubmit(onSubmit), change: doChange, form, validateStep, loading: mutation.isLoading || imgMutation.isLoading }
+            props: { ...defaultProps, submit: form.handleSubmit(onSubmit), loading: mutation.isLoading || imgMutation.isLoading, triggerStep }
         },
+    ]
+
+    const links = [
+        {
+            label: "Anfitrión",
+            href: "/host",
+        },
+        {
+            label: "Mis propiedades",
+            href: "/host/listings",
+        },
+        {
+            label: "Nueva propiedad",
+            href: "/host/new-listing",
+            disabled: true
+        }
     ]
 
     const [tipo, ubicacion, basicos, amenidades, fotos, titulo, precio, horarios, reglas] = allTabs
@@ -229,7 +259,8 @@ export default function NuevaPropiedad() {
 
     return (
         <div className='w-full flex flex-col items-center lg:items-start justify-center gap-1 content'>
-            <h4>Registrar nueva propiedad</h4>
+            <Breadcrumb items={links} />
+            <h5 className='mt-4'>Registrar nueva propiedad</h5>
             <nav className='flex flex-row items-center justify-center gap-2 mb-2'>
                 <p>Paso{" "}
                     <AnimatePresence mode="wait">
@@ -267,17 +298,13 @@ export default function NuevaPropiedad() {
 /**
  * @param {{
  *  next?: () => void,
- *  change?: (tag:string, value: any) => Promise<void>,
- *  form: Form,
+ * change?: (tag:string, value: any) => void,
  * validateStep: (step: number) => boolean,
  * }} props
  */
-const Step1 = ({ next, change, form, validateStep }) => {
+const Step1 = ({ next, change, validateStep, watchKey }) => {
     const tipos = useTipos();
-    const currTip = useWatch({
-        control: form.control,
-        name: "tipo_id"
-    });
+    const currTip = watchKey("tipo_id");
     const canContinue = validateStep(0);
     return <section className='w-full' >
         <div className="w-auto flex flex-col  gap-4">
@@ -291,8 +318,8 @@ const Step1 = ({ next, change, form, validateStep }) => {
                             key={t.id}
                             t={t}
                             currId={currTip}
-                            onChange={async () => {
-                                await change('tipo_id', t.id);
+                            onChange={() => {
+                                change('tipo_id', t.id);
                             }
                             }
                         />
@@ -312,22 +339,15 @@ const Step1 = ({ next, change, form, validateStep }) => {
  * @param {{
  *  next?: () => void,
  * prev?: () => void
- *  change?: (tag:string, value: any) => Promise<void>,
- *  form: Form,
+ * change?: (tag:string, value: any) => void,
  * setCoordenadas: ({ lat: number, lng: number }) => Promise<void>, 
  * validateStep: (step: number) => boolean,
  * }} props
  */
-const Step2 = ({ next, prev, change, setCoordenadas, form, userCoords, validateStep }) => {
+const Step2 = ({ next, prev, change, validateStep, watchKey, setCoordenadas, userCoords = { lat: 0, lng: 0 } }) => {
     const mapRef = useRef(null);
-    const coords = useWatch({
-        control: form.control,
-        name: "coordenadas"
-    });
-    const direction = useWatch({
-        control: form.control,
-        name: "direccion"
-    });
+    const coords = watchKey("coordenadas");
+    const direction = watchKey("direccion");
 
     useEffect(() => {
         if (mapRef.current) {
@@ -368,11 +388,11 @@ const Step2 = ({ next, prev, change, setCoordenadas, form, userCoords, validateS
         const ciudad = feature.properties.context.place.name;
         const pais = feature.properties.context.country.name;
 
-        await setCoordenadas({ lat, lng })
+        setCoordenadas({ lat, lng })
         if (direccion) {
-            await change("direccion", direccion)
-            await change("ciudad", ciudad)
-            await change("pais", pais)
+            change("direccion", direccion)
+            change("ciudad", ciudad)
+            change("pais", pais)
         }
 
         setViewState(prev => ({ ...prev, longitude: lng, latitude: lat, zoom: 15 }))
@@ -385,7 +405,7 @@ const Step2 = ({ next, prev, change, setCoordenadas, form, userCoords, validateS
         setLoading(true);
         const { lng, lat } = e.lngLat
 
-        await setCoordenadas({ lat, lng })
+        setCoordenadas({ lat, lng })
         setViewState(prev => ({ ...prev, longitude: lng, latitude: lat }))
 
         // Geocoding inverso
@@ -403,9 +423,9 @@ const Step2 = ({ next, prev, change, setCoordenadas, form, userCoords, validateS
         const pais = context.find(c => c.id.startsWith('country'))?.text
 
         if (direccion) {
-            await change("direccion", direccion)
-            await change("ciudad", ciudad)
-            await change("pais", pais)
+            change("direccion", direccion)
+            change("ciudad", ciudad)
+            change("pais", pais)
         }
 
         mapRef.current?.resize();
@@ -413,14 +433,14 @@ const Step2 = ({ next, prev, change, setCoordenadas, form, userCoords, validateS
     }
 
     const markerLng =
-        coords?.lng !== 0
-            ? coords.lng
-            : userCoords.lng;
+        coords?.lng === 0
+            ? userCoords.lng
+            : coords.lng;
 
     const markerLat =
-        coords?.lat !== 0
-            ? coords.lat
-            : userCoords.lat;
+        coords?.lat === 0
+            ? userCoords.lat
+            : coords.lat;
 
     return (
         <section className='flex flex-col gap-4 w-full'>
@@ -478,27 +498,14 @@ const Step2 = ({ next, prev, change, setCoordenadas, form, userCoords, validateS
  * @param {{
  *  next?: () => void,
  * prev?: () => void
- *  change?: (tag:string, value: any) => Promise<void>,
- *  form: Form
+ * change?: (tag:string, value: any) => void,
  * }} props
  */
-const Step3 = ({ prev, next, change, form }) => {
-    const maxHuespedes = useWatch({
-        control: form.control,
-        name: "max_huespedes"
-    });
-    const camas = useWatch({
-        control: form.control,
-        name: "camas"
-    });
-    const banos = useWatch({
-        control: form.control,
-        name: "banos"
-    });
-    const habiitaciones = useWatch({
-        control: form.control,
-        name: "habitaciones"
-    });
+const Step3 = ({ prev, next, change, watchKey }) => {
+    const maxHuespedes = watchKey("max_huespedes");
+    const camas = watchKey("camas");
+    const banos = watchKey("banos");
+    const habiitaciones = watchKey("habitaciones");
     return <section className='w-full flex gap-6 flex-col'>
         <h3>¿A cuantos huéspedes te gustaría recibir?</h3>
         <SelectNav
@@ -540,16 +547,12 @@ const Step3 = ({ prev, next, change, form }) => {
  * @param {{
  *  next?: () => void,
  * prev?: () => void
- *  change?: (tag:string, value: any) => Promise<void>,
- * setAmenidades: (list: number[]) => Promise<void>,
- * form: Form
+ * change?: (tag:string, value: any) => void,
+ * setAmenidades: (list: number[]) => void,
  * }} props
  */
-const Step4 = ({ prev, next, setAmenidades, form }) => {
-    const list = useWatch({
-        control: form.control,
-        name: "amenidades_ids"
-    });
+const Step4 = ({ prev, next, watchKey, setAmenidades }) => {
+    const list = watchKey("amenidades_ids") ?? [];
     const amenidades = useAmenidades();
     const grouped = (amenidades.data ?? []).reduce((acc, a) => {
         if (!acc[a.categoria]) {
@@ -558,58 +561,84 @@ const Step4 = ({ prev, next, setAmenidades, form }) => {
         acc[a.categoria].push(a);
         return acc;
     }, {});
+    function addAmenidad(selected, amenidad) {
+        if (!selected) {
+            setAmenidades(
+                [...list, amenidad.amenidad_id],
+            );
+        }
+    }
+    function removeAmenidad(amenidad) {
+        setAmenidades(
+            list.filter(
+                (id) => id !== amenidad.amenidad_id
+            ),
+        );
+    }
     const canContinue = list.length > 0;
     return <section className='w-full flex gap-2 flex-col'>
         <h3>¿Qué es lo que ofrece tu propiedad?</h3>
         {amenidades.isLoading && !amenidades.isError ? (
             <CustomLoader />
         ) : (
-            <div className="flex flex-col gap-4 max-w-[800px]">
-                {Object.entries(grouped ?? {}).map(
-                    ([categoria, items]) => (
-                        <div key={categoria}>
+            <AnimatePresence mode='wait'>
+                <div className="flex flex-col gap-4 max-w-[800px]">
+                    <div className="flex flex-wrap items-center gap-2 justify-center">
+                        {
+                            list.map((a) => {
+                                const amenidad = amenidades.data.find(
+                                    (am) => am.amenidad_id === a
+                                );
+                                return <Chip
+                                    key={a}
+                                    selected={true}
+                                    label={amenidad.nombre}
+                                    icon={amenidad.icono_nombre}
+                                    onDelete={() => {
+                                        removeAmenidad(amenidad);
+                                    }}
+                                />
+                            })
+                        }
+                    </div>
+                    {Object.entries(grouped ?? {}).map(
+                        ([categoria, items]) => (
+                            <div key={categoria}>
 
-                            {/* Título categoría */}
-                            <p className="font-bold mb-2">
-                                {categoria.charAt(0).toUpperCase() + categoria.slice(1)}
-                            </p>
+                                {/* Título categoría */}
+                                <p className="font-bold mb-2">
+                                    {categoria.charAt(0).toUpperCase() + categoria.slice(1)}
+                                </p>
 
-                            {/* Chips de la categoría */}
-                            <div className="flex flex-wrap items-center gap-2 justify-center">
-                                {items.map((a) => {
-                                    const selected = list.includes(
-                                        a.amenidad_id
-                                    );
+                                {/* Chips de la categoría */}
+                                <div className="flex flex-wrap items-center gap-2 justify-center">
+                                    {items.map((a) => {
+                                        const selected = list.includes(
+                                            a.amenidad_id
+                                        );
 
-                                    return (
-                                        <Chip
-                                            key={a.amenidad_id}
-                                            selected={selected}
-                                            label={a.nombre}
-                                            icon={a.icono_nombre}
-                                            onClick={async () => {
-                                                if (!selected) {
-                                                    await setAmenidades(
-                                                        [...list, a.amenidad_id],
-                                                    );
-                                                }
-                                            }}
-                                            onDelete={async () => {
-                                                await setAmenidades(
-                                                    list.filter(
-                                                        (id) => id !== a.amenidad_id
-                                                    ),
-                                                );
-                                            }}
-                                        />
-                                    );
-                                })}
+                                        return !selected && (
+                                            <Chip
+                                                key={a.amenidad_id}
+                                                selected={selected}
+                                                label={a.nombre}
+                                                icon={a.icono_nombre}
+                                                onClick={() => {
+                                                    addAmenidad(selected, a);
+                                                }}
+                                                onDelete={() => {
+                                                    removeAmenidad(a);
+                                                }}
+                                            />
+                                        );
+                                    })}
+                                </div>
+
                             </div>
-
-                        </div>
-                    )
-                )}
-            </div>
+                        )
+                    )}
+                </div>
+            </AnimatePresence>
         )}
         <div className='w-full flex flex-row items-center justify-end gap-2' >
             <CustomButton variant='tertiary' onClick={prev} >
@@ -626,18 +655,13 @@ const Step4 = ({ prev, next, setAmenidades, form }) => {
  * @param {{
  *  next?: () => void,
  * prev?: () => void
- * setAmenidades: (list: number[]) => Promise<void>,
- * setFotos: (list: Imagen[]) => Promise<void>,
- * form: Form,
+ * setFotos: (list: Imagen[]) => void,
  * validateStep: (step: number) => boolean,
  * }} props
  */
-/** @param {Imagen[]} list */
-const Step5 = ({ prev, next, setFotos, form, validateStep }) => {
-    const list = useWatch({
-        control: form.control,
-        name: "imagenes"
-    });
+const Step5 = ({ prev, next, validateStep, watchKey, setFotos }) => {
+    /** @param {Imagen[]} list */
+    const list = watchKey("imagenes") ?? []
 
     const hasCover = !!list?.[0]?.url;
 
@@ -662,14 +686,13 @@ const Step5 = ({ prev, next, setFotos, form, validateStep }) => {
     useEffect(() => {
         return () => {
             list.forEach(img => {
-                if (img.url && img.url instanceof File) {
-                    URL.revokeObjectURL(
-                        URL.createObjectURL(img.url)
-                    );
+                if (img?.preview) {
+                    URL.revokeObjectURL(img.preview);
                 }
             });
         };
-    });
+    }, [list]);
+
     const onDropToIndex = (acceptedFiles, index) => {
         if (!acceptedFiles.length) return;
         const file = acceptedFiles[0];
@@ -768,29 +791,32 @@ const Step5 = ({ prev, next, setFotos, form, validateStep }) => {
  * @param {{
  *  next?: () => void,
  * prev?: () => void
- *  change?: (tag:string, value: any) => Promise<void>,
- *  form: Form,
+ * change?: (tag:string, value: any) => void,
  * validateStep: (step: number) => boolean,
+ * register: (key: string, options?: Register) => ReturnType<Form["register"]>,
+ * formState: FormState,
  * }} props
  */
-const Step6 = ({ prev, next, form, validateStep }) => {
+const Step6 = ({ prev, next, validateStep, register, formState }) => {
     const canContinue = validateStep(5);
 
     return <section className='w-full flex gap-2 flex-col'>
         <h3>Dale identidad a tu propiedad</h3>
-        <CustomInput label='Título' placeholder='Define un título para tu propiedad.' {...form.register("titulo")} name='titulo'
+        <CustomInput label='Título' placeholder='Define un título para tu propiedad.' {...register("titulo")} name='titulo'
             isError={
-                !!form.formState.errors.titulo &&
-                form.formState.touchedFields.titulo
+                !!formState.errors.titulo &&
+                formState.touchedFields.titulo
             }
-            ErrorElement={<FieldErrors errors={form.formState.errors} name="titulo" />} maxLength={50} />
+            ErrorElement={<FieldErrors errors={formState.errors} name="titulo" />} maxLength={50} />
         <CustomTextArea label='Descripción' rows={4} placeholder='Cuentanos más acerca de ella.' name='descripcion'
-            {...form.register("descripcion")}
+            {...register("descripcion")}
             isError={
-                !!form.formState.errors.descripcion &&
-                form.formState.touchedFields.descripcion
+                !!formState.errors.descripcion &&
+                formState.touchedFields.descripcion
             }
-            ErrorElement={<FieldErrors errors={form.formState.errors} name="descripcion" />} maxLength={500} />
+            ErrorElement={<FieldErrors errors={formState.errors} name="descripcion" />}
+            maxLength={3000}
+        />
         <div className='w-full flex flex-row items-center justify-end gap-2' >
             <CustomButton variant='tertiary' onClick={prev} >
                 Anterior
@@ -804,18 +830,17 @@ const Step6 = ({ prev, next, form, validateStep }) => {
 
 /**
  * @param {{
- *  next?: () => void,
- *  change?: (tag:string, value: any) => Promise<void>,
- *  form: Form,
+ * prev?: () => void
+ * next?: () => void,
+ * change?: (tag:string, value: any) => void,
  * validateStep: (step: number) => boolean,
+ * register: (key: string, options?: Register) => ReturnType<Form["register"]>,
+ * formState: FormState,
  * }} props
  */
-const Step7 = ({ prev, next, change, form, validateStep }) => {
+const Step7 = ({ prev, next, change, validateStep, watchKey, register, formState }) => {
     const divisas = useDivisas();
-    const divisa = useWatch({
-        control: form.control,
-        name: "divisa_id"
-    });
+    const divisa = watchKey("divisa_id");
     const canContinue = validateStep(6)
     return <section className='w-full md:min-w-[350px] flex gap-2 flex-col'>
         <h3>¡Define tu precio!</h3>
@@ -823,22 +848,22 @@ const Step7 = ({ prev, next, change, form, validateStep }) => {
             <CustomLoader />
         ) : (
             <>
-                <CustomInput label='Precio por noche' placeholder=' Ingresa el precio que vas a cobrar.'   {...form.register("precio_noche", {
+                <CustomInput label='Precio por noche' placeholder=' Ingresa el precio que vas a cobrar.'   {...register("precio_noche", {
                     pattern: {
                         value: /^\d+(\.\d{0,2})?$/,
                         message: "Máximo 2 decimales",
                     },
-                })} name='precio_noche' type='number' inputMode='decimal' min={1.00} step={0.01} max={9999999.99}
+                })} name='precio_noche' type='number' inputMode='decimal' min={1} step={0.01} max={9999999.99}
                     isError={
-                        !!form.formState.errors.precio_noche &&
-                        form.formState.touchedFields.precio_noche
+                        !!formState.errors.precio_noche &&
+                        formState.touchedFields.precio_noche
                     }
-                    ErrorElement={<FieldErrors errors={form.formState.errors} name="precio_noche" />}
+                    ErrorElement={<FieldErrors errors={formState.errors} name="precio_noche" />}
                 />
                 <CustomSelect label='Divisa de cambio'
                     helperText='Selecciona un tipo de cambio para tu precio.'
                     value={divisa}
-                    onChange={async (val) => await change("divisa_id", val)}
+                    onChange={(val) => change("divisa_id", val)}
                     options={
                         divisas.data?.map(d => ({ label: d.acronimo + " - " + d.nombre, value: d.divisa_id })) ?? []} />
             </>
@@ -856,37 +881,39 @@ const Step7 = ({ prev, next, change, form, validateStep }) => {
 
 /**
  * @param {{
+ * prev?: () => void
  *  next?: () => void,
- *  change?: (tag:string, value: any) => Promise<void>,
- *  form: Form,
  * validateStep: (step: number) => boolean,
+  * register: (key: string, options?: Register) => ReturnType<Form["register"]>,
+ * formState: FormState,
+ * triggerStep: () => void,
  * }} props
  */
-const Step8 = ({ prev, next, form, validateStep }) => {
+const Step8 = ({ prev, next, validateStep, register, formState, triggerStep }) => {
     React.useEffect(() => {
-        form.trigger(["check_in", "check_out"]);
+        triggerStep();
     }, []);
     const canContinue = validateStep(7);
     return <section className='w-full flex gap-2 flex-col'>
         <h3 className='md:text-left'>¿Cuáles son tus horarios de entrada y salida?</h3>
         <div className='flex flex-col md:flex-row w-full gap-2'>
-            <CustomInput label='Entrada' type="time" name="check_in" step="60" min="00:00" placeholder='Ej. 00:00' max="23:59" {...form.register("check_in")}
+            <CustomInput label='Entrada' type="time" name="check_in" step="60" min="00:00" placeholder='Ej. 00:00' max="23:59" {...register("check_in")}
                 fullWidth
                 isError={
-                    !!form.formState.errors.check_in &&
-                    form.formState.touchedFields.check_in
+                    !!formState.errors.check_in &&
+                    formState.touchedFields.check_in
                 }
-                ErrorElement={<FieldErrors errors={form.formState.errors} name="check_in" />}
+                ErrorElement={<FieldErrors errors={formState.errors} name="check_in" />}
                 useMinWidth={false}
             />
 
-            <CustomInput label='Salida' type="time" name='check_out' step="60" min="00:00" placeholder='Ej. 00:00' max="23:59" {...form.register("check_out")}
+            <CustomInput label='Salida' type="time" name='check_out' step="60" min="00:00" placeholder='Ej. 00:00' max="23:59" {...register("check_out")}
                 fullWidth
                 isError={
-                    !!form.formState.errors.check_out &&
-                    form.formState.touchedFields.check_out
+                    !!formState.errors.check_out &&
+                    formState.touchedFields.check_out
                 }
-                ErrorElement={<FieldErrors errors={form.formState.errors} name="check_out" />}
+                ErrorElement={<FieldErrors errors={formState.errors} name="check_out" />}
                 useMinWidth={false}
             />
         </div>
@@ -905,23 +932,25 @@ const Step8 = ({ prev, next, form, validateStep }) => {
 /**
  * @param {{
  *  prev?: () => void,
- *  change?: (tag:string, value: any) => Promise<void>,
- *  form: Form,
+ * change?: (tag:string, value: any) => void,
  *  submit: () => Promise<void>,
  * loading: boolean,
+ * triggerStep: () => void,
  * }} props
  */
-const Step9 = ({ prev, submit, change, form, loading }) => {
+const Step9 = ({ prev, change, watchKey, loading, submit, triggerStep }) => {
     const [showReglas, setShowReglas] = useState(false);
 
     // Checkboxes principales
-    const mascotas = useWatch({ control: form.control, name: "regla_mascotas" });
-    const ninos = useWatch({ control: form.control, name: "regla_ninos" });
-    const fiestas = useWatch({ control: form.control, name: "regla_fiestas" });
-    const fumar = useWatch({ control: form.control, name: "regla_fumar" });
+    const mascotas = watchKey("regla_mascotas");
+    const ninos = watchKey("regla_ninos");
+    const fiestas = watchKey("regla_fiestas");
+    const fumar = watchKey("regla_fumar");
+    const apagar = watchKey("regla_apagar");
+    const autocheck = watchKey("regla_autochecar");
 
     // Reglas extra dinámicas como JSON
-    const reglasJson = useWatch({ control: form.control, name: "reglas_extra" });
+    const reglasJson = watchKey("reglas_extra");
     const [extraReglas, setExtraReglas] = useState(reglasJson ?? { regla_1: "" });
 
     // Agregar nueva regla
@@ -934,6 +963,9 @@ const Step9 = ({ prev, submit, change, form, loading }) => {
     const removeRegla = (key) => {
         const copy = { ...extraReglas };
         delete copy[key];
+        if (Object.keys(copy).length === 0) {
+            copy.regla_1 = "";
+        }
         setExtraReglas(copy);
     };
 
@@ -956,7 +988,7 @@ const Step9 = ({ prev, submit, change, form, loading }) => {
 
     // Trigger inicial para los checkboxes
     useEffect(() => {
-        form.trigger(["regla_mascotas", "regla_ninos", "regla_fiestas", "regla_fumar"]);
+        triggerStep();
     }, []);
 
     return (
@@ -987,6 +1019,18 @@ const Step9 = ({ prev, submit, change, form, loading }) => {
                 onChange={change}
                 field="regla_fumar"
             />
+            <CheckRow
+                question="¿Apagar todo a la salida?"
+                checked={apagar}
+                onChange={change}
+                field="regla_apagar"
+            />
+            <CheckRow
+                question="¿Llegada autónoma?"
+                checked={autocheck}
+                onChange={change}
+                field="regla_autochecar"
+            />
 
             <CheckRow
                 question="¿Deseas adjuntar reglas específicas?"
@@ -999,12 +1043,11 @@ const Step9 = ({ prev, submit, change, form, loading }) => {
                 <div className="flex flex-col gap-2">
                     {Object.entries(extraReglas).map(([key, value]) => (
                         <div key={key} className="flex gap-2 items-center">
-                            <CustomInput
+                            <SmallInput
                                 placeholder={`Regla #${key.split("_")[1]}`}
                                 value={value}
                                 onChange={(e) => updateRegla(key, e.target.value)}
                                 fullWidth
-                                inpSize="small"
                             />
                             {key === "regla_1" ? (
                                 <button
@@ -1087,7 +1130,7 @@ const FieldErrors = ({ errors = {}, name = "" }) => {
 /**
  * @param {{
  * value: number,
- *  change?: (tag:string, value: any) => Promise<void>,
+ *  change?: (tag:string, value: any) => void,
  *  field: string,
  *  label: string,
  * }} props
@@ -1102,8 +1145,8 @@ const SelectNav = ({ label = "", value = 0, change = () => { }, field = "" }) =>
                     type="button"
                     disabled={value === 1}
                     className='disabled:opacity-50 disabled:cursor-not-allowed p-1 bg-transparent disabled:bg-border rounded-full border-1 border-text-secondary'
-                    onClick={async () =>
-                        await change(
+                    onClick={() =>
+                        change(
                             field,
                             value - 1
                         )
@@ -1142,11 +1185,24 @@ const SelectNav = ({ label = "", value = 0, change = () => { }, field = "" }) =>
  *  field: string,
  * }} props
  */
-const CheckRow = ({ question = "¿?", checked = false, onChange = async () => { }, field = "" }) => {
+export const CheckRow = ({ question = "¿?", checked = false, onChange = async () => { }, field = "" }) => {
     return (
         <div className="flex justify-between items-center my-2 gap-4">
-            <h5>{question}</h5>
+            <h5 className='text-left'>{question}</h5>
             <CustomCheckBox checked={checked} onChange={async (e) => await onChange(field, (e.target.checked))} />
         </div>
     )
+}
+
+function makeImgenPayload(propiedadId, imgs) {
+    const formData = new FormData();
+
+    formData.append("propiedad", propiedadId);
+
+    imgs.forEach((img) => {
+        formData.append("imagenes", img.url);
+        formData.append("ordenes", img.orden);
+    });
+
+    return formData;
 }

@@ -96,16 +96,13 @@ class Propiedad(models.Model):
     titulo = models.CharField(
         max_length=50,
         blank=False,
-        validators=[
-            RegexValidator("^[a-zA-ZáéíóúÁÉÍÓÚ ]+$", "No puedes incluir números")
-        ],
         error_messages={
             "max_length": "El título asignado no debe exceder los 50 carácteres",
             "blank": non_empty_message,
         },
     )
     descripcion = models.TextField(
-        max_length=500,
+        max_length=3000,
         blank=False,
         error_messages={
             "max_length": "La descripción asignada no debe exceder los 500 carácteres",
@@ -259,7 +256,6 @@ class PropiedadImagen(models.Model):
     url = ResizedImageField(
         size=[1200, 800],
         quality=85,
-        #upload_to="propiedades/",
         upload_to=upload_propiedad_imagen,
     )
     orden = models.IntegerField(

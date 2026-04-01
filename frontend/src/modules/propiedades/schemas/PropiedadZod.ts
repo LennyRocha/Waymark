@@ -18,18 +18,14 @@ export const PropiedadSchema = z
         50,
         "El título asignado no debe exceder los 50 carácteres",
       )
-      .regex(
-        /^[a-zA-ZáéíóúÁÉÍÓÚ ]+$/,
-        "No puedes incluir números ni símbolos",
-      )
       .default(""),
 
     descripcion: z
       .string()
       .min(1, "Este campo no puede estar vacío")
       .max(
-        500,
-        "La descripción asignada no debe exceder los 500 carácteres",
+        3000,
+        "La descripción asignada no debe exceder los 3000 carácteres",
       )
       .default(""),
 

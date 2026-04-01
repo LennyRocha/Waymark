@@ -79,7 +79,16 @@ export const CustomInput: React.FC<InputProps> = ({
   useMinWidth = true,
   ...props
 }) => {
-  const currentLength = props.value?.toString().length || 0;
+  const [currentLength, setCurrentLength] = React.useState(
+    props.value?.toString().length || 0,
+  );
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    setCurrentLength(e.target.value.length);
+
+    props.onChange?.(e);
+  };
   const sizeClass = React.useMemo(() => {
     switch (inpSize) {
       case "small":
@@ -106,6 +115,7 @@ export const CustomInput: React.FC<InputProps> = ({
             {...props}
             className={`w-full h-auto p-4  ${label !== "" && "pt-8"} ${isError ? "border-orange-500 bg-orange-50" : "border-border"} border-2 rounded-xl ${icon && "pr-8"}  disabled:bg-gray-100 ${sizeClass} transition ease focus:outline-none focus:border-text-primary`}
             disabled={props.disabled || isWaiting}
+            onChange={handleChange}
           />
           {icon && (
             <DynamicIcon
@@ -162,7 +172,16 @@ export const MediumInput: React.FC<InputProps> = ({
   useMinWidth = true,
   ...props
 }) => {
-  const currentLength = props.value?.toString().length || 0;
+  const [currentLength, setCurrentLength] = React.useState(
+    props.value?.toString().length || 0,
+  );
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    setCurrentLength(e.target.value.length);
+
+    props.onChange?.(e);
+  };
   return (
     <AnimatePresence mode="wait">
       <div
@@ -179,6 +198,7 @@ export const MediumInput: React.FC<InputProps> = ({
             {...props}
             className={`w-full h-[44px]  p-4  ${isError ? "border-orange-500 bg-orange-50" : "border-border"} border-2 rounded-md ${icon && "pr-10"}  disabled:bg-gray-100 transition ease focus:outline-none focus:border-text-primary`}
             disabled={props.disabled || isWaiting}
+            onChange={handleChange}
           />
           {icon && (
             <DynamicIcon
@@ -221,7 +241,6 @@ export const MediumInput: React.FC<InputProps> = ({
   );
 };
 
-
 export const SmallInput: React.FC<InputProps> = ({
   children,
   isWaiting = false,
@@ -236,7 +255,16 @@ export const SmallInput: React.FC<InputProps> = ({
   useMinWidth = true,
   ...props
 }) => {
-  const currentLength = props.value?.toString().length || 0;
+  const [currentLength, setCurrentLength] = React.useState(
+    props.value?.toString().length || 0,
+  );
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    setCurrentLength(e.target.value.length);
+
+    props.onChange?.(e);
+  };
   return (
     <AnimatePresence mode="wait">
       <div
@@ -253,6 +281,7 @@ export const SmallInput: React.FC<InputProps> = ({
             {...props}
             className={`w-full h-[40px]  p-4  ${isError ? "border-orange-500 bg-orange-50" : "border-border"} border-2 rounded-md ${icon && "pr-10"}  disabled:bg-gray-100 transition ease focus:outline-none focus:border-text-primary`}
             disabled={props.disabled || isWaiting}
+            onChange={handleChange}
           />
           {icon && (
             <DynamicIcon
@@ -610,7 +639,10 @@ export const CustomTextArea: React.FC<TextProps> = ({
   onIconPress = () => {},
   ...props
 }) => {
-  const currentLength = props.value?.toString().length || 0;
+  const [currentLength, setCurrentLength] = React.useState(
+    props.value?.toString().length || 0,
+  );
+
   const sizeClass = React.useMemo(() => {
     switch (inpSize) {
       case "small":
@@ -621,6 +653,25 @@ export const CustomTextArea: React.FC<TextProps> = ({
         return "min-h-[50px]";
     }
   }, [inpSize]);
+
+  const textareaRef =
+    React.useRef<HTMLTextAreaElement>(null);
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLTextAreaElement>,
+  ) => {
+    const el = textareaRef.current;
+
+    if (el) {
+      el.style.height = "auto";
+      el.style.height = el.scrollHeight + "px";
+    }
+
+    setCurrentLength(e.target.value.length);
+
+    props.onChange?.(e);
+  };
+
   return (
     <AnimatePresence mode="wait">
       <div
@@ -634,9 +685,11 @@ export const CustomTextArea: React.FC<TextProps> = ({
             {label}
           </label>
           <textarea
+            ref={textareaRef}
             {...props}
-            className={`scroll-mini is_y w-full h-auto resize-none p-4  ${label !== "" && "pt-8"} ${isError ? "border-orange-500 bg-orange-50" : "border-border"} border-2 rounded-xl ${icon && "pr-8"}  disabled:bg-gray-100 ${sizeClass} transition ease focus:outline-none focus:border-text-primary`}
+            className={`scroll-mini is_y w-full resize-none box-border p-4 ${label !== "" && "pt-8"} ${isError ? "border-orange-500 bg-orange-50" : "border-border"} border-2 rounded-xl ${icon && "pr-8"} disabled:bg-gray-100 ${sizeClass} transition ease focus:outline-none focus:border-text-primary`}
             disabled={props.disabled || isWaiting}
+            onChange={handleChange}
           />
           {icon && (
             <DynamicIcon

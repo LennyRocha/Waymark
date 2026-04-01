@@ -46,7 +46,7 @@ const PropiedadRepository = {
     return res.data;
   },
   delete: async (id: number) => {
-    const res = await api.delete<void>(`${prefix}${id}`);
+    const res = await api.delete<void>(`${prefix}${id}/`);
     return res.data;
   },
   findUbicaciones: async () => {

@@ -2,14 +2,22 @@ import { useMutation } from "@tanstack/react-query";
 import Imagen, { Payload } from "../types/Imagen";
 import ImagenRepository from "../repositories/ImagenRepository";
 
-type accion = "post" | "put";
+type accion = "post_all" | "post" | "put";
 export default function useImagenMutation(
   props = {},
-  accion: accion = "post",
+  accion: accion = "post_all",
 ) {
-  if (accion === "post") {
+  if (accion === "post_all") {
     return useMutation({
       mutationFn: (data: Payload) =>
+        ImagenRepository.saveAll(data),
+      ...props,
+    });
+  }
+
+  if (accion === "post") {
+    return useMutation({
+      mutationFn: (data: Imagen) =>
         ImagenRepository.save(data),
       ...props,
     });

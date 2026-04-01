@@ -122,26 +122,18 @@ export default function HostHeader() {
           {open && (
             <>
               {/* Overlay */}
-
               <motion.div
                 key="overlay"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.2 }}
-                className="
-          fixed
-          inset-0
-          z-[9998]
-          bg-black/50
-          lg:hidden
-        "
+                className="fixed inset-0 z-[9998] bg-black/50 lg:hidden"
                 onClick={() => setOpen(false)}
               />
 
               {/* Drawer lateral */}
-
-              <motion.div
+              <motion.aside
                 key="drawer"
                 initial={{ x: "100%" }}
                 animate={{ x: 0 }}
@@ -150,22 +142,9 @@ export default function HostHeader() {
                   type: "tween",
                   duration: 0.25,
                 }}
-                className="
-          fixed
-          inset-y-0
-          right-0
-          z-[9999]
-          w-full
-          max-w-sm
-          bg-white
-          overflow-y-auto
-          p-6
-          shadow-xl
-          lg:hidden
-        "
+                className="fixed inset-y-0 right-0 z-[9999] w-full max-w-sm bg-white overflow-y-auto p-6 shadow-xl lg:hidden"
               >
                 {/* Header */}
-
                 <div className="flex items-center justify-between">
                   <Link to="/" className="-m-1.5 p-1.5">
                     <img
@@ -186,27 +165,13 @@ export default function HostHeader() {
                 </div>
 
                 {/* Links */}
-
                 <div className="mt-6 space-y-2">
                   {links.map((l) => (
                     <NavLink
                       key={l.name}
                       to={l.to}
                       className={({ isActive }) =>
-                        `
-                  block
-                  rounded-lg
-                  px-3
-                  py-2
-                  text-base
-                  font-semibold
-                  transition
-                  ${
-                    isActive
-                      ? "text-secondary-500"
-                      : "text-text-primary hover:bg-black/5"
-                  }
-                `
+                        `block rounded-lg px-3 py-2 text-base font-semibold transition ${isActive ? "text-secondary-500" : "text-text-primary hover:bg-black/5"}`
                       }
                     >
                       {l.text}
@@ -216,26 +181,13 @@ export default function HostHeader() {
                   <NavLink
                     to="/host/profile"
                     className={({ isActive }) =>
-                      `
-                block
-                rounded-lg
-                px-3
-                py-2
-                text-base
-                font-semibold
-                transition
-                ${
-                  isActive
-                    ? "text-secondary-500"
-                    : "text-text-primary hover:bg-black/5"
-                }
-              `
+                      `block rounded-lg px-3 py-2 text-base font-semibold transition ${isActive ? "text-secondary-500" : "text-text-primary hover:bg-black/5"}`
                     }
                   >
                     Mi perfil
                   </NavLink>
                 </div>
-              </motion.div>
+              </motion.aside>
             </>
           )}
         </AnimatePresence>

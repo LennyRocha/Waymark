@@ -15,7 +15,8 @@ export default function PropiedadCard({ propiedad }) {
     const location = useLocation();
 
     const goToPropiedad = () => {
-        navigate("/rooms/24-tequesquitengo", { state: { from: location.pathname } });
+        window.open("/rooms/3-tequesquitengo", "_blank", "noopener,noreferrer");
+        //navigate("/rooms/3-tequesquitengo", { state: { from: location.pathname } });
     };
     return (
         <div className=' w-[clamp(138px,13.5%,250px)] shrink-0   relative flex flex-col items-start justify-center gap-2' >

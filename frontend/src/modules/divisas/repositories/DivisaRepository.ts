@@ -14,7 +14,7 @@ const DivisaRepository = {
     const res = await api.post<Divisa>(prefix, data);
     return res.data;
   },
-  update: async (data: Divisa, id: number) => {
+  update: async (data: Partial<Divisa>, id: number) => {
     const res = await api.patch<Divisa>(
       `${prefix}${id}`,
       data,

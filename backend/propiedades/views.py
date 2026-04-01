@@ -37,12 +37,19 @@ method_not_allowed_response = Response(
 )
 
 
-class PropiedadViewSet(viewsets.ModelViewSet):
-    queryset = (
-        Propiedad.objects.select_related("divisa", "tipo_propiedad")
-        .prefetch_related("amenidades", "imagenes")
-        .filter(activa=1)
-    )
+class PropiedadViewSet(viewsets.ModelViewSet):    
+    def get_queryset(self):
+        queryset = (
+            Propiedad.objects
+            .select_related("divisa", "tipo_propiedad")
+            .prefetch_related("amenidades", "imagenes")
+        )
+
+        # Solo ocultar inactivas en list
+        if self.action == "list":
+            queryset = queryset.filter(activa=True)
+
+        return queryset
 
     serializer_class = PropiedadSerializer
 
@@ -61,19 +68,13 @@ class PropiedadViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["GET"])
     def by_host(self, request):
-        #TODO: Cuando ya esté el token usar esto
+        # TODO: Cuando ya esté el token usar esto
         host_id = request.user.id
-        self.pagination_class = PropiedadPagination  # ← solo aplica aquí
         queryset = (
             Propiedad.objects.select_related("divisa", "tipo_propiedad")
             .prefetch_related("amenidades", "imagenes")
             .filter(anfitrion=1)
         )
-
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
@@ -86,15 +87,15 @@ class PropiedadViewSet(viewsets.ModelViewSet):
         serializer = PropiedadSerializer(
             data=request.data, context={"anfitrion": debug_anfitrion}
         )
-        
-       # serializer.is_valid(raise_exception=True)
+
+        # serializer.is_valid(raise_exception=True)
         if not serializer.is_valid():
             print("Errores de validación:", serializer.errors)
             return Response(serializer.errors, status=400)
 
         try:
             propiedad = serializer.save()
-                
+
         except ValidationError as ve:
             # Devuelve los errores de validación como JSON
             return Response({"errores": ve.detail}, status=status.HTTP_400_BAD_REQUEST)
@@ -118,8 +119,9 @@ class PropiedadViewSet(viewsets.ModelViewSet):
         )
 
     def destroy(self, request, *args, **kwargs):
+        print(self.get_object())
         instance = self.get_object()
-        instance.activa = 0
+        instance.activa = not instance.activa
         instance.save(update_fields=["activa"])
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -183,19 +185,17 @@ class ImagenViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
     queryset = PropiedadImagen.objects.all()
     serializer_class = ImagenSerializer
 
-    def create(self, request, *args, **kwargs):
+    @action(detail=False, methods=["POST"])
+    def save_many(self, request, *args, **kwargs):
         propiedad_id = request.data.get("propiedad")
         imagenes = request.FILES.getlist("imagenes")
         ordenes = request.data.getlist("ordenes")
         propiedad = Propiedad.objects.get(pk=propiedad_id)
-        anfitrion = request.user
-        # TODO: Cuando ya esté el token quitar esto
-        debug_anfitrion = Usuario.objects.get(pk=propiedad.anfitrion.pk)
         total_existentes = PropiedadImagen.objects.filter(
             propiedad_id=propiedad_id
         ).count()
         print(len(imagenes), len(ordenes))
-        list = []
+        lista = []
         if total_existentes + len(imagenes) > 10:
             return Response(
                 {"error": "Máximo 10 imágenes por propiedad"},
@@ -227,22 +227,79 @@ class ImagenViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
                     orden=orden,
                     updated_by=propiedad.anfitrion.pk,
                 )
-                list.append(saved)
+                lista.append(saved)
                 print(f"Imagen {saved.prop_ima_id} guardada con orden {saved.orden}")
-            
+
             except Exception as e:
                 print(traceback.format_exc())
                 return Response(
                     {"error": f"No se pudo guardar la imagen: {str(e)}"},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-            
-        serializer = ImagenSerializer(list, many=True)
+
+        serializer = ImagenSerializer(lista, many=True)
 
         return Response(
             {
                 "message": f"Imágenes para {propiedad.titulo} guardadas correctamente",
                 "imagenes": serializer.data,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    def create(self, request, *args, **kwargs):
+        propiedad_id = request.data.get("propiedad")
+        imagen = request.FILES.get("imagen")
+        orden = request.data.get("orden")
+
+        if not propiedad_id or not imagen or not orden:
+            return Response(
+                {"error": "propiedad, imagen y orden son requeridos"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            propiedad = Propiedad.objects.get(pk=propiedad_id)
+            
+            total = PropiedadImagen.objects.filter(
+                propiedad=propiedad
+            ).count()
+
+            if PropiedadImagen.objects.filter(
+                propiedad=propiedad, orden=orden
+            ).exists():
+
+                return Response(
+                    {"orden": "Ya existe una imagen con ese orden"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            if total >= 10:
+                return Response(
+                    {"error": "Máximo 10 imágenes por propiedad"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            saved = PropiedadImagen.objects.create(
+                propiedad=propiedad,
+                url=imagen.url,
+                orden=imagen.orden,
+                updated_by=propiedad.anfitrion.pk,
+            )
+
+        except Exception as e:
+            print(traceback.format_exc())
+            return Response(
+                {"error": f"No se pudo guardar la imagen: {str(e)}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        serializer = ImagenSerializer(saved)
+
+        return Response(
+            {
+                "message": f"Imágen para {propiedad.titulo} guardadas correctamente",
+                "imagen": serializer.data,
             },
             status=status.HTTP_200_OK,
         )
