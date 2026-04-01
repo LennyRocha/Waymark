@@ -11,15 +11,18 @@ export default function FiltrosPage() {
 
   // Leer
   const { ciudad_pais } = useParams();
-  const params = ciudad_pais.split("-");
-  const city = params[0];
-  const country = params[1];
+  if (ciudad_pais) {
+    const params = ciudad_pais?.split("-");
+    const city = params[0];
+    const country = params[1];
+    console.table({ city, country });
+  }
   const checkIn = searchParams.get("checkin");
   const checkOut = searchParams.get("checkout");
   const homies = searchParams.get("adults");
   const pets = searchParams.get("allow_pets");
   const kids = searchParams.get("allow_children");
-  console.table({ city, country, checkIn, checkOut, homies, pets, kids });
+  console.table({ checkIn, checkOut, homies, pets, kids });
   return (
     <div>FiltrosPage</div>
   )

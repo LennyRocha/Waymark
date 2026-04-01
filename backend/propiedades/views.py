@@ -63,7 +63,7 @@ class PropiedadViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=["GET"])
     def locations(self, request, pk=None):
         queryset = Ubicaciones.objects.all()
-        serializer = self.get_serializer(queryset, many=True)
+        serializer = UbicacionSerializer(queryset, many=True)
         return Response(serializer.data)
 
     @action(detail=False, methods=["GET"])

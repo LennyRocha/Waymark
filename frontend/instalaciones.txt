@@ -46,3 +46,6 @@ react-layout-skeletonizer
 #Imágenes
 npm install react-dropzone
 npm install react-loading-skeleton
+
+#Calendario
+npm i react-calendar

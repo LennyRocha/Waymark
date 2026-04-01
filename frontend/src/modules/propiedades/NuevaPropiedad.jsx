@@ -1163,8 +1163,8 @@ const SelectNav = ({ label = "", value = 0, change = () => { }, field = "" }) =>
                     type="button"
                     disabled={value === 20}
                     className='disabled:opacity-50 disabled:cursor-not-allowed p-1 bg-transparent disabled:bg-border rounded-full border-1 border-text-secondary'
-                    onClick={async () =>
-                        await change(
+                    onClick={() =>
+                        change(
                             field,
                             value + 1
                         )
@@ -1181,7 +1181,7 @@ const SelectNav = ({ label = "", value = 0, change = () => { }, field = "" }) =>
  * @param {{
  *  question: string,
  *  checked: boolean,
- *  onChange: (tag:string, value: any) => Promise<void>,
+ *  onChange: (tag:string, value: any) => void,
  *  field: string,
  * }} props
  */
@@ -1189,7 +1189,7 @@ export const CheckRow = ({ question = "¿?", checked = false, onChange = async (
     return (
         <div className="flex justify-between items-center my-2 gap-4">
             <h5 className='text-left'>{question}</h5>
-            <CustomCheckBox checked={checked} onChange={async (e) => await onChange(field, (e.target.checked))} />
+            <CustomCheckBox checked={checked} onChange={(e) => onChange(field, (e.target.checked))} />
         </div>
     )
 }

@@ -11,15 +11,21 @@ import BuscadorBoton from './components/BuscadorBoton'
 import Footer from '../../layout/Footer';
 import Skeleton from 'react-loading-skeleton';
 import useSetPageTitle from '../../utils/setPageTitle';
+import useUbicaciones from './hooks/useUbicaciones';
+import usePropiedades from './hooks/usePropiedades';
 
 export default function Landing() {
+  const ubicaciones = useUbicaciones();
+  const propiedades = usePropiedades();
+  const isLoading = ubicaciones.isInitialLoading || ubicaciones.isLoading || propiedades.isInitialLoading || propiedades.isLoading;
+  console.log(propiedades.data??[])
   useSetPageTitle("Waymark - Encuentra el lugar perfecto para tu próxima aventura");
   return (
     <div className="flex flex-col min-h-screen gap-2">
-      <Header />
+      <Header isWaiting={isLoading} ubicaciones={ubicaciones.data ?? []} />
       <main className="content">
         <h4 className='w-full text-left mt-[1rem] mb-2'>Encabezado h5</h4>
-        <section className='inline-flex w-full overflow-x-auto gap-[.75rem] md:gap-3 scroll-smooth scroll-no mb-5'>
+        <section className='inline-flex w-full overflow-x-auto overflow-y-hidden overflow-y-hidden gap-[.75rem] md:gap-3 scroll-smooth scroll-no mb-5'>
           <PropiedadCard />
           <PropiedadCard />
           <PropiedadCard />
@@ -31,7 +37,7 @@ export default function Landing() {
           <VerMasCard direccion={"/juan"} />
         </section>
         <h4 className='w-full text-left mt-[1rem] mb-2'>Encabezado h5</h4>
-        <section className='inline-flex w-full overflow-x-auto gap-[.75rem] md:gap-3 scroll-smooth scroll-no mb-5'>
+        <section className='inline-flex w-full overflow-x-auto overflow-y-hidden gap-[.75rem] md:gap-3 scroll-smooth scroll-no mb-5'>
           <PropiedadCard />
           <PropiedadCard />
           <PropiedadCard />
@@ -43,7 +49,7 @@ export default function Landing() {
           <VerMasCard direccion={"/marcelo"} />
         </section>
         <h4 className='w-full text-left mt-[1rem] mb-2'>Encabezado h5</h4>
-        <section className='inline-flex w-full overflow-x-auto gap-[.75rem] md:gap-3 scroll-smooth scroll-no mb-5'>
+        <section className='inline-flex w-full overflow-x-auto overflow-y-hidden gap-[.75rem] md:gap-3 scroll-smooth scroll-no mb-5'>
           <PropiedadCard />
           <PropiedadCard />
           <PropiedadCard />
@@ -55,7 +61,7 @@ export default function Landing() {
           <VerMasCard direccion={"/beto"} />
         </section>
         <h4 className='w-full text-left mt-[1rem] mb-2'>Encabezado h5</h4>
-        <section className='inline-flex w-full overflow-x-auto gap-[.75rem] md:gap-3 scroll-smooth scroll-no mb-5'>
+        <section className='inline-flex w-full overflow-x-auto overflow-y-hidden gap-[.75rem] md:gap-3 scroll-smooth scroll-no mb-5'>
           <PropiedadCard />
           <PropiedadCard />
           <PropiedadCard />
@@ -88,7 +94,7 @@ const VerMasCard = ({ direccion = "" }) => {
   )
 }
 
-const Header = ({  isWaiting = false }) => {
+const Header = ({  isWaiting = false, ubicaciones =[] }) => {
   const { scrollY } = useScroll()
   const [scrolled, setScrolled] = useState(false)
   const [show, setShow] = useState(false)
@@ -140,7 +146,7 @@ const Header = ({  isWaiting = false }) => {
   })
   return <motion.header
     className="sticky top-0 z-10 flex flex-col items-center w-full bg-gradient-to-b from-white via-white to-gray-50 to-80% p-[1.25rem] border-b border-border" >
-    {!isSmall ? <>
+    {isSmall ? <BuscadorBoton isWaiting={isWaiting} /> : <>
       <nav className="max-w-[1450px] w-full flex flex-col md:flex-row items-center md:justify-between justify-center">
         <div className="flex flex-row gap-2 justify-center items-center">
           <img src={"/logo_white.png"} alt="waymark" className='w-[3.25rem]' />
@@ -170,7 +176,7 @@ const Header = ({  isWaiting = false }) => {
           </CustomDropdown>
         </DropdownParent>
       </nav>
-      <Buscador scrolled={scrolled} setScrolled={setScrolledSync} isWaiting={isWaiting} />
-    </> : <BuscadorBoton isWaiting={isWaiting} />}
+      <Buscador locations={ubicaciones} scrolled={scrolled} setScrolled={setScrolledSync} isWaiting={isWaiting} />
+    </>}
   </motion.header >
 }

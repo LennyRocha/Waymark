@@ -80,6 +80,8 @@ export default function AdministrarPropiedad() {
         watchKey: useWatchKey
     }
 
+    let smallScreen = globalThis.matchMedia("(max-width: 640px)").matches;
+
     const components = [
         {
             label: 'general',
@@ -117,7 +119,7 @@ export default function AdministrarPropiedad() {
             href: "/host/listings",
         },
         {
-            label: propiedadQuery.data?.titulo ?? "Administrar propiedad",
+            label: smallScreen ? "Administrar" : propiedadQuery.data?.titulo ?? "Administrar propiedad",
             href: "",
             disabled: true
         }
