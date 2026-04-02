@@ -37,6 +37,7 @@ interface TextProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   inpSize: size;
   onIconPress?: () => void;
   ErrorElement?: React.ReactNode;
+  resize: "vertical" | "none" | "horizontal" | "both";
 }
 
 type Option = {
@@ -641,6 +642,7 @@ export const CustomTextArea: React.FC<TextProps> = ({
   ErrorElement = undefined,
   errorMessage = undefined,
   onIconPress = () => {},
+  resize = "none",
   ...props
 }) => {
   const [currentLength, setCurrentLength] = React.useState(
@@ -676,6 +678,8 @@ export const CustomTextArea: React.FC<TextProps> = ({
     props.onChange?.(e);
   };
 
+  const getResize = resize === "vertical" ? "resize-vertical" : resize === "horizontal" ? "resize-horizontal" : resize === "both" ? "resize-both" : "resize-none"
+
   return (
     <AnimatePresence mode="wait">
       <div
@@ -691,7 +695,7 @@ export const CustomTextArea: React.FC<TextProps> = ({
           <textarea
             ref={textareaRef}
             {...props}
-            className={`scroll-mini is_y w-full resize-none box-border p-4 ${label !== "" && "pt-8"} ${isError ? "border-orange-500 bg-orange-50" : "border-border"} border-2 rounded-xl ${icon && "pr-8"} disabled:bg-gray-100 ${sizeClass} transition ease focus:outline-none focus:border-text-primary`}
+            className={`scroll-mini is_y w-full ${getResize} box-border p-4 ${label !== "" && "pt-8"} ${isError ? "border-orange-500 bg-orange-50" : "border-border"} border-2 rounded-xl ${icon && "pr-8"} disabled:bg-gray-100 ${sizeClass} transition ease focus:outline-none focus:border-text-primary`}
             disabled={props.disabled || isWaiting}
             onChange={handleChange}
           />

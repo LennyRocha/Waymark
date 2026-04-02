@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/set-state-in-effect */
-import React, { useState, useEffect, useRef } from 'react'
-import { href, useParams } from 'react-router-dom'
+import React, { useState, useEffect, useRef, useMemo } from 'react'
+import { useParams } from 'react-router-dom'
 // eslint-disable-next-line no-unused-vars
 import { AnimatePresence, motion } from "framer-motion"
 import usePropiedad from './hooks/useGetPropiedad'
@@ -11,8 +11,8 @@ import ErrorViewComponent from '../../layout/ErrorViewComponent';
 import CustomButton from '../../components/CustomButton'
 import { useWatch } from 'react-hook-form'
 import { CheckRow } from './NuevaPropiedad'
-import { SmallInput } from '../../components/CustomInputs'
-import { Plus, Minus } from 'lucide-react'
+import { FieldErrors, CustomTextArea, MediumInput, SmallInput } from '../../components/CustomInputs'
+import { Plus, Minus, MapPin } from 'lucide-react'
 import Chip from '../../components/Chip'
 import useAmenidades from './hooks/useAmenidades'
 import useTipos from './hooks/useTipos'
@@ -20,6 +20,10 @@ import useDivisas from '../divisas/hooks/useDivisas'
 import imagenSlots from './templates/ImagenSlots'
 import DropZoneItem from './components/DropZoneItem'
 import Breadcrumb from '../../components/Breadcrumb'
+import useSetPageTitle from '../../utils/setPageTitle'
+import Map, { Marker } from 'react-map-gl/mapbox'
+
+const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN
 
 /** 
 *  @typedef {import("./types/Imagen").default} Imagen
@@ -33,6 +37,8 @@ import Breadcrumb from '../../components/Breadcrumb'
 export default function AdministrarPropiedad() {
     const { id } = useParams();
     const propiedadQuery = usePropiedad(id);
+
+    useSetPageTitle("Administrar propiedad - Waymark")
 
     const form = usePropiedadForm();
 
@@ -82,11 +88,18 @@ export default function AdministrarPropiedad() {
 
     let smallScreen = globalThis.matchMedia("(max-width: 640px)").matches;
 
+    const oldTipo = useMemo(() => {
+        return propiedadQuery.data?.tipo.tipo ?? "casa";
+    }, [propiedadQuery.data]);
+
+    const backup = propiedadQuery.data?.imagenes;
+    console.log(oldTipo, backup)
+
     const components = [
         {
             label: 'general',
             Component: Tab1,
-            props: { ...generalProps, tiposList, divisasList }
+            props: { ...generalProps, tiposList, divisasList, tipo: oldTipo }
         },
         {
             label: 'fotos',
@@ -125,6 +138,13 @@ export default function AdministrarPropiedad() {
         }
     ]
 
+    console.log(form.formState) // <-- para debuggear el estado del formulario
+
+    async function onSubmit(data) {
+        console.log("Juas juas");
+        form.reset();
+    }
+
     if (propiedadQuery.isInitialLoading || propiedadQuery.isLoading) return <main className='w-[100dvw] h-[100dvh] flex items-center justify-center' >
         <CustomLoader />
     </main>
@@ -133,8 +153,9 @@ export default function AdministrarPropiedad() {
     </main>
 
     return (
-        <section className='content'>
+        <section className='content w-full'>
             <Breadcrumb items={links} />
+            <h5 className='md:text-left font-[montserrat] mt-4'>{propiedadQuery.data?.titulo}</h5>
             <nav className='mt-4 border-sm border-bl-0 border-br-0 border-t-0 h-[44px]' >
                 <ul style={tabsContainer}>
                     {componentes.map((item) => (
@@ -172,14 +193,14 @@ export default function AdministrarPropiedad() {
                         animate={{ y: 0, opacity: 1 }}
                         exit={{ y: -10, opacity: 0 }}
                         transition={{ duration: 0.2 }}
-                        className='min-h-[50dvh]'
+                        className='min-h-[50dvh] w-full'
                     >
                         <Tab Component={selectedTab.Component} props={selectedTab.props} />
                     </motion.div>
                 </AnimatePresence>
             </article>
             <div className='mt-2 flex items-center justify-center md:justify-end w-full' >
-                <CustomButton variant='secondary' disabled={!form.formState.isDirty || !form.formState.isValid}  >Guardar cambios</CustomButton>
+                <CustomButton variant='secondary' disabled={!form.formState.isDirty || !form.formState.isValid} onClick={() => form.handleSubmit(onSubmit)()} >Guardar cambios</CustomButton>
             </div>
         </section>
     )
@@ -245,21 +266,92 @@ const Tab = ({ Component = <></>, props = {} }) => {
  * watchKey: (key: string) => any
  * }} props
  */
-const Tab1 = ({ form, change, watchKey }) => {
-    //Tab 1: General (título, descripción, huespedes, baños, habitaciones, camas tipo de propiedad,  check-in, check-out, divisa, precio) Solo lectura: (ciudad, país, dirección,coordenadas en mapa)
+const Tab1 = ({ form, change, watchKey, tipo }) => {
+    //Tab 1: General (título, descripción, huespedes, baños, habitaciones, camas tipo de propiedad,  check-in, check-out, divisa, precio)
+    console.log(form.getValues())
     const titulo = watchKey("titulo");
     const descripcion = watchKey("descripcion");
     const huespedes = watchKey("huespedes");
     const banos = watchKey("banos");
     const habitaciones = watchKey("habitaciones");
     const camas = watchKey("camas");
-    const tipoPropiedad = watchKey("tipoPropiedad");
-    const checkIn = watchKey("checkIn");
-    const checkOut = watchKey("checkOut");
+    const tipoPropiedad = watchKey("tipo_id");
+    const checkIn = watchKey("check_in");
+    const checkOut = watchKey("check_out");
     const divisa = watchKey("divisa");
     const precio = watchKey("precio");
+    const direccion = watchKey("direccion");
+    const coordenadas = watchKey("coordenadas");
+    console.log(checkIn, checkOut)
     return <div>
-        <h2>{titulo}</h2>
+        <h3>Datos de tu {tipo}</h3>
+        <div className='flex max-md:flex-col gap-4'>
+            <div className="flex-1 flex flex-col items-center justify-start gap-4  w-full">
+                <MediumInput
+                    value={titulo}
+                    placeholder='Actualiza el título de tu propiedad'
+                    label='Título'
+                    fullWidth
+                    {...form.register("titulo")}
+                    isError={
+                        !!form.formState.errors.titulo &&
+                        form.formState.touchedFields.titulo
+                    }
+                    ErrorElement={<FieldErrors errors={form.formState.errors} name="titulo" />} maxLength={50}
+                />
+                <CustomTextArea
+                    value={descripcion}
+                    placeholder='Describe tu propiedad'
+                    label='Descripción'
+                    fullWidth
+                    {...form.register("descripcion")}
+                    resizeVertical
+                    cols={8}
+                    isError={
+                        !!form.formState.errors.descripcion &&
+                        form.formState.touchedFields.descripcion
+                    }
+                    ErrorElement={<FieldErrors errors={form.formState.errors} name="descripcion" />}
+                    maxLength={3000}
+                    resize='vertical'
+                />
+            </div>
+            <div className="flex-1 flex flex-col items-center justify-start gap-4 w-full">
+                <p>{tipoPropiedad}</p>
+                <div className="w-full mt-4">
+                    <MediumInput value={checkIn} placeholder='Actualiza la hora de entrada' label='Hora de entrada' type='time' fullWidth />
+                </div>
+                <div className="w-full mt-4">
+                    <MediumInput value={checkOut} placeholder='Actualiza la hora de salida' label='Hora de salida' type='time' fullWidth />
+                </div>
+            </div>
+            <div className="flex-1 flexflex-col items-center justify-start gap-4 w-full">
+                <p className='font-[montserrat]'>
+                    <b className='font-[cabin]'>Dirección:</b>
+                    {" "}
+                    {direccion}
+                </p>
+                <Map
+                    longitude={coordenadas.lng}
+                    latitude={coordenadas.lat}
+                    zoom={12}
+                    onMove={() => { }}
+                    style={{ width: "100%", maxWidth: 350, minHeight: 200, height: "auto", borderRadius: 12, marginRight: "auto", marginLeft: "auto" }}
+                    mapStyle='mapbox://styles/mapbox/streets-v12'
+                    mapboxAccessToken={MAPBOX_TOKEN}
+                    onClick={() => { }}
+                    cursor='crosshairs'
+                >
+                    <Marker
+                        longitude={coordenadas?.lng ?? 0}
+                        latitude={coordenadas?.lat ?? 0}
+                        anchor='bottom'
+                    >
+                        <MapPin color='#fff' fill='var(--color-secondary-500)' size={32} strokeWidth={1} />
+                    </Marker>
+                </Map>
+            </div>
+        </div>
     </div>
 }
 
@@ -445,8 +537,6 @@ const Tab4 = ({ change, watchKey }) => {
     const apagar = watchKey("regla_apagar");
     const autocheck = watchKey("regla_autochecar");
 
-
-
     const [extraReglas, setExtraReglas] = useState(
         reglasJson ?? { regla_1: "" }
     );
@@ -498,9 +588,9 @@ const Tab4 = ({ change, watchKey }) => {
     };
 
     return <div className='w-full md:min-w-[450px] flex flex-col gap-2'>
-        <h2>
-            Reglas de la casa
-        </h2>
+        <h3>
+            Define tus reglas
+        </h3>
         <CheckRow
             question="¿Permites mascotas?"
             checked={mascotas}

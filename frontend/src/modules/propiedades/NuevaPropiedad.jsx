@@ -38,7 +38,7 @@ const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN
  * @typedef {import("react-hook-form").FormState} FormState
 */
 export default function NuevaPropiedad() {
-    useSetPageTitle("Registrar nueva propiedad");
+    useSetPageTitle("Registrar nueva propiedad - Waymark");
     const navigate = useNavigate();
     const queryClient = useQueryClient();
 

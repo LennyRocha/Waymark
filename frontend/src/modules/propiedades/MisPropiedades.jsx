@@ -15,8 +15,10 @@ import Modal from '../../layout/Modal';
 import usePropiedadMutation from './hooks/usePropiedadMutation';
 import toast from 'react-hot-toast';
 import { getAxiosErrorMessage } from '../../utils/getAxiosErrorMessage';
+import useSetPageTitle from '../../utils/setPageTitle';
 
 export default function MisPropiedades() {
+    useSetPageTitle("Mis propiedades - Waymark");
     const propiedades = useHostPropiedades({});
     const listings = usePropiedades();
     const navigate = useNavigate()

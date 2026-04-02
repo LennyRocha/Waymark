@@ -18,7 +18,7 @@ export default function PropiedadPage() {
   console.log(id, " ", slug);
   const [show, setShow] = useState(false);
   const propiedad = usePropiedad(id);
-  useSetPageTitle(propiedad.data?.titulo ||  "Waymark - Encuentra el lugar perfecto para tu próxima aventura");
+  useSetPageTitle(propiedad.data ? `${propiedad.data?.titulo} - Waymark` : "Waymark - Encuentra el lugar perfecto para tu próxima aventura");
   if (propiedad.isInitialLoading || propiedad.isLoading) return <main className='w-[100dvw] h-[100dvh] flex items-center justify-center' >
     <CustomLoader />
   </main>
