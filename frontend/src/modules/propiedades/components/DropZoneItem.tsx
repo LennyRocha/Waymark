@@ -20,10 +20,15 @@ export default function DropZoneItem({
   onDrop,
   onDelete,
 }: Readonly<Props>) {
+  console.log(img.url, img)
   const { getRootProps, getInputProps, open } = useDropzone(
     {
       onDrop: (files) => onDrop(files, index),
-      accept: { "image/*": [] },
+      accept: {
+        "image/jpeg": [],
+        "image/png": [],
+        "image/webp": [],
+      },
       maxFiles: 1,
     },
   );

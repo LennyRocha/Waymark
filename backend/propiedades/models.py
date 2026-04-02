@@ -9,6 +9,7 @@ from django.core.validators import (
     FileExtensionValidator,
     BaseValidator,
 )
+from django.core.exceptions import ValidationError
 from django.utils import timezone
 from django_resized import ResizedImageField
 from django.utils.text import slugify
@@ -71,24 +72,24 @@ class TipoPropiedad(models.Model):
         managed = False
         db_table = "tipo_propiedad"
         ordering = ["tipo"]
-        
+
+
 def upload_propiedad_imagen(instance, filename):
-
     extension = filename.split(".")[-1]
-
     slug = instance.propiedad.slug
     orden = str(instance.orden).zfill(2)
-
     nuevo_nombre = f"{slug}-imagen-{orden}.{extension}"
-
     ruta = f"propiedades/{nuevo_nombre}"
-
     full_path = os.path.join(settings.MEDIA_ROOT, ruta)
-
     if os.path.exists(full_path):
         os.remove(full_path)
-
     return ruta
+
+
+def validate_image_size(image):
+    max_size = 10 * 1024 * 1024  # 10 MB en bytes
+    if image.size > max_size:
+        raise ValidationError("La imagen no debe superar los 10 MB.")
 
 
 class Propiedad(models.Model):
@@ -257,6 +258,7 @@ class PropiedadImagen(models.Model):
         size=[1200, 800],
         quality=85,
         upload_to=upload_propiedad_imagen,
+        validators=[validate_image_size],
     )
     orden = models.IntegerField(
         validators=[
@@ -277,6 +279,7 @@ class PropiedadImagen(models.Model):
     def save(self, *args, **kwargs):
         self.updated_at = timezone.now()
         super().save(*args, **kwargs)
+
 
 class Favorito(models.Model):
     favorito_id = models.AutoField(primary_key=True)

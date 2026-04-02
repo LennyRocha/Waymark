@@ -4,7 +4,11 @@ import {
   type IconName,
 } from "lucide-react/dynamic";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, ChevronDown } from "lucide-react";
+import {
+  AlertCircle,
+  Check,
+  ChevronDown,
+} from "lucide-react";
 
 type size = "small" | "medium" | "large";
 
@@ -729,5 +733,47 @@ export const CustomTextArea: React.FC<TextProps> = ({
         )}
       </div>
     </AnimatePresence>
+  );
+};
+
+type FieldErrorsProps = {
+  name: string;
+  errors: Record<string, any>;
+};
+
+export const FieldErrors = ({
+  errors = {},
+  name = "",
+}: Readonly<FieldErrorsProps>) => {
+  const fieldError = errors[name];
+
+  if (!fieldError) return null;
+
+  if (fieldError.types) {
+    return (
+      <ul className="text-orange-500 text-sm mt-1  text-left ">
+        {Object.values(fieldError.types).map(
+          (msg: any, i) => (
+            <li className="flex gap-1 items-center" key={i}>
+              <AlertCircle
+                fill="var(--color-orange-500)"
+                color="#fff"
+              />
+              {msg}
+            </li>
+          ),
+        )}
+      </ul>
+    );
+  }
+
+  return (
+    <p className="text-red-500 text-sm mt-1 text-left flex gap-1 items-center">
+      <AlertCircle
+        fill="var(--color-orange-500)"
+        color="#fff"
+      />
+      {fieldError.message}
+    </p>
   );
 };

@@ -2,6 +2,7 @@ from rest_framework import viewsets, status, mixins
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from urllib3 import request
+from django.db import transaction
 from .serializers import (
     PropiedadSerializer,
     DivisaSerializer,
@@ -220,22 +221,23 @@ class ImagenViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            try:
-                saved = PropiedadImagen.objects.create(
-                    propiedad=propiedad,
-                    url=imagen,
-                    orden=orden,
-                    updated_by=propiedad.anfitrion.pk,
-                )
-                lista.append(saved)
-                print(f"Imagen {saved.prop_ima_id} guardada con orden {saved.orden}")
+            with transaction.atomic():
+                try:
+                    saved = PropiedadImagen.objects.create(
+                        propiedad=propiedad,
+                        url=imagen,
+                        orden=orden,
+                        updated_by=propiedad.anfitrion.pk,
+                    )
+                    lista.append(saved)
+                    print(f"Imagen {saved.prop_ima_id} guardada con orden {saved.orden}")
 
-            except Exception as e:
-                print(traceback.format_exc())
-                return Response(
-                    {"error": f"No se pudo guardar la imagen: {str(e)}"},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
+                except Exception as e:
+                    print(traceback.format_exc())
+                    return Response(
+                        {"error": f"No se pudo guardar la imagen: {str(e)}"},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
 
         serializer = ImagenSerializer(lista, many=True)
 

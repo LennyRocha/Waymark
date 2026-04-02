@@ -23,7 +23,7 @@ export default function MisPropiedades() {
 
     const [filtro, setFiltro] = React.useState("");
 
-    const sortedListings = propiedades?.data ?? [].filter(
+    const sortedListings = (propiedades?.data ?? []).filter(
         (listing) => listing.titulo.toLowerCase().includes(filtro.toLowerCase())
     );
 

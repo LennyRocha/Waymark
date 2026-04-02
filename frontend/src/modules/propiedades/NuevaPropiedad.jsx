@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import React, { useEffect, useRef, useState, useMemo } from 'react'
 import { AnimatePresence, motion } from "framer-motion"
-import { AlertCircle, ImagePlus, MapPin, Minus, Plus, X } from 'lucide-react'
+import { MapPin, Minus, Plus, X } from 'lucide-react'
 import Map, { Marker } from 'react-map-gl/mapbox'
 import { SearchBox } from '@mapbox/search-js-react'
 import 'mapbox-gl/dist/mapbox-gl.css'
@@ -12,7 +12,7 @@ import toast from 'react-hot-toast'
 import CustomButton from '../../components/CustomButton'
 import { getUserLocation } from '../../utils/getUserLocation'
 import usePropiedadForm from './hooks/usePropiedadForm'
-import { CustomCheckBox, CustomInput, CustomSelect, CustomTextArea, SmallInput } from '../../components/CustomInputs'
+import { CustomCheckBox, CustomInput, CustomSelect, CustomTextArea, SmallInput, FieldErrors } from '../../components/CustomInputs'
 import CustomLoader from '../../layout/CustomLoader'
 import Chip from '../../components/Chip'
 import useAmenidades from './hooks/useAmenidades'
@@ -20,12 +20,13 @@ import { useWatch } from 'react-hook-form'
 import useDivisas from '../divisas/hooks/useDivisas'
 import useSetPageTitle from '../../utils/setPageTitle'
 import usePropiedadMutation from './hooks/usePropiedadMutation'
-import { useDropzone } from 'react-dropzone'
 import { useQueryClient } from '@tanstack/react-query'
 import { getAxiosErrorMessage } from '../../utils/getAxiosErrorMessage'
 import { useNavigate } from 'react-router-dom'
 import useImagenMutation from './hooks/useImagenMutation'
 import Breadcrumb from '../../components/Breadcrumb'
+import DropZoneItem from './components/DropZoneItem'
+import getPropiedadNameByField from './hooks/getPropiedadNameByField'
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN
 
@@ -65,8 +66,17 @@ export default function NuevaPropiedad() {
             const errorMessage = getAxiosErrorMessage(error);
             const backendErrors = error.response?.data;
             console.log("Errores backend:", backendErrors);
-            if (backendErrors.direccion) {
-                return toast.error(backendErrors.direccion[0], { id: toastRef.current, duration: 5000 });
+            if (backendErrors && typeof backendErrors === "object") {
+                const firstError = Object.entries(backendErrors)
+                    .map(([field, messages]) => {
+                        console.log({ field, messages })
+                        const msg = Array.isArray(messages) ? messages[0] : messages;
+                        return `${getPropiedadNameByField(field)}: ¡${msg}!`;
+                    })[0];
+
+                if (firstError) {
+                    return toast.error(firstError, { id: toastRef.current, duration: 5000 });
+                }
             }
             toast.error(errorMessage || "¡Error al guardar propiedad!", { id: toastRef.current, duration: 5000 });
         },
@@ -74,6 +84,7 @@ export default function NuevaPropiedad() {
             const payload = makeImgenPayload(data.propiedad_id, variables.imagenes);
             await imgMutation.mutateAsync(payload);
             toast.success("Propiedad guardada!", { id: toastRef.current, duration: 3000 });
+            queryClient.invalidateQueries(["propiedades_host"]);
             setTimeout(() => {
                 navigate("/host/listings");
             }, 3000);
@@ -667,13 +678,6 @@ const Step5 = ({ prev, next, validateStep, watchKey, setFotos }) => {
 
     const canContinue = validateStep(4);
 
-    const getImageSrc = (img) => {
-        if (!img?.url) return;
-        if (img.url instanceof File)
-            return img.preview;
-        return img.url;
-    };
-
     const removeImage = (index) => {
         const newList = [...list];
         newList[index] = {
@@ -696,6 +700,10 @@ const Step5 = ({ prev, next, validateStep, watchKey, setFotos }) => {
     const onDropToIndex = (acceptedFiles, index) => {
         if (!acceptedFiles.length) return;
         const file = acceptedFiles[0];
+        if (file.size > 10 * 1024 * 1024) {
+            toast.error("La imagen no debe superar los 10 MB");
+            return;
+        }
         const newList = [...list];
         newList[index] = {
             ...newList[index],
@@ -705,24 +713,6 @@ const Step5 = ({ prev, next, validateStep, watchKey, setFotos }) => {
         setFotos(newList);
     };
 
-    function MakeDropZone(index = 0) {
-        const {
-            getRootProps,
-            getInputProps,
-            isDragActive
-        } = useDropzone({
-            onDrop: (files) =>
-                onDropToIndex(files, index),
-            accept: { "image/*": [] },
-            maxFiles: 1,
-        });
-
-        return {
-            getRootProps,
-            getInputProps,
-            isDragActive
-        }
-    }
     return <section className='w-full flex gap-2 flex-col'>
         <h3>Compartenos unas imágenes de tu propiedad</h3>
 
@@ -730,45 +720,13 @@ const Step5 = ({ prev, next, validateStep, watchKey, setFotos }) => {
             className={`grid grid-cols-2 max-sm:grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-2 place-items-center p-2 transition`}
         >
             {list.map((img, index) => {
-                const src = getImageSrc(img);
-                const {
-                    getRootProps,
-                    getInputProps,
-                } = MakeDropZone(index);
-                return (
-                    <div
-                        {...getRootProps()}
-                        key={img.orden}
-                        className="w-full aspect-video min-h-[150px] rounded-xl overflow-hidden relative bg-transparent md:min-w-[120px] lg:min-w-[175px] cursor-pointer border-2 border-dashed border-border flex items-center justify-center"
-                    >
-                        <input {...getInputProps()} />
-                        {src ? (
-                            <>
-                                <img
-                                    src={src}
-                                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                                    alt={`Imagen #${img.orden} de la propiedad`}
-                                />
-
-                                <button
-                                    type="button"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        removeImage(index);
-                                    }}
-                                    className="absolute top-1 right-1 bg-white rounded-full p-2 "
-                                >
-                                    <X size={18} />
-                                </button>
-                            </>
-                        ) : (
-                            <div className="w-full h-full flex  flex-col items-center justify-center text-text-secondary text-xl">
-                                <ImagePlus size={32} />
-                                <span className='text-sm'>{index === 0 ? "Agregar o arrastrar portada" : "Agregar o arrastrar imagen"}</span>
-                            </div>
-                        )}
-                    </div>
-                );
+                return <DropZoneItem
+                    key={img.orden}
+                    index={index}
+                    img={img}
+                    onDelete={(index) => removeImage(index)}
+                    onDrop={(files) => onDropToIndex(files, index)}
+                />
             })}
         </div>
         <small className='font-[montserrat] text-sm text-text-secondary block'>
@@ -821,7 +779,7 @@ const Step6 = ({ prev, next, validateStep, register, formState }) => {
             <CustomButton variant='tertiary' onClick={prev} >
                 Anterior
             </CustomButton>
-            <CustomButton variant='secondary' onClick={next} disabled={!canContinue}>
+            <CustomButton variant='secondary' onClick={next} disabled={!canContinue || !formState.dirtyFields.titulo || !formState.dirtyFields.descripcion} >
                 Siguiente
             </CustomButton>
         </div>
@@ -1095,36 +1053,6 @@ const fieldsByStep = {
     6: ["precio_noche"],
     7: ["check_in", "check_out"],
     8: ["reglas_extra", "regla_mascotas", "regla_ninos", "regla_fumar", "regla_fiestas", "regla_autochecar", "regla_apagar"],
-};
-
-/**
- * @param {{
- * name: string,
- * errors: Record<string, any>
- * }} props
- */
-const FieldErrors = ({ errors = {}, name = "" }) => {
-
-    const fieldError = errors[name];
-
-    if (!fieldError) return null;
-
-    if (fieldError.types) {
-        return (
-            <ul className="text-orange-500 text-sm mt-1  text-left ">
-                {Object.values(fieldError.types).map((msg, i) => (
-                    <li className='flex gap-1 items-center' key={i}><AlertCircle fill='var(--color-orange-500)' color='#fff' />{msg}</li>
-                ))}
-            </ul>
-        );
-    }
-
-    return (
-        <p className="text-red-500 text-sm mt-1 text-left flex gap-1 items-center">
-            <AlertCircle fill='var(--color-orange-500)' color='#fff' />
-            {fieldError.message}
-        </p>
-    );
 };
 
 /**
