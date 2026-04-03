@@ -1,7 +1,6 @@
 from rest_framework import viewsets, status, mixins
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from urllib3 import request
 from django.db import transaction
 from .serializers import (
     PropiedadSerializer,
@@ -37,16 +36,21 @@ method_not_allowed_response = Response(
     {"error": "Method not allowed"}, status=status.HTTP_405_METHOD_NOT_ALLOWED
 )
 
+not_authenticated_response = Response(
+    {"error": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED
+)
 
-class PropiedadViewSet(viewsets.ModelViewSet):    
+not_host_response = Response(
+    {"error": "User is not a host"}, status=status.HTTP_403_FORBIDDEN
+)
+
+
+class PropiedadViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
-        queryset = (
-            Propiedad.objects
-            .select_related("divisa", "tipo_propiedad")
-            .prefetch_related("amenidades", "imagenes")
-        )
+        queryset = Propiedad.objects.select_related(
+            "divisa", "tipo_propiedad"
+        ).prefetch_related("amenidades", "imagenes")
 
-        # Solo ocultar inactivas en list
         if self.action == "list":
             queryset = queryset.filter(activa=True)
 
@@ -71,6 +75,15 @@ class PropiedadViewSet(viewsets.ModelViewSet):
     def by_host(self, request):
         # TODO: Cuando ya esté el token usar esto
         host_id = request.user.id
+
+        # TODO: Descomentar esto cuando ya esté el token
+        # if not request.user.is_authenticated:
+        # return not_authenticated_response
+
+        # TODO: Descomentar esto cuando ya esté el token
+        # if not request.user.is_host:
+        # return not_host_response
+
         queryset = (
             Propiedad.objects.select_related("divisa", "tipo_propiedad")
             .prefetch_related("amenidades", "imagenes")
@@ -82,6 +95,15 @@ class PropiedadViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         anfitrion = request.user
+
+        # TODO: Descomentar esto cuando ya esté el token
+        # if not anfitrion.is_authenticated:
+        # return not_authenticated_response
+
+        # TODO: Descomentar esto cuando ya esté el token
+        # if not anfitrion.is_host:
+        # return not_host_response
+
         # TODO: Cuando ya esté el token quitar esto
         debug_anfitrion = Usuario.objects.get(pk=1)
 
@@ -98,7 +120,6 @@ class PropiedadViewSet(viewsets.ModelViewSet):
             propiedad = serializer.save()
 
         except ValidationError as ve:
-            # Devuelve los errores de validación como JSON
             return Response({"errores": ve.detail}, status=status.HTTP_400_BAD_REQUEST)
 
         except IntegrityError as ie:
@@ -119,15 +140,37 @@ class PropiedadViewSet(viewsets.ModelViewSet):
             self.get_serializer(propiedad).data, status=status.HTTP_201_CREATED
         )
 
+    def partial_update(self, request, *args, **kwargs):
+        # TODO: Descomentar esto cuando ya esté el token
+        # if not request.user.is_authenticated:
+        # return not_authenticated_response
+
+        # TODO: Descomentar esto cuando ya esté el token
+        # if not request.user.is_host:
+        # return not_host_response
+        return super().partial_update(request, *args, **kwargs)
+
     def destroy(self, request, *args, **kwargs):
-        print(self.get_object())
+        # TODO: Descomentar esto cuando ya esté el token
+        # if not request.user.is_authenticated:
+        # return not_authenticated_response
+
+        # TODO: Descomentar esto cuando ya esté el token
+        # if not request.user.is_host:
+        # return not_host_response
         instance = self.get_object()
         instance.activa = not instance.activa
         instance.save(update_fields=["activa"])
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class DivisaViewSet(viewsets.ModelViewSet):
+class DivisaViewSet(
+    viewsets.GenericViewSet,
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.CreateModelMixin,
+    mixins.UpdateModelMixin,
+):
     queryset = Divisa.objects.all().order_by("nombre")
     serializer_class = DivisaSerializer
 
@@ -148,7 +191,11 @@ class FavoritoViewSet(
         return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
-        usuario_ = request.user
+        usuario = request.user
+        # TODO: Descomentar esto cuando ya esté el token
+        # if not usuario.is_authenticated:
+        # return not_authenticated_response
+
         propiedad_ = request.data.get("propiedad")
 
         favorito, created = Favorito.objects.get_or_create(
@@ -182,7 +229,9 @@ class TipoPropiedadViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = TipoPropSerializer
 
 
-class ImagenViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, viewsets.GenericViewSet):
+class ImagenViewSet(
+    mixins.CreateModelMixin, mixins.UpdateModelMixin, viewsets.GenericViewSet
+):
     queryset = PropiedadImagen.objects.all()
     serializer_class = ImagenSerializer
 
@@ -230,7 +279,9 @@ class ImagenViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, viewsets.G
                         updated_by=propiedad.anfitrion.pk,
                     )
                     lista.append(saved)
-                    print(f"Imagen {saved.prop_ima_id} guardada con orden {saved.orden}")
+                    print(
+                        f"Imagen {saved.prop_ima_id} guardada con orden {saved.orden}"
+                    )
 
                 except Exception as e:
                     print(traceback.format_exc())
@@ -262,10 +313,8 @@ class ImagenViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, viewsets.G
 
         try:
             propiedad = Propiedad.objects.get(pk=propiedad_id)
-            
-            total = PropiedadImagen.objects.filter(
-                propiedad=propiedad
-            ).count()
+
+            total = PropiedadImagen.objects.filter(propiedad=propiedad).count()
 
             if PropiedadImagen.objects.filter(
                 propiedad=propiedad, orden=orden
