@@ -84,7 +84,6 @@ const MenuFechas = ({
 }: Readonly<DropdownMenuProps>) => {
   type ValuePiece = Date | null;
   type Value = ValuePiece | [ValuePiece, ValuePiece];
-  const nextMonth = new Date().getMonth() + 1;
   const [fecha1, setFecha1] = useState<Value>(new Date());
   const [fecha2, setFecha2] = useState<Value>(new Date());
   return (
@@ -419,6 +418,20 @@ type SectionProps = {
   cleanInput: () => void;
 };
 
+const fuckOrClick = (
+  scrolled: boolean,
+  open: (idx: number) => void,
+  idx: number,
+) => {
+  const handle = (e: React.FocusEvent | React.MouseEvent) => {
+    if (!scrolled) {
+      e.stopPropagation();
+      open(idx);
+    }
+  };
+  return handle;
+};
+
 const SearchSection = ({
   idx,
   label,
@@ -436,19 +449,9 @@ const SearchSection = ({
   readonly = false,
   cleanInput = () => {},
 }: SectionProps) => {
-  const handleClick = (e: React.MouseEvent) => {
-    if (!scrolled) {
-      e.stopPropagation();
-      open(idx);
-    }
-  };
+  const handleClick = fuckOrClick(scrolled, open, idx);
 
-  const handleFocus = (e: React.FocusEvent) => {
-    if (!scrolled) {
-      e.stopPropagation();
-      open(idx);
-    }
-  };
+  const handleFocus = fuckOrClick(scrolled, open, idx);
 
   return (
     <motion.div

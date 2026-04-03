@@ -80,7 +80,7 @@ export const PropiedadSchema = z
         "El precio asignado no debe ser menor o igual a 0",
       )
       .max(9999999.99, "El precio dado es demasiado grande")
-      .default(1),
+      .default(100),
 
     divisa_id: z.coerce
       .number()

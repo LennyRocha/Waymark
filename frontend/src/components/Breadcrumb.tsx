@@ -5,7 +5,7 @@ import { ChevronRight } from "lucide-react";
 type Bread = {
   label: string;
   href: string;
-  disabled: boolean;
+  disabled?: boolean;
 };
 
 type Props = {
@@ -19,10 +19,10 @@ export default function Breadcrumb({
   return (
     <div className="flex  items-center justify-start gap-2">
       {items.map((item, index) => (
-        <div key={index} className="flex items-center gap-2">
+        <div key={item.label} className="flex items-center gap-2">
           <CustomLink
             to={item.href}
-            disabled={item.disabled}
+            disabled={item.disabled ?? false}
           >
             {item.label}
           </CustomLink>

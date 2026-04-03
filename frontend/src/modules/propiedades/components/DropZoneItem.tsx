@@ -1,16 +1,16 @@
 import React from "react";
-import { Imagen } from "../NuevaPropiedad";
+import type Imagen from "../types/Imagen";
 import { useDropzone } from "react-dropzone";
 import { Pencil, X, ImagePlus } from "lucide-react";
 
 type Props = {
   img: Imagen;
-  action: "add" | "replace";
+  action?: "add" | "replace";
   index: number;
   onDrop: (file: File[], index: number) => void;
   onDelete: (index: number) => void;
-  onUpdate: (file: File, index: number) => void;
-  change: (key: string, value: any) => void;
+  onUpdate?: (file: File, index: number) => void;
+  change?: (key: string, value: any) => void;
 };
 
 export default function DropZoneItem({

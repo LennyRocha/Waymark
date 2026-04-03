@@ -6,11 +6,11 @@ import React from "react";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "secondary" | "tertiary";
-  isWaiting: boolean;
-  fullWidth: boolean;
-  customWidth: string;
-  iconName: IconName | undefined;
-  size: "small" | "medium" | "large";
+  isWaiting?: boolean;
+  fullWidth?: boolean;
+  customWidth?: string;
+  iconName?: IconName | undefined;
+  size?: "small" | "medium" | "large";
 }
 const CustomButton: React.FC<ButtonProps> = ({
   children,

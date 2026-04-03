@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import React, { useState, useRef, useEffect, useMemo } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import PropiedadCard from './components/PropiedadCard';
 import { GalleryHorizontal, Menu } from 'lucide-react';
 import { useScroll, useMotionValueEvent, motion } from "framer-motion"
@@ -9,7 +9,6 @@ import CustomDropdown from '../../components/CustomDropdown';
 import DropdownParent from '../../components/DropdownParent';
 import BuscadorBoton from './components/BuscadorBoton'
 import Footer from '../../layout/Footer';
-import Skeleton from 'react-loading-skeleton';
 import useSetPageTitle from '../../utils/setPageTitle';
 import useUbicaciones from './hooks/useUbicaciones';
 import usePropiedades from './hooks/usePropiedades';

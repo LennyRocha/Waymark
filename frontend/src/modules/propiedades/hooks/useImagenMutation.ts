@@ -1,38 +1,36 @@
-import { useMutation } from "@tanstack/react-query";
-import Imagen, { Payload } from "../types/Imagen";
+import { useMutation, type UseMutationOptions } from "@tanstack/react-query";
+import Imagen from "../types/Imagen";
 import ImagenRepository from "../repositories/ImagenRepository";
 
 type accion = "post_all" | "post" | "put";
+type MutationProps = UseMutationOptions<any, any, any, any>;
+
 export default function useImagenMutation(
-  props = {},
+  props: MutationProps = {},
   accion: accion = "post_all",
 ) {
-  if (accion === "post_all") {
-    return useMutation({
-      mutationFn: (data: Payload) =>
-        ImagenRepository.saveAll(data),
-      ...props,
-    });
-  }
-
-  if (accion === "post") {
-    return useMutation({
-      mutationFn: (data: Imagen) =>
-        ImagenRepository.save(data),
-      ...props,
-    });
-  }
-
-  if (accion === "put") {
-    return useMutation({
-      mutationFn: ({
+  let mutationFn:
+    | ((data: FormData) => Promise<Imagen[]>)
+    | ((data: Imagen) => Promise<Imagen>)
+    | (({
         id,
         data,
       }: {
         id: number;
         data: Imagen;
-      }) => ImagenRepository.update(data, id),
-      ...props,
-    });
+      }) => Promise<Imagen>);
+
+  if (accion === "post") {
+    mutationFn = (data: Imagen) => ImagenRepository.save(data);
+  } else if (accion === "put") {
+    mutationFn = ({ id, data }: { id: number; data: Imagen }) =>
+      ImagenRepository.update(data, id);
+  } else {
+    mutationFn = (data: FormData) => ImagenRepository.saveAll(data as any);
   }
+
+  return useMutation({
+    mutationFn: mutationFn as any,
+    ...props,
+  } as any);
 }

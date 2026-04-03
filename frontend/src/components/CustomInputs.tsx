@@ -13,28 +13,28 @@ import {
 type size = "small" | "medium" | "large";
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  label: string;
-  icon: IconName | undefined;
-  helperText: string | undefined;
-  errorMessage: string | undefined;
-  isWaiting: boolean;
-  fullWidth: boolean;
-  isError: boolean;
-  inpSize: size;
+  label?: string;
+  icon?: IconName | undefined;
+  helperText?: string | undefined;
+  errorMessage?: string | undefined;
+  isWaiting?: boolean;
+  fullWidth?: boolean;
+  isError?: boolean;
+  inpSize?: size;
   onIconPress?: () => void;
   ErrorElement?: React.ReactNode;
   useMinWidth?: boolean;
 }
 
 interface TextProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
-  label: string;
-  icon: IconName | undefined;
-  helperText: string | undefined;
-  errorMessage: string | undefined;
-  isWaiting: boolean;
-  fullWidth: boolean;
-  isError: boolean;
-  inpSize: size;
+  label?: string;
+  icon?: IconName | undefined;
+  helperText?: string | undefined;
+  errorMessage?: string | undefined;
+  isWaiting?: boolean;
+  fullWidth?: boolean;
+  isError?: boolean;
+  inpSize?: size;
   onIconPress?: () => void;
   ErrorElement?: React.ReactNode;
   resize: "vertical" | "none" | "horizontal" | "both";
@@ -47,27 +47,28 @@ type Option = {
 
 type SelectProps = {
   options: Option[];
-
   value?: string | number | null;
-
   onChange?: (value: string | number) => void;
-
   placeholder?: string;
-
   label?: string;
-
   isError?: boolean;
-
   helperText?: string;
-
   errorMessage?: string;
-
   ErrorElement?: React.ReactNode;
-
   inpSize?: "small" | "medium" | "large";
 };
 
 interface OtherInputProps extends React.InputHTMLAttributes<HTMLInputElement> {}
+
+const changeFuncion =
+  (
+    onChange: InputProps["onChange"],
+    setCurrentLength: (value: number) => void,
+  ) =>
+  (e: React.ChangeEvent<HTMLInputElement>) => {
+    setCurrentLength(e.target.value.length);
+    onChange?.(e);
+  };
 
 export const CustomInput: React.FC<InputProps> = ({
   children,
@@ -87,13 +88,10 @@ export const CustomInput: React.FC<InputProps> = ({
   const [currentLength, setCurrentLength] = React.useState(
     props.value?.toString().length || 0,
   );
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    setCurrentLength(e.target.value.length);
-
-    props.onChange?.(e);
-  };
+  const handleChange = changeFuncion(
+    props.onChange,
+    setCurrentLength,
+  );
   React.useEffect(() => {
     const valueLength = props.value?.toString().length || 0;
 
@@ -185,13 +183,10 @@ export const MediumInput: React.FC<InputProps> = ({
   const [currentLength, setCurrentLength] = React.useState(
     props.value?.toString().length || 0,
   );
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    setCurrentLength(e.target.value.length);
-
-    props.onChange?.(e);
-  };
+  const handleChange = changeFuncion(
+    props.onChange,
+    setCurrentLength,
+  );
   React.useEffect(() => {
     const valueLength = props.value?.toString().length || 0;
 
@@ -199,8 +194,7 @@ export const MediumInput: React.FC<InputProps> = ({
   }, [props.value]);
   return (
     <AnimatePresence mode="wait">
-      <div
-        className={`z-10 ${useMinWidth ? "min-w-[250px]" : "w-auto"} ${fullWidth ? "w-full" : "w-auto"} ${label && "mt-4"}`}
+      <div className={`z-10 ${useMinWidth ? "min-w-[250px]" : "w-auto"} ${fullWidth ? "w-full" : "w-auto"} ${label && "mt-4"}`}
       >
         <div className="relative w-full">
           <label
@@ -273,13 +267,10 @@ export const SmallInput: React.FC<InputProps> = ({
   const [currentLength, setCurrentLength] = React.useState(
     props.value?.toString().length || 0,
   );
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    setCurrentLength(e.target.value.length);
-
-    props.onChange?.(e);
-  };
+  const handleChange = changeFuncion(
+    props.onChange,
+    setCurrentLength,
+  );
   React.useEffect(() => {
     const valueLength = props.value?.toString().length || 0;
 
@@ -730,14 +721,20 @@ export const CustomTextArea: React.FC<TextProps> = ({
     props.onChange?.(e);
   };
 
-  const getResize =
-    resize === "vertical"
-      ? "resize-vertical"
-      : resize === "horizontal"
-        ? "resize-horizontal"
-        : resize === "both"
-          ? "resize-both"
-          : "resize-none";
+  const getResized = () => {
+    switch (resize) {
+      case "vertical":
+        return "resize-vertical";
+      case "horizontal":
+        return "resize-horizontal";
+      case "both":
+        return "resize-both";
+      default:
+        return "resize-none";
+    }
+  };
+
+  const getResize = getResized();
 
   return (
     <AnimatePresence mode="wait">
@@ -817,7 +814,10 @@ export const FieldErrors = ({
       <ul className="text-orange-500 text-sm mt-1  text-left ">
         {Object.values(fieldError.types).map(
           (msg: any, i) => (
-            <li className="flex gap-1 items-center" key={i}>
+            <li
+              className="flex gap-1 items-center"
+              key={msg}
+            >
               <AlertCircle
                 fill="var(--color-orange-500)"
                 color="#fff"

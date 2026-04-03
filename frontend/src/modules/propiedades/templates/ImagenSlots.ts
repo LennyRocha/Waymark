@@ -1,4 +1,4 @@
-import { Imagen } from "../NuevaPropiedad";
+import type Imagen from "../types/Imagen";
 
 const imagenSlots: Imagen[] = Array.from(
   { length: 10 },
