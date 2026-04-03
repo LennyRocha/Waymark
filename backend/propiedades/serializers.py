@@ -79,6 +79,7 @@ class PropiedadSerializer(serializers.ModelSerializer):
             "descripcion",
             "pais",
             "ciudad",
+            "region",
             "direccion",
             "activa",
             "coordenadas",

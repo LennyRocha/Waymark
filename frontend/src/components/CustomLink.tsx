@@ -16,7 +16,7 @@ export default function CustomLink({
   return (
     <Link
       {...props}
-      className={`${classN} transition duration-300 ease-in-out ${disabled ? "text-primary-800 pointer-events-none" : "text-text-secondary"} hover:underline hover:text-secondary-500`}
+      className={`${classN} flex gap-2 transition duration-300 ease-in-out ${disabled ? "text-primary-800 pointer-events-none" : "text-text-secondary"} hover:underline hover:text-secondary-500`}
       aria-disabled={disabled}
       onClick={(e) => {
         if (disabled) {

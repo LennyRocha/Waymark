@@ -94,6 +94,11 @@ export const CustomInput: React.FC<InputProps> = ({
 
     props.onChange?.(e);
   };
+  React.useEffect(() => {
+    const valueLength = props.value?.toString().length || 0;
+
+    setCurrentLength(valueLength);
+  }, [props.value]);
   const sizeClass = React.useMemo(() => {
     switch (inpSize) {
       case "small":
@@ -187,10 +192,15 @@ export const MediumInput: React.FC<InputProps> = ({
 
     props.onChange?.(e);
   };
+  React.useEffect(() => {
+    const valueLength = props.value?.toString().length || 0;
+
+    setCurrentLength(valueLength);
+  }, [props.value]);
   return (
     <AnimatePresence mode="wait">
       <div
-        className={`z-10 ${useMinWidth ? "min-w-[250px]" : "w-auto"} ${fullWidth ? "w-full" : "w-auto"}`}
+        className={`z-10 ${useMinWidth ? "min-w-[250px]" : "w-auto"} ${fullWidth ? "w-full" : "w-auto"} ${label && "mt-4"}`}
       >
         <div className="relative w-full">
           <label
@@ -270,6 +280,11 @@ export const SmallInput: React.FC<InputProps> = ({
 
     props.onChange?.(e);
   };
+  React.useEffect(() => {
+    const valueLength = props.value?.toString().length || 0;
+
+    setCurrentLength(valueLength);
+  }, [props.value]);
   return (
     <AnimatePresence mode="wait">
       <div
@@ -536,6 +551,7 @@ export const CustomSelect: React.FC<SelectProps> = ({
               z-50
               max-h-60
               overflow-y-auto
+              scroll-mini is_y
             "
           >
             {options.map((option) => (
@@ -551,6 +567,7 @@ export const CustomSelect: React.FC<SelectProps> = ({
                   hover:bg-gray-100
                   cursor-pointer
                   transition
+                  text-left
                 "
               >
                 {option.label}
@@ -652,16 +669,51 @@ export const CustomTextArea: React.FC<TextProps> = ({
   const sizeClass = React.useMemo(() => {
     switch (inpSize) {
       case "small":
-        return "min-h-[40px]";
+        return "min-h-[150px]";
       case "medium":
-        return "min-h-[44px]";
+        return "min-h-[200px]";
       case "large":
-        return "min-h-[50px]";
+        return "min-h-[250px]";
     }
   }, [inpSize]);
 
   const textareaRef =
     React.useRef<HTMLTextAreaElement>(null);
+
+  React.useEffect(() => {
+    const el = textareaRef.current;
+
+    if (el) {
+      el.style.height = "auto";
+      el.style.height = el.scrollHeight + "px";
+    }
+  }, [props.value]);
+
+  React.useEffect(() => {
+    const el = textareaRef.current;
+
+    if (!el) return;
+
+    const resize = () => {
+      el.style.height = "auto";
+      el.style.height = el.scrollHeight + "px";
+    };
+
+    resize();
+  }, []);
+
+  React.useEffect(() => {
+    const el = textareaRef.current;
+
+    const valueLength = props.value?.toString().length || 0;
+
+    setCurrentLength(valueLength);
+
+    if (el) {
+      el.style.height = "auto";
+      el.style.height = el.scrollHeight + "px";
+    }
+  }, [props.value]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLTextAreaElement>,
@@ -678,7 +730,14 @@ export const CustomTextArea: React.FC<TextProps> = ({
     props.onChange?.(e);
   };
 
-  const getResize = resize === "vertical" ? "resize-vertical" : resize === "horizontal" ? "resize-horizontal" : resize === "both" ? "resize-both" : "resize-none"
+  const getResize =
+    resize === "vertical"
+      ? "resize-vertical"
+      : resize === "horizontal"
+        ? "resize-horizontal"
+        : resize === "both"
+          ? "resize-both"
+          : "resize-none";
 
   return (
     <AnimatePresence mode="wait">

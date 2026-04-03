@@ -150,7 +150,7 @@ slug: `propiedad-demo-${i + 4}`,
 imagenes: [
 {
 prop_ima_id: i + 10,
-url: `https://images.unsplash.com/photo-15${60000000 + i}`,
+url: `https://a0.muscache.com/im/pictures/225729b8-a72d-4048-89a3-92000e80086a.jpg?im_w=960`,
 orden: 1
 }
 ]

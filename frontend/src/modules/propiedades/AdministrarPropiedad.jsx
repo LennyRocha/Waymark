@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import React, { useState, useEffect, useRef, useMemo } from 'react'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 // eslint-disable-next-line no-unused-vars
 import { AnimatePresence, motion } from "framer-motion"
 import usePropiedad from './hooks/useGetPropiedad'
@@ -10,8 +10,8 @@ import CustomLoader from '../../layout/CustomLoader';
 import ErrorViewComponent from '../../layout/ErrorViewComponent';
 import CustomButton from '../../components/CustomButton'
 import { useWatch } from 'react-hook-form'
-import { CheckRow } from './NuevaPropiedad'
-import { FieldErrors, CustomTextArea, MediumInput, SmallInput } from '../../components/CustomInputs'
+import { CheckRow, SelectNav } from './NuevaPropiedad'
+import { FieldErrors, CustomTextArea, MediumInput, SmallInput, CustomSelect, CustomInput } from '../../components/CustomInputs'
 import { Plus, Minus, MapPin } from 'lucide-react'
 import Chip from '../../components/Chip'
 import useAmenidades from './hooks/useAmenidades'
@@ -22,25 +22,143 @@ import DropZoneItem from './components/DropZoneItem'
 import Breadcrumb from '../../components/Breadcrumb'
 import useSetPageTitle from '../../utils/setPageTitle'
 import Map, { Marker } from 'react-map-gl/mapbox'
+import usePropiedadMutation from './hooks/usePropiedadMutation'
+import useImagenMutation from './hooks/useImagenMutation'
+import toast from 'react-hot-toast'
+import { useQueryClient } from '@tanstack/react-query'
+import { getAxiosErrorMessage } from '../../utils/getAxiosErrorMessage'
+import getPropiedadNameByField from './hooks/getPropiedadNameByField'
+import { id } from 'zod/v4/locales'
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN
 
 /** 
 *  @typedef {import("./types/Imagen").default} Imagen
-* @typedef {import("./types/Propiedad").default} Propiedad
-* @typedef {import("./types/Amenidad").default} Amenidad
+*  @typedef {import("./types/Propiedad").default} Propiedad
+*  @typedef {import("../divisas/types/Divisa").default} Divisa
+*  @typedef {import("./types/TipoPropiedad").default} TipoPropiedad
+*  @typedef {import("./types/Amenidad").default} Amenidad
 *  @typedef {import("./schemas/PropiedadZod").PropiedadForm} PropiedadForm 
 *  @typedef {import("react-hook-form").UseFormReturn<PropiedadForm>} Form 
 *  @typedef {import("@tanstack/react-query").UseQueryResult<any>} Query 
 */
 
 export default function AdministrarPropiedad() {
-    const { id } = useParams();
+    const { idSlug } = useParams();
+    const  id = idSlug.split("-")[0];
+    const navigate = useNavigate();
     const propiedadQuery = usePropiedad(id);
+
+    const [success, setSuccess] = useState(false);
+
+    const [savedData, setSavedData] = useState(false);
+    const [updatedImages, setUpdatedImages] = useState(false);
 
     useSetPageTitle("Administrar propiedad - Waymark")
 
     const form = usePropiedadForm();
+
+    const queryClient = useQueryClient();
+
+    const toastRef = useRef(null);
+
+    const mutation = usePropiedadMutation({
+        onMutate: () => {
+            if (toastRef.current) {
+                toast.loading("Guardando...", { id: toastRef.current });
+            } else {
+                toastRef.current = toast.loading("Guardando...");
+            }
+            const previousData = queryClient.getQueryData(["propiedades"]);
+            return { previousData };
+        },
+        onError: (error, variables, context) => {
+            console.warn(variables, context)
+            const errorMessage = getAxiosErrorMessage(error);
+            const backendErrors = error.response?.data;
+            console.log("Errores backend:", backendErrors);
+            if (backendErrors && typeof backendErrors === "object") {
+                const firstError = Object.entries(backendErrors)
+                    .map(([field, messages]) => {
+                        console.log({ field, messages })
+                        const msg = Array.isArray(messages) ? messages[0] : messages;
+                        return `${getPropiedadNameByField(field)}: ¡${msg}!`;
+                    })[0];
+
+                if (firstError) {
+                    return toast.error(firstError, { id: toastRef.current, duration: 5000 });
+                }
+            }
+            toast.error(errorMessage || "¡Error al modificar  propiedad!", { id: toastRef.current, duration: 5000 });
+        },
+        onSuccess: () => {
+            setSuccess(true);
+            toast.success("!Propiedad modificada correctamente!", { id: toastRef.current, duration: 3000 });
+            queryClient.invalidateQueries(["propiedades_host"]);
+            queryClient.invalidateQueries(["propiedad", id]);
+            setSavedData(false);
+            setUpdatedImages(false);
+            setTimeout(() => {
+                form.reset();
+                navigate("/host/listings");
+            }, 3000);
+        }
+    }, "put")
+
+    const imgPostMutation = useImagenMutation({
+        onMutate: () => {
+            if (toastRef.current) {
+                toast.loading("Guardando imagenes nuevas...", { id: toastRef.current });
+            } else {
+                toastRef.current = toast.loading("Guardando imagenes nuevas...", { id: toastRef.current });
+            }
+        },
+        onError: (error) => {
+            const errorMessage = getAxiosErrorMessage(error);
+            toast.error(errorMessage || "¡Error al subir imagen!", { id: toastRef.current, duration: 5000 });
+        },
+        onSuccess: () => {
+            if (savedData) return;
+            setSuccess(true);
+            toast.success("!Imagenes guardadas correctamente!", { id: toastRef.current, duration: 3000 });
+            if (!updatedImages) {
+                queryClient.invalidateQueries(["propiedades_host"]);
+                queryClient.invalidateQueries(["propiedad", id]);
+                setTimeout(() => {
+                    form.reset();
+                    navigate("/host/listings");
+                }, 3000);
+            }
+        }
+    }, "post");
+
+    const imgPutMutation = useImagenMutation({
+        onMutate: () => {
+            if (toastRef.current) {
+                toast.loading("Actualizando imagenes...", { id: toastRef.current });
+            } else {
+                toastRef.current = toast.loading("Actualizando imagenes...", { id: toastRef.current });
+            }
+        },
+        onError: (error) => {
+            const errorMessage = getAxiosErrorMessage(error);
+            toast.error(errorMessage || "¡Error al actualizar imagen!", { id: toastRef.current, duration: 5000 });
+        },
+        onSuccess: () => {
+            if (savedData) return;
+            setSuccess(true);
+            toast.success("!Imagenes actualizadas correctamente!", { id: toastRef.current, duration: 3000 });
+            if (updatedImages) {
+                setUpdatedImages(false);
+                queryClient.invalidateQueries(["propiedades_host"]);
+                queryClient.invalidateQueries(["propiedad", id]);
+                setTimeout(() => {
+                    form.reset();
+                    navigate("/host/listings");
+                }, 3000);
+            }
+        }
+    }, "put");
 
     useEffect(() => {
         if (propiedadQuery.data) {
@@ -68,11 +186,7 @@ export default function AdministrarPropiedad() {
         form.trigger(key);
     }
 
-    //Tab 1: General (título, descripción, huespedes, baños, habitaciones, camas tipo de propiedad,  check-in, check-out, divisa, precio) Solo lectura: (ciudad, país, dirección,coordenadas en mapa)
-    // Tab 2: Imagenes, guardar
-
     const amenidadesList = useAmenidades();
-    const tiposList = useTipos();
     const divisasList = useDivisas();
 
     const useWatchKey = (key) => useWatch({
@@ -87,24 +201,28 @@ export default function AdministrarPropiedad() {
     }
 
     let smallScreen = globalThis.matchMedia("(max-width: 640px)").matches;
+    let mediumScreen = globalThis.matchMedia("(max-width: 768px)").matches;
 
     const oldTipo = useMemo(() => {
         return propiedadQuery.data?.tipo.tipo ?? "casa";
     }, [propiedadQuery.data]);
 
     const backup = propiedadQuery.data?.imagenes;
-    console.log(oldTipo, backup)
+
+    const backupOrders = useMemo(() => {
+        return new Set(backup?.map(img => img.orden))
+    }, [backup]);
 
     const components = [
         {
             label: 'general',
             Component: Tab1,
-            props: { ...generalProps, tiposList, divisasList, tipo: oldTipo }
+            props: { ...generalProps, tipo: oldTipo }
         },
         {
             label: 'fotos',
             Component: Tab2,
-            props: generalProps
+            props: { ...generalProps, backup: backupOrders }
         },
         {
             label: 'amenidades',
@@ -116,10 +234,15 @@ export default function AdministrarPropiedad() {
             Component: Tab4,
             props: generalProps
         },
+        {
+            label: 'servicio',
+            Component: Tab5,
+            props: { ...generalProps, divisasList: divisasList.data }
+        },
     ]
 
-    const [general, fotos, amenidades, reglas] = components
-    const componentes = [general, fotos, amenidades, reglas]
+    const [general, fotos, amenidades, reglas, servicio] = components
+    const componentes = [general, fotos, amenidades, reglas, servicio]
     const [selectedTab, setSelectedTab] = useState(componentes[0])
 
     const links = [
@@ -138,11 +261,107 @@ export default function AdministrarPropiedad() {
         }
     ]
 
-    console.log(form.formState) // <-- para debuggear el estado del formulario
-
     async function onSubmit(data) {
-        console.log("Juas juas");
-        form.reset();
+        const imagesToSave = [];
+        const imagesToUpdate = [];
+
+        const dirtyFields =
+            form.formState.dirtyFields;
+
+        let clData = {
+            ...data,
+            titulo: data.titulo.trim(),
+            descripcion: data.descripcion.trim(),
+        };
+
+        if (data.reglas_extra) {
+            const reglasMap = {};
+
+            Object.entries(data.reglas_extra)
+                .forEach(([key, value]) => {
+                    if (value !== "") {
+                        reglasMap[key] = value;
+                    }
+                });
+
+            clData.reglas_extra =
+                Object.keys(reglasMap).length
+                    ? reglasMap
+                    : null;
+        }
+
+        const dirtyData =
+            getDirtyValues(dirtyFields, clData);
+
+        delete dirtyData.imagenes;
+
+        const otherFieldsModified =
+            Object.keys(dirtyData).length > 0;
+
+        if (dirtyFields["imagenes"]) {
+            data.imagenes.forEach(img => {
+                if (!img.url) return;
+                if (!backupOrders.has(img.orden)) {
+                    imagesToSave.push(img);
+                }
+                else if (img.url instanceof File) {
+                    imagesToUpdate.push(img);
+                }
+            });
+        }
+
+        if (dirtyFields["amenidades_ids"]) {
+            dirtyData.amenidades_ids = clData.amenidades_ids;
+        }
+
+        if (
+            !imagesToSave.length &&
+            !imagesToUpdate.length &&
+            !otherFieldsModified
+        ) {
+
+            toast("No hay cambios para guardar");
+
+            return;
+        }
+
+        if (otherFieldsModified) setSavedData(true);
+        if (imagesToUpdate.length !== 0) setUpdatedImages(true);
+
+        try {
+            await saveImages(imagesToSave);
+            await updateImages(imagesToUpdate);
+            if (otherFieldsModified) {
+                await mutation.mutateAsync({
+                    data: dirtyData,
+                    id: id
+                });
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    async function saveImages(list) {
+        if (!list.length) return;
+        await Promise.all(list.map(img => {
+            const formData = new FormData();
+            formData.append("propiedad", id);
+            formData.append("orden", img.orden);
+            formData.append("imagen", img.url);
+            return imgPostMutation.mutateAsync(formData);
+        }))
+    }
+
+    async function updateImages(list) {
+        if (!list.length) return;
+        await Promise.all(list.map(img => {
+            console.log("Actualizando imagen:", img);
+            const formData = new FormData();
+            formData.append("orden", img.orden);
+            formData.append("url", img.url);
+            return imgPutMutation.mutateAsync({ id: img.prop_ima_id, data: formData });
+        }))
     }
 
     if (propiedadQuery.isInitialLoading || propiedadQuery.isLoading) return <main className='w-[100dvw] h-[100dvh] flex items-center justify-center' >
@@ -199,8 +418,9 @@ export default function AdministrarPropiedad() {
                     </motion.div>
                 </AnimatePresence>
             </article>
-            <div className='mt-2 flex items-center justify-center md:justify-end w-full' >
-                <CustomButton variant='secondary' disabled={!form.formState.isDirty || !form.formState.isValid} onClick={() => form.handleSubmit(onSubmit)()} >Guardar cambios</CustomButton>
+            <div className='mt-2 flex items-center justify-center md:justify-end w-full gap-2' >
+                <CustomButton variant='tertiary' disabled={success || !form.formState.isDirty} onClick={() => form.reset()} isWaiting={mutation.isPending}>Reestablecer</CustomButton>
+                <CustomButton variant='secondary' disabled={success || !form.formState.isDirty || !form.formState.isValid} onClick={() => form.handleSubmit(onSubmit)()} isWaiting={mutation.isPending || imgPutMutation.isPending || imgPostMutation.isPending}>Guardar cambios</CustomButton>
             </div>
         </section>
     )
@@ -253,7 +473,7 @@ const underline = {
  * props: Object
  * }} props
  */
-const Tab = ({ Component = <></>, props = {} }) => {
+const Tab = ({ Component, props = {} }) => {
     return <div>
         <Component {...props} />
     </div>
@@ -264,26 +484,23 @@ const Tab = ({ Component = <></>, props = {} }) => {
  *  form: Form,
  * change: (key: string, value: any) => void,
  * watchKey: (key: string) => any
+ * tiposList: TipoPropiedad[],
  * }} props
  */
 const Tab1 = ({ form, change, watchKey, tipo }) => {
-    //Tab 1: General (título, descripción, huespedes, baños, habitaciones, camas tipo de propiedad,  check-in, check-out, divisa, precio)
-    console.log(form.getValues())
+    const tiposList = useTipos();
+
     const titulo = watchKey("titulo");
     const descripcion = watchKey("descripcion");
-    const huespedes = watchKey("huespedes");
-    const banos = watchKey("banos");
-    const habitaciones = watchKey("habitaciones");
-    const camas = watchKey("camas");
-    const tipoPropiedad = watchKey("tipo_id");
-    const checkIn = watchKey("check_in");
-    const checkOut = watchKey("check_out");
-    const divisa = watchKey("divisa");
-    const precio = watchKey("precio");
     const direccion = watchKey("direccion");
     const coordenadas = watchKey("coordenadas");
-    console.log(checkIn, checkOut)
-    return <div>
+    const tipoId = watchKey("tipo_id");
+
+    if (tiposList.isLoading || tiposList.isInitialLoading) {
+        return <CustomLoader />
+    }
+
+    return <div className='w-fullflex gap-2 flex-col'>
         <h3>Datos de tu {tipo}</h3>
         <div className='flex max-md:flex-col gap-4'>
             <div className="flex-1 flex flex-col items-center justify-start gap-4  w-full">
@@ -299,14 +516,15 @@ const Tab1 = ({ form, change, watchKey, tipo }) => {
                     }
                     ErrorElement={<FieldErrors errors={form.formState.errors} name="titulo" />} maxLength={50}
                 />
+
                 <CustomTextArea
                     value={descripcion}
                     placeholder='Describe tu propiedad'
                     label='Descripción'
                     fullWidth
+                    inpSize='large'
                     {...form.register("descripcion")}
-                    resizeVertical
-                    cols={8}
+                    cols={10}
                     isError={
                         !!form.formState.errors.descripcion &&
                         form.formState.touchedFields.descripcion
@@ -315,18 +533,57 @@ const Tab1 = ({ form, change, watchKey, tipo }) => {
                     maxLength={3000}
                     resize='vertical'
                 />
-            </div>
-            <div className="flex-1 flex flex-col items-center justify-start gap-4 w-full">
-                <p>{tipoPropiedad}</p>
-                <div className="w-full mt-4">
-                    <MediumInput value={checkIn} placeholder='Actualiza la hora de entrada' label='Hora de entrada' type='time' fullWidth />
+                <div className="flex flex-col md:flex-row  gap-2 w-full">
+                    <div className="w-full mt-2">
+                        <SmallInput
+                            {...form.register("check_in")}
+                            label='Hora de entrada'
+                            type='time'
+                            name="check_in"
+                            step="60" min="00:00"
+                            placeholder='Ej. 00:00'
+                            max="23:59"
+                            fullWidth
+                            isError={
+                                !!form.formState.errors.check_in &&
+                                form.formState.touchedFields.check_in
+                            }
+                            ErrorElement={
+                                <FieldErrors errors={form.formState.errors} name="check_in" />
+                            }
+                            useMinWidth={false}
+                        />
+                    </div>
+                    <div className="w-full mt-2">
+                        <SmallInput
+                            {...form.register("check_out")}
+                            label='Hora de salida'
+                            type='time'
+                            name="check_out"
+                            step="60"
+                            min="00:00"
+                            placeholder='Ej. 00:00'
+                            max="23:59"
+                            fullWidth
+                            isError={
+                                !!form.formState.errors.check_out &&
+                                form.formState.touchedFields.check_out
+                            }
+                            ErrorElement={
+                                <FieldErrors errors={form.formState.errors} name="check_out" />
+                            }
+                            useMinWidth={false}
+                        />
+                    </div>
                 </div>
-                <div className="w-full mt-4">
-                    <MediumInput value={checkOut} placeholder='Actualiza la hora de salida' label='Hora de salida' type='time' fullWidth />
-                </div>
             </div>
-            <div className="flex-1 flexflex-col items-center justify-start gap-4 w-full">
-                <p className='font-[montserrat]'>
+            <div className="flex-1 gap-4 w-full">
+                <CustomSelect label='Tipo de propiedad'
+                    value={tipoId}
+                    onChange={(val) => change("tipo_id", val)}
+                    options={
+                        tiposList.data.map(t => ({ label: t.tipo, value: t.id })) ?? []} />
+                <p className='md:text-left font-[montserrat] mt-2'>
                     <b className='font-[cabin]'>Dirección:</b>
                     {" "}
                     {direccion}
@@ -336,7 +593,7 @@ const Tab1 = ({ form, change, watchKey, tipo }) => {
                     latitude={coordenadas.lat}
                     zoom={12}
                     onMove={() => { }}
-                    style={{ width: "100%", maxWidth: 350, minHeight: 200, height: "auto", borderRadius: 12, marginRight: "auto", marginLeft: "auto" }}
+                    style={{ width: "100%", minHeight: 350, height: "auto", borderRadius: 8, marginRight: "auto", marginLeft: "auto" }}
                     mapStyle='mapbox://styles/mapbox/streets-v12'
                     mapboxAccessToken={MAPBOX_TOKEN}
                     onClick={() => { }}
@@ -359,26 +616,28 @@ const Tab1 = ({ form, change, watchKey, tipo }) => {
  * @param {{
  * change: (key: string, value: any) => void,
  * watchKey: (key: string) => any
+ * backup: Set<number>
  * }} props
  */
-const Tab2 = ({ change, watchKey }) => {
+const Tab2 = ({ change, watchKey, backup }) => {
     /** @param {Imagen[]} list */
-    const list = watchKey("imagenes") ?? []
+    const list = watchKey("imagenes");
+    let slots = imagenSlots.map(slot => ({ ...slot }));
 
     const normalizeList = (rawList) => {
         rawList.forEach(img => {
             const index = img.orden - 1;
             if (
                 index >= 0 &&
-                index < imagenSlots.length
+                index < slots.length
             ) {
-                imagenSlots[index] = {
-                    ...imagenSlots[index],
+                slots[index] = {
+                    ...slots[index],
                     ...img
                 };
             }
         });
-        return imagenSlots;
+        return slots;
     };
 
     const fullList = normalizeList(list);
@@ -396,7 +655,16 @@ const Tab2 = ({ change, watchKey }) => {
     const onDropToIndex = (acceptedFiles, index) => {
         if (!acceptedFiles.length) return;
         const file = acceptedFiles[0];
+        if (file.size > 10 * 1024 * 1024) {
+            toast.error("La imagen no debe superar los 10 MB");
+            return;
+        }
         const newList = [...fullList];
+        if (newList[index]?.preview) {
+            URL.revokeObjectURL(
+                newList[index].preview
+            );
+        }
         newList[index] = {
             ...newList[index],
             url: file,
@@ -405,30 +673,42 @@ const Tab2 = ({ change, watchKey }) => {
         change("imagenes", newList);
     };
 
-    return <section className='w-full flex gap-2 flex-col'>
+    const removeImage = (index) => {
+        const newList = [...fullList];
+        newList[index] = {
+            prop_ima_id: 0,
+            orden: index + 1,
+        };
+        change("imagenes", newList);
+    };
+
+
+    return <div className='w-fullflex gap-2 flex-col'>
         <h3>Imágenes de tu propiedad</h3>
 
         <div
             className={`grid grid-cols-2 max-sm:grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-2 place-items-center p-2 transition`}
         >
-            {fullList.map((img, index) => (
-
-                <DropZoneItem
-                    key={index}
-                    img={img}
-                    index={index}
-                    onDrop={onDropToIndex}
-                    action='replace'
-                />
-
-            ))}
+            {fullList.map((img, index) => {
+                const hadImg = backup.has(img.orden);
+                return (
+                    <DropZoneItem
+                        key={img.orden}
+                        img={img}
+                        index={index}
+                        onDrop={onDropToIndex}
+                        onDelete={removeImage}
+                        action={hadImg ? "replace" : "add"}
+                    />
+                )
+            })}
         </div>
         <small className='font-[montserrat] text-sm text-text-secondary block'>
             <b className='text-primary-500'>NOTA:</b>
             {" "}
             También puedes arrastrar y soltar una imagen en el espacio de cada imagen o presionar sobre ella para seleccionar una.
         </small>
-    </section>
+    </div>
 }
 
 /**
@@ -463,9 +743,10 @@ const Tab3 = ({ change, watchKey, amenidadesList }) => {
             ),
         );
     }
-    return <div>
+
+    return <div className='w-full flex gap-2 flex-col'>
         <h3>¿Qué es lo que ofrece tu propiedad?</h3>
-        <div className="flex flex-col gap-4 max-w-[800px]">
+        <div className="flex flex-col gap-4 max-w-[800px] mx-auto">
             <div className="flex flex-wrap items-center gap-2 justify-center">
                 {
                     amenidades.map((a) => {
@@ -587,7 +868,7 @@ const Tab4 = ({ change, watchKey }) => {
         }
     };
 
-    return <div className='w-full md:min-w-[450px] flex flex-col gap-2'>
+    return <div className='w-full md:min-w-[450px] max-w-[600px] mx-auto flex flex-col gap-2'>
         <h3>
             Define tus reglas
         </h3>
@@ -668,4 +949,81 @@ const Tab4 = ({ change, watchKey }) => {
             )}
         </div>
     </div>
-} 
+}
+
+/**
+ * @param {{
+ *  form: Form,
+ * change: (key: string, value: any) => void,
+ * watchKey: (key: string) => any
+ * divisasList:Divisa[]
+ * }} props
+ */
+const Tab5 = ({ form, change, watchKey, divisasList }) => {
+    //Tab 1: General (título, descripción, huespedes, baños, habitaciones, camas tipo de propiedad,  check-in, check-out, divisa, precio)
+    const huespedes = watchKey("max_huespedes");
+    const banos = watchKey("banos");
+    const habitaciones = watchKey("habitaciones");
+    const camas = watchKey("camas");
+    const divisa = watchKey("divisa_id");
+
+    return <div className='w-full flex gap-2 flex-col'>
+        <h3>Acerca del servicio</h3>
+        <div className='flex max-md:flex-col gap-4'>
+            <div className="flex-1 flex flex-col items-center justify-start gap-4  w-full">
+                <SelectNav label='Huéspedes' value={huespedes} change={change} field='max_huespedes' fullWidth />
+                <SelectNav label='Habitaciónes' value={habitaciones} change={change} field='habitaciones' fullWidth />
+                <SelectNav label='Camas' value={camas} change={change} field='camas' fullWidth />
+                <SelectNav label='Baños' value={banos} change={change} field='banos' fullWidth />
+            </div>
+            <div className="flex-1 flex flex-col items-center justify-start gap-4 w-full">
+                <CustomInput label='Precio por noche' placeholder=' Ingresa el precio que vas a cobrar.'   {...form.register("precio_noche", {
+                    pattern: {
+                        value: /^\d+(\.\d{0,2})?$/,
+                        message: "Máximo 2 decimales",
+                    },
+                })} name='precio_noche' type='number' inputMode='decimal' min={1} step={0.01} max={9999999.99}
+                    isError={
+                        !!form.formState.errors.precio_noche &&
+                        form.formState.touchedFields.precio_noche
+                    }
+                    ErrorElement={<FieldErrors errors={form.formState.errors} name="precio_noche" />}
+                    fullWidth
+                />
+                <CustomSelect label='Divisa de cambio'
+                    helperText='Selecciona un tipo de cambio para tu precio.'
+                    value={divisa}
+                    onChange={(val) => change("divisa_id", val)}
+                    options={
+                        divisasList.map(d => ({ label: d.acronimo + " - " + d.nombre, value: d.divisa_id })) ?? []}
+                />
+            </div>
+        </div>
+    </div>
+}
+
+function getDirtyValues(dirtyFields, allValues) {
+
+    const dirtyValues = {};
+
+    Object.keys(dirtyFields).forEach(key => {
+
+        if (typeof dirtyFields[key] === "object") {
+
+            dirtyValues[key] = getDirtyValues(
+                dirtyFields[key],
+                allValues[key]
+            );
+
+        }
+        else {
+
+            dirtyValues[key] = allValues[key];
+
+        }
+
+    });
+
+    return dirtyValues;
+
+}

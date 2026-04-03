@@ -16,6 +16,7 @@ import usePropiedadMutation from './hooks/usePropiedadMutation';
 import toast from 'react-hot-toast';
 import { getAxiosErrorMessage } from '../../utils/getAxiosErrorMessage';
 import useSetPageTitle from '../../utils/setPageTitle';
+import { useQueryClient } from '@tanstack/react-query';
 
 export default function MisPropiedades() {
     useSetPageTitle("Mis propiedades - Waymark");
@@ -60,11 +61,14 @@ export default function MisPropiedades() {
         setId(null);
     }
 
+    const queryClient = useQueryClient();
+
     const mutation = usePropiedadMutation({
         onSuccess: () => {
             propiedades.refetch();
             closeModal();
             toast.success("¡Estado de propiedad actualizado!");
+            queryClient.invalidateQueries(["propiedad", id]);
         },
         onerror: (error) => {
             const message = getAxiosErrorMessage(error);
@@ -156,7 +160,7 @@ function retrieveColumns(openModal) {
             name: "Acciones",
             cell: (row) => (
                 <div className="flex gap-2 justify-center items-center px-2 w-[fit-content]">
-                    <CustomLink to={`/host/manage-listing/${row.propiedad_id}`}>
+                    <CustomLink to={`/host/manage-listing/${row.propiedad_id}-${row.slug}`}>
                         <Pencil size={16} />
                         Editar
                     </CustomLink>

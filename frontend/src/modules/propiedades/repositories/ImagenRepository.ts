@@ -21,7 +21,7 @@ const ImagenRepository = {
   },
   update: async (data: Partial<Imagen>, id: number) => {
     const res = await api.patch<Imagen>(
-      `${prefix}${id}`,
+      `${prefix}${id}/`,
       data,
       {
         headers: {

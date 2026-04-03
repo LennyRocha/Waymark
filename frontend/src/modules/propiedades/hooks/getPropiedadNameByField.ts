@@ -4,6 +4,7 @@ const fields = {
 
   pais: "País",
   ciudad: "Ciudad",
+  region: "Región",
   direccion: "Dirección",
 
   coordenadas: "Coordenadas",

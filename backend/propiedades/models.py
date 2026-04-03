@@ -126,6 +126,14 @@ class Propiedad(models.Model):
             "blank": non_empty_message,
         },
     )
+    region = models.CharField(
+        max_length=25,
+        blank=False,
+        error_messages={
+            "max_length": "La región no debe exceder los 25 carácteres",
+            "blank": non_empty_message,
+        },
+    )
     direccion = models.CharField(
         max_length=100,
         blank=False,
@@ -306,9 +314,10 @@ class Ubicaciones(models.Model):
     ciudad = models.CharField(
         max_length=25, db_collation="utf8mb4_0900_ai_ci", primary_key=True
     )
+    region = models.CharField(max_length=25, db_collation="utf8mb4_0900_ai_ci")
     pais = models.CharField(max_length=25, db_collation="utf8mb4_0900_ai_ci")
 
     class Meta:
         managed = False
         db_table = "ubicaciones"
-        unique_together = (("ciudad", "pais"),)
+        unique_together = (("ciudad", "region","pais"),)

@@ -44,6 +44,15 @@ export const PropiedadSchema = z
       )
       .default(""),
 
+    region: z
+      .string()
+      .min(1, "Este campo no puede estar vacío")
+      .max(
+        25,
+        "La region no debe exceder los 25 carácteres",
+      )
+      .default(""),
+
     direccion: z
       .string()
       .min(1, "Este campo no puede estar vacío")
@@ -161,8 +170,14 @@ export const PropiedadSchema = z
   })
 
   .refine((data) => data.check_out > data.check_in, {
-    message: "Check-out debe ser después del check-in",
+    message:
+      "La hora de salida debe ser después de la hora de entrada",
     path: ["check_out"],
+  })
+  .refine((data) => data.check_in < data.check_out, {
+    message:
+      "La hora de entrada debe ser antes de la hora de salida",
+    path: ["check_in"],
   });
 
 export type PropiedadForm = z.infer<typeof PropiedadSchema>;

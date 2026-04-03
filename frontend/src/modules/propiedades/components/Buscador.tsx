@@ -62,7 +62,7 @@ const MenuDestino = ({
       </p>
     ) : (
       list.map((loc) => {
-        const locStr = `${loc.ciudad}, ${loc.pais}`;
+        const locStr = `${loc.ciudad}, ${loc.region}`;
         return (
           <LocationItem
             key={locStr}
@@ -81,8 +81,6 @@ const MenuDestino = ({
 const MenuFechas = ({
   anchorRef,
   visible,
-  functions,
-  values,
 }: Readonly<DropdownMenuProps>) => {
   type ValuePiece = Date | null;
   type Value = ValuePiece | [ValuePiece, ValuePiece];
@@ -439,13 +437,17 @@ const SearchSection = ({
   cleanInput = () => {},
 }: SectionProps) => {
   const handleClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!scrolled) open(idx);
+    if (!scrolled) {
+      e.stopPropagation();
+      open(idx);
+    }
   };
 
   const handleFocus = (e: React.FocusEvent) => {
-    e.stopPropagation();
-    if (!scrolled) open(idx);
+    if (!scrolled) {
+      e.stopPropagation();
+      open(idx);
+    }
   };
 
   return (
@@ -453,7 +455,7 @@ const SearchSection = ({
       layout
       ref={refProp}
       onClick={handleClick}
-      className={`relative w-auto transition delay-150 duration-300 ease 
+      className={`cursor-pointer relative w-auto transition delay-150 duration-300 ease 
             ${!scrolled && inputIdx !== idx && !isWaiting ? "hover:bg-border" : ""}
             ${inputIdx === idx ? "bg-white" : "bg-transparent"} ${hasButton ? "flex-2" : "flex-1"} ${isWaiting && "opacity-50"}
             rounded-full px-6 py-2 h-full flex flex-col justify-center flex-1 relative`}

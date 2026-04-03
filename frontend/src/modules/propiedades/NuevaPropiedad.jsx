@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import React, { useEffect, useRef, useState, useMemo } from 'react'
 import { AnimatePresence, motion } from "framer-motion"
-import { MapPin, Minus, Plus, X } from 'lucide-react'
+import { MapPin, Minus, Plus } from 'lucide-react'
 import Map, { Marker } from 'react-map-gl/mapbox'
 import { SearchBox } from '@mapbox/search-js-react'
 import 'mapbox-gl/dist/mapbox-gl.css'
@@ -42,6 +42,8 @@ export default function NuevaPropiedad() {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
 
+    const [success, setSuccess] = useState(false);
+
     const toastRef = useRef(null);
 
     const imgMutation = useImagenMutation({
@@ -81,6 +83,7 @@ export default function NuevaPropiedad() {
             toast.error(errorMessage || "¡Error al guardar propiedad!", { id: toastRef.current, duration: 5000 });
         },
         onSuccess: async (data, variables) => {
+            setSuccess(true);
             const payload = makeImgenPayload(data.propiedad_id, variables.imagenes);
             await imgMutation.mutateAsync(payload);
             toast.success("Propiedad guardada!", { id: toastRef.current, duration: 3000 });
@@ -108,7 +111,9 @@ export default function NuevaPropiedad() {
         const fields = fieldsByStep[step];
 
         const canContinue = fields.every(
-            (field) =>
+            field =>
+                fields[field] !== undefined &&
+                fields[field] !== null &&
                 !form.formState.errors[field]
         );
 
@@ -190,8 +195,18 @@ export default function NuevaPropiedad() {
         });
         const payload = {
             ...data,
-            imagenes: data.imagenes.filter(img => img.url),
+            titulo: data.titulo.trim(),
+            descripcion: data.descripcion.trim(),
+            imagenes: data.imagenes.filter(
+                img => img.url instanceof File
+            ),
             reglas_extra: Object.entries(reglasMap).length === 0 ? null : reglasMap
+        }
+        if (!payload.imagenes.length) {
+            toast.error(
+                "Debes agregar al menos una imagen"
+            );
+            return;
         }
         mutation.mutate(payload);
     }
@@ -240,7 +255,7 @@ export default function NuevaPropiedad() {
         {
             label: 'Reglas',
             component: Step9,
-            props: { ...defaultProps, submit: form.handleSubmit(onSubmit), loading: mutation.isLoading || imgMutation.isLoading, triggerStep }
+            props: { ...defaultProps, submit: form.handleSubmit(onSubmit), loading: mutation.isLoading || imgMutation.isLoading, triggerStep, success }
         },
     ]
 
@@ -388,29 +403,88 @@ const Step2 = ({ next, prev, change, validateStep, watchKey, setCoordenadas, use
         }
     }, [userCoords]);
 
-    const geocodingClient = mbxGeocoding({ accessToken: MAPBOX_TOKEN })
+    const geocodingClient = useMemo(() => {
+        return mbxGeocoding({
+            accessToken: MAPBOX_TOKEN
+        });
+    }, []);
 
     const handleRetrieve = async (res) => {
+
         setLoading(true);
-        const feature = res.features[0]
-        const [lng, lat] = feature.geometry.coordinates
 
-        const direccion = feature.properties.full_address;
-        const ciudad = feature.properties.context.place.name;
-        const pais = feature.properties.context.country.name;
+        const feature = res.features[0];
 
-        setCoordenadas({ lat, lng })
-        if (direccion) {
-            change("direccion", direccion)
-            change("ciudad", ciudad)
-            change("pais", pais)
+        const [lng, lat] =
+            feature.geometry.coordinates;
+
+        const direccion =
+            feature.properties.full_address;
+
+        let ciudad =
+            feature.properties.context?.place?.name;
+
+        let pais =
+            feature.properties.context?.country?.name;
+
+        let region =
+            feature.properties.context?.region?.name;
+
+        // 🔥 Si region no viene → hacer reverseGeocode
+        if (!region) {
+
+            const reverse =
+                await geocodingClient.reverseGeocode({
+                    query: [lng, lat],
+                    language: ['es'],
+                    countries: ['mx'],
+                    limit: 1
+                }).send();
+
+            const context =
+                reverse.body.features[0]?.context ?? [];
+
+            region =
+                context.find(c =>
+                    c.id.startsWith('region')
+                )?.text;
+
+            ciudad =
+                ciudad ??
+                context.find(c =>
+                    c.id.startsWith('place')
+                )?.text;
+
+            pais =
+                pais ??
+                context.find(c =>
+                    c.id.startsWith('country')
+                )?.text;
+
         }
 
-        setViewState(prev => ({ ...prev, longitude: lng, latitude: lat, zoom: 15 }))
+        setCoordenadas({ lat, lng });
+
+        if (direccion) {
+
+            change("direccion", direccion);
+            change("ciudad", ciudad);
+            change("pais", pais);
+            change("region", region);
+
+        }
+
+        setViewState(prev => ({
+            ...prev,
+            longitude: lng,
+            latitude: lat,
+            zoom: 15
+        }));
 
         mapRef.current?.resize();
+
         setLoading(false);
-    }
+    };
 
     const handleMapClick = async (e) => {
         setLoading(true);
@@ -430,13 +504,42 @@ const Step2 = ({ next, prev, change, validateStep, watchKey, setCoordenadas, use
         const direccion = res.body.features[0]?.place_name
         const context = res.body.features[0].context ?? []
 
-        const ciudad = context.find(c => c.id.startsWith('place'))?.text
-        const pais = context.find(c => c.id.startsWith('country'))?.text
+        let ciudad =
+            context.find(c =>
+                c.id.startsWith('place')
+            )?.text;
+
+        let pais =
+            context.find(c =>
+                c.id.startsWith('country')
+            )?.text;
+
+        let region =
+            context.find(c =>
+                c.id.startsWith('region')
+            )?.text;
+
+        // 🔥 Fallback 1: CDMX y casos similares
+        if (!region && ciudad) {
+            region = ciudad;
+        }
+
+        if (!region && direccion) {
+            const partes =
+                direccion.split(",");
+            if (partes.length >= 2) {
+                region =
+                    partes[partes.length - 2]
+                        .replace(/\d+/g, "")
+                        .trim();
+            }
+        }
 
         if (direccion) {
             change("direccion", direccion)
             change("ciudad", ciudad)
             change("pais", pais)
+            change("region", region)
         }
 
         mapRef.current?.resize();
@@ -698,6 +801,12 @@ const Step5 = ({ prev, next, validateStep, watchKey, setFotos }) => {
     }, [list]);
 
     const onDropToIndex = (acceptedFiles, index) => {
+        if (newList[index]?.preview) {
+            URL.revokeObjectURL(
+                newList[index].preview
+            );
+        }
+
         if (!acceptedFiles.length) return;
         const file = acceptedFiles[0];
         if (file.size > 10 * 1024 * 1024) {
@@ -774,6 +883,7 @@ const Step6 = ({ prev, next, validateStep, register, formState }) => {
             }
             ErrorElement={<FieldErrors errors={formState.errors} name="descripcion" />}
             maxLength={3000}
+            cols={10}
         />
         <div className='w-full flex flex-row items-center justify-end gap-2' >
             <CustomButton variant='tertiary' onClick={prev} >
@@ -855,7 +965,14 @@ const Step8 = ({ prev, next, validateStep, register, formState, triggerStep }) =
     return <section className='w-full flex gap-2 flex-col'>
         <h3 className='md:text-left'>¿Cuáles son tus horarios de entrada y salida?</h3>
         <div className='flex flex-col md:flex-row w-full gap-2'>
-            <CustomInput label='Entrada' type="time" name="check_in" step="60" min="00:00" placeholder='Ej. 00:00' max="23:59" {...register("check_in")}
+            <CustomInput
+                label='Entrada'
+                type="time"
+                name="check_in"
+                step="60"
+                min="00:00"
+                placeholder='Ej. 00:00'
+                max="23:59" {...register("check_in")}
                 fullWidth
                 isError={
                     !!formState.errors.check_in &&
@@ -865,7 +982,13 @@ const Step8 = ({ prev, next, validateStep, register, formState, triggerStep }) =
                 useMinWidth={false}
             />
 
-            <CustomInput label='Salida' type="time" name='check_out' step="60" min="00:00" placeholder='Ej. 00:00' max="23:59" {...register("check_out")}
+            <CustomInput
+                label='Salida'
+                type="time"
+                name='check_out'
+                step="60" min="00:00"
+                placeholder='Ej. 00:00'
+                max="23:59" {...register("check_out")}
                 fullWidth
                 isError={
                     !!formState.errors.check_out &&
@@ -896,7 +1019,7 @@ const Step8 = ({ prev, next, validateStep, register, formState, triggerStep }) =
  * triggerStep: () => void,
  * }} props
  */
-const Step9 = ({ prev, change, watchKey, loading, submit, triggerStep }) => {
+const Step9 = ({ prev, change, watchKey, loading, submit, triggerStep, success }) => {
     const [showReglas, setShowReglas] = useState(false);
 
     // Checkboxes principales
@@ -1035,7 +1158,7 @@ const Step9 = ({ prev, change, watchKey, loading, submit, triggerStep }) => {
                         Anterior
                     </CustomButton>
                 )}
-                <CustomButton variant="secondary" onClick={submit} isWaiting={loading}>
+                <CustomButton variant="secondary" disabled={success} onClick={submit} isWaiting={loading}>
                     Guardar
                 </CustomButton>
             </div>
@@ -1061,11 +1184,12 @@ const fieldsByStep = {
  *  change?: (tag:string, value: any) => void,
  *  field: string,
  *  label: string,
+ * fullWidth?: boolean,
  * }} props
  */
-const SelectNav = ({ label = "", value = 0, change = () => { }, field = "" }) => {
+export const SelectNav = ({ label = "", value = 0, change = () => { }, field = "", fullWidth = false }) => {
     return (
-        <nav className='flex justify-between items-center my-1'>
+        <nav className={`flex justify-between items-center my-1 ${fullWidth ? 'w-full' : ''}`}>
             <h5>{label}</h5>
             <div className='flex flex-row items-center justify-center gap-2 mb-2'>
 
@@ -1124,13 +1248,12 @@ export const CheckRow = ({ question = "¿?", checked = false, onChange = async (
 
 function makeImgenPayload(propiedadId, imgs) {
     const formData = new FormData();
-
     formData.append("propiedad", propiedadId);
-
     imgs.forEach((img) => {
-        formData.append("imagenes", img.url);
-        formData.append("ordenes", img.orden);
+        if (img.url instanceof File) {
+            formData.append("imagenes", img.url);
+            formData.append("ordenes", img.orden);
+        }
     });
-
     return formData;
 }

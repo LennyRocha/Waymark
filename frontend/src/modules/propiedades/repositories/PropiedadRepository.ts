@@ -40,7 +40,7 @@ const PropiedadRepository = {
   },
   update: async (data: PropiedadUpdate, id: number) => {
     const res = await api.patch<Propiedad>(
-      `${prefix}${id}`,
+      `${prefix}${id}/`,
       data,
     );
     return res.data;

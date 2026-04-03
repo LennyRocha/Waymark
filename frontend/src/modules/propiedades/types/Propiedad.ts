@@ -11,6 +11,7 @@ export default interface Propiedad {
 
   pais: string;
   ciudad: string;
+  region: string;
   direccion: string;
 
   activa: boolean;
@@ -54,5 +55,6 @@ export default interface Propiedad {
 
 export type Ubicacion = {
   pais: string;
+  region: string;
   ciudad: string;
 };

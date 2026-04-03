@@ -182,7 +182,7 @@ class TipoPropiedadViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = TipoPropSerializer
 
 
-class ImagenViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
+class ImagenViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, viewsets.GenericViewSet):
     queryset = PropiedadImagen.objects.all()
     serializer_class = ImagenSerializer
 
@@ -284,12 +284,13 @@ class ImagenViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
 
             saved = PropiedadImagen.objects.create(
                 propiedad=propiedad,
-                url=imagen.url,
-                orden=imagen.orden,
+                url=imagen,
+                orden=orden,
                 updated_by=propiedad.anfitrion.pk,
             )
 
         except Exception as e:
+            print("Error al guardar la imagen:", str(e))
             print(traceback.format_exc())
             return Response(
                 {"error": f"No se pudo guardar la imagen: {str(e)}"},
