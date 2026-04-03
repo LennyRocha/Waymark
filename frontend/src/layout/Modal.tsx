@@ -87,7 +87,7 @@ const Modal: ModalComponent = ({
                     <motion.div
                         layout
                         onClick={(e: ReactMouseEvent<HTMLDivElement>) => e.stopPropagation()}
-                        className="flex flex-col p-6 bg-white rounded-4xl text-text-primary overflow-hidden gap-2 xl:max-h-[60vh]"
+                        className="flex flex-col p-6 bg-white rounded-4xl text-text-primary overflow-hidden gap-2 xl:max-h-[60vh] shadow-2xl/50"
                         style={{
                             width: width ?? 'fit-content',
                             height: height ?? 'auto',

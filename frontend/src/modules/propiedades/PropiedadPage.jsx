@@ -8,6 +8,13 @@ import CustomLoader from '../../layout/CustomLoader';
 import ErrorViewComponent from '../../layout/ErrorViewComponent';
 import CustomButton from '../../components/CustomButton';
 import useSetPageTitle from '../../utils/setPageTitle';
+import { Dot, MapPinHouse } from 'lucide-react';
+import ReactMarkdown from "react-markdown";
+import Calendar from 'react-calendar';
+import Map, { Marker } from 'react-map-gl/mapbox'
+
+const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN
+const MAX_LENGTH = 500;
 
 export default function PropiedadPage() {
   const amenidades = useAmenidades();
@@ -19,6 +26,7 @@ export default function PropiedadPage() {
   const [show, setShow] = useState(false);
   const propiedad = usePropiedad(id);
   useSetPageTitle(propiedad.data ? `${propiedad.data?.titulo} - Waymark` : "Waymark - Encuentra el lugar perfecto para tu próxima aventura");
+  const [expanded, setExpanded] = useState(false);
   if (propiedad.isInitialLoading || propiedad.isLoading) return <main className='w-[100dvw] h-[100dvh] flex items-center justify-center' >
     <CustomLoader />
   </main>
@@ -26,6 +34,15 @@ export default function PropiedadPage() {
     <ErrorViewComponent error={propiedad.error} retryFunction={() => propiedad.refetch()} />
   </main>
   const prop = propiedad.data;
+  const testDesc = "DEPARTAMENTO TOTALMENTE REMODELADO A TODO LUJO JUNTO AL MAR, para poder tener el mar a tus pies con toda la comodidad. Y contamos con acceso privado a la playa y a las albercas. El restaurante se encuentra a lado de la alberca por lo que sin salir podrás disfrutar de la magia del puerto,  muy bien ubicado cerca del Baby' O. Se cuenta a una cuadra con un estacionamiento publico, aunque es muy seguro dejar tu coche fuera del condominio. También hay  restaurant. \n La recepción está afectada por otis...";
+  console.log(testDesc.length)
+
+  const text = expanded
+    ? prop.descripcion
+    : prop.descripcion.substring(0, MAX_LENGTH);
+
+  const shouldShowButton =
+    prop.descripcion.length > MAX_LENGTH;
   return (
     <main className='w-full p-[1rem] mx-auto max-w-[1200px] flex flex-col items-start justify-start gap-4' >
       <h3 className='md:text-left font-[montserrat]'>{prop?.titulo}</h3>
@@ -46,9 +63,39 @@ export default function PropiedadPage() {
           <img className='w-full h-full object-cover' src={prop?.imagenes[4]?.url} alt={`Imagen #${prop?.imagenes[4]?.orden}`} />
         </div>
       </div>
-      <section className='w-full flex max-md:flex-col items-start justify-start gap-2' >
+      <section className='w-full flex max-md:flex-col items-start justify-start gap-8' >
         <article className='flex-1 flex flex-col items-start justify-start gap-2'>
-          <h4> {prop?.tipo.tipo.charAt(0).toUpperCase() + prop?.tipo.tipo.slice(1)} en {prop?.ciudad}, {prop?.pais}</h4>
+          <h4> {prop?.tipo.tipo.charAt(0).toUpperCase() + prop?.tipo.tipo.slice(1)} en {prop?.ciudad}, {prop?.region}</h4>
+          <p className='text-text-secondary flex gap-1 items-center'>{prop.camas} {prop.camas === 1 ? "cama" : "camas"} <Dot size={14} /> {prop.banos} {prop.banos === 1 ? "baño" : "baños"}</p>
+          <ReactMarkdown
+            components={{
+              p: ({ children }) => (
+                <p className='font-[montserrat] h-[150px] text-[14px]/[20px] text-text-primary text-left tracking-normal truncate w-full overflow-hidden whitespace-pre-line' >
+                  {children}
+                </p>
+              ),
+            }}
+          >
+            {text + (!expanded && shouldShowButton ? "..." : "")}
+          </ReactMarkdown>
+
+          {shouldShowButton && (
+            <CustomButton
+              variant="secondary"
+              onClick={() => setShow(!show)}
+            >
+              {expanded ? "Mostrar menos" : "Mostrar más"}
+            </CustomButton>
+          )}
+
+          <Divider />
+
+          <Divider />
+
+          <h3>Lo que ofrece este lugar</h3>
+
+          <Divider />
+
           <h1>Texto largo</h1>
           <h1>Texto largo</h1>
           <h1>Texto largo</h1>
@@ -56,13 +103,17 @@ export default function PropiedadPage() {
           <h1>Texto largo</h1>
           <h1>Texto largo</h1>
           <h1>Texto largo</h1>
-          <h1>Texto largo</h1>  <h1>Texto largo</h1>
           <h1>Texto largo</h1>
           <h1>Texto largo</h1>
           <h1>Texto largo</h1>
           <h1>Texto largo</h1>
           <h1>Texto largo</h1>
           <h1>Texto largo</h1>
+          <h1>Texto largo</h1>
+          <h1>Texto largo</h1>
+
+          {/*Aquí irá el calendario */}
+          <Calendar value={new Date()} />
 
         </article>
         <article className='p-6 top-4 sticky  max-md:hidden  md:w-[275px] lg:w-[400px] shadow-md/30 bg-white rounded-xl gap-4 flex flex-col items-start justify-start' >
@@ -81,38 +132,37 @@ export default function PropiedadPage() {
           <p className='text-text-secondary text-center mx-auto'>El pago se realiza en efectivo</p>
         </article>
       </section>
-      PropiedadPage {idSlug}
-      <br />
-      <button onClick={() => setShow(!show)} >Show modal</button>
+      <h4>Dónde vas a estar</h4>
+      <p>{prop.ciudad} - {prop.region} - {prop.pais}</p>
+      <Map
+        longitude={prop.coordenadas.lng}
+        latitude={prop.coordenadas.lat}
+        zoom={16}
+        onMove={() => { }}
+        style={{ width: "100%", minHeight: 350, height: "auto", borderRadius: 8, marginRight: "auto", marginLeft: "auto" }}
+        mapStyle='mapbox://styles/mapbox/streets-v12'
+        mapboxAccessToken={MAPBOX_TOKEN}
+        onClick={() => { }}
+        cursor='crosshairs'
+      >
+        <Marker
+          longitude={prop.coordenadas?.lng ?? 0}
+          latitude={prop.coordenadas?.lat ?? 0}
+          anchor='bottom'
+        >
+          <MapPinHouse color='#fff' fill='var(--color-primary-500)' size={64} strokeWidth={1} />
+        </Marker>
+      </Map>
       <Modal open={show} close={() => setShow(false)} width={"min(768px, 100%)"} >
-        <Modal.Header>
-          <h3>¿Confirmación?</h3>
-          <p>Estás seguro de eliminar esto</p>
-        </Modal.Header>
-
         <Modal.Body>
-          {amenidades.data?.map((a, index) => {
-            return (
-              <>
-                {index === 0 ? <p>{a.categoria}</p> : amenidades.data[index].categoria !== amenidades.data[index - 1].categoria &&
-                  <p>{a.categoria}</p>
-                }
-                <div className="flex items-center gap-2" key={a.amenidad_id}>
-                  <Icono name={a.icono_nombre} />
-                  <p>{a.nombre}</p>
-                </div>
-              </>
-            )
-          })}
+          <h3>Acerca del espacio</h3>
+          <p className='text-justify mt-4'>{prop.descripcion}</p>
         </Modal.Body>
-
-        <Modal.Footer>
-          <button onClick={() => setShow(false)}>Cancelar</button>
-        </Modal.Footer>
       </Modal>
-      {
-        amenidades.isLoading && <p>Cargando...</p>
-      }
-    </main>
+    </main >
   )
 }
+
+const Divider = () => (
+  <div className="h-px w-full bg-gray-200 mt-2" />
+);

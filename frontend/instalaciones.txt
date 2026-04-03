@@ -49,3 +49,6 @@ npm install react-loading-skeleton
 
 #Calendario
 npm i react-calendar
+
+#Markdown
+npm install react-markdown

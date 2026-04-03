@@ -12,7 +12,7 @@ import CustomButton from '../../components/CustomButton'
 import { useWatch } from 'react-hook-form'
 import { CheckRow, SelectNav } from './NuevaPropiedad'
 import { FieldErrors, CustomTextArea, MediumInput, SmallInput, CustomSelect, CustomInput } from '../../components/CustomInputs'
-import { Plus, Minus, MapPin } from 'lucide-react'
+import { Plus, Minus, MapPin, Cog, Book, Banknote, Image as Picture, ScrollText } from 'lucide-react'
 import Chip from '../../components/Chip'
 import useAmenidades from './hooks/useAmenidades'
 import useTipos from './hooks/useTipos'
@@ -28,7 +28,7 @@ import toast from 'react-hot-toast'
 import { useQueryClient } from '@tanstack/react-query'
 import { getAxiosErrorMessage } from '../../utils/getAxiosErrorMessage'
 import getPropiedadNameByField from './hooks/getPropiedadNameByField'
-import { id } from 'zod/v4/locales'
+import useWatchResize from '../../utils/useWatchResize'
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN
 
@@ -45,7 +45,7 @@ const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN
 
 export default function AdministrarPropiedad() {
     const { idSlug } = useParams();
-    const  id = idSlug.split("-")[0];
+    const id = idSlug.split("-")[0];
     const navigate = useNavigate();
     const propiedadQuery = usePropiedad(id);
 
@@ -200,8 +200,8 @@ export default function AdministrarPropiedad() {
         watchKey: useWatchKey
     }
 
-    let smallScreen = globalThis.matchMedia("(max-width: 640px)").matches;
-    let mediumScreen = globalThis.matchMedia("(max-width: 768px)").matches;
+    let smallScreen = useWatchResize({ pixeles: 640, metrica: "lessThan" });
+    let mediumScreen = useWatchResize({ pixeles: 768, metrica: "lessThan" });
 
     const oldTipo = useMemo(() => {
         return propiedadQuery.data?.tipo.tipo ?? "casa";
@@ -216,26 +216,31 @@ export default function AdministrarPropiedad() {
     const components = [
         {
             label: 'general',
+            Icon: <Cog size={24} className='mx-auto' />,
             Component: Tab1,
             props: { ...generalProps, tipo: oldTipo }
         },
         {
             label: 'fotos',
+            Icon: <Picture size={24} className='mx-auto' />,
             Component: Tab2,
             props: { ...generalProps, backup: backupOrders }
         },
         {
             label: 'amenidades',
+            Icon: <ScrollText size={24} className='mx-auto' />,
             Component: Tab3,
             props: { ...generalProps, amenidadesList: amenidadesList.data }
         },
         {
             label: 'reglas',
+            Icon: <Book size={24} className='mx-auto' />,
             Component: Tab4,
             props: generalProps
         },
         {
             label: 'servicio',
+            Icon: <Banknote size={24} className='mx-auto' />,
             Component: Tab5,
             props: { ...generalProps, divisasList: divisasList.data }
         },
@@ -390,9 +395,11 @@ export default function AdministrarPropiedad() {
                             className={`text-wrap list-none ${item.label === selectedTab.label ? "max-md:w-150" : "max-md:w-40"}`}
                             onClick={() => setSelectedTab(item)}
                         >
-                            <b className='truncate'>
-                                {`${item.label}`}
-                            </b>
+                            {
+                                mediumScreen ? item.Icon : <b className='truncate'>
+                                    {`${item.label}`}
+                                </b>
+                            }
                             {item.label === selectedTab.label ? (
                                 <motion.div
                                     style={underline}
