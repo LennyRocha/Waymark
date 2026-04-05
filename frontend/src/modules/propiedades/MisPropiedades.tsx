@@ -71,7 +71,7 @@ export default function MisPropiedades() {
         propiedades.refetch();
         closeModal();
         toast.success("¡Estado de propiedad actualizado!");
-        queryClient.invalidateQueries(["propiedad", id]);
+        queryClient.invalidateQueries({queryKey: ["propiedad", id]});
       },
       onerror: (error) => {
         const message = getAxiosErrorMessage(error);

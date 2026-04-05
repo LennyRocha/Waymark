@@ -1,0 +1,21 @@
+.react-calendar__tile--rangeStart {
+    background-color: var(--color-text-primary);
+    color: white !important;
+}
+
+.react-calendar__tile--rangeEnd {
+    background-color: var(--color-text-primary);
+    color: white !important;
+}
+
+.react-calendar__tile {
+    border-radius: 9999px;
+    padding: 12px 10px;
+    margin: 2px;
+}
+
+.react-calendar {
+    border: none;
+    width: 100%;
+    font-family: Montserrat, sans-serif;
+}

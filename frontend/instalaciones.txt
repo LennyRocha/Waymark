@@ -49,6 +49,7 @@ npm install react-loading-skeleton
 
 #Calendario
 npm i react-calendar
+npm install @cameratajs/react-date-range-input
 
 #Markdown
 npm install react-markdown

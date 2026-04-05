@@ -2,6 +2,7 @@ from rest_framework import viewsets, status, mixins
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.db import transaction
+import random
 from .serializers import (
     PropiedadSerializer,
     DivisaSerializer,
@@ -11,6 +12,7 @@ from .serializers import (
     CategoriaAmenidadSerializer,
     UbicacionSerializer,
     ImagenSerializer,
+    CardSerializer,
 )
 from .models import (
     Propiedad,
@@ -21,6 +23,7 @@ from .models import (
     Amenidad,
     CategoriasAmenidad,
     Ubicaciones,
+    Cards,
 )
 from .filters import PropiedadFilter
 from .paginations import PropiedadPagination
@@ -64,6 +67,62 @@ class PropiedadViewSet(viewsets.ModelViewSet):
 
     filterset_class = PropiedadFilter
     serializer_class = PropiedadSerializer
+
+    @action(detail=False, methods=["GET"])
+    def cards(self, request):
+        queryset = Cards.objects.all()
+        w_city = request.query_params.get("w_city")
+        if w_city and w_city.lower() == "true":
+            ciudad = (
+                Cards.objects.values_list("ciudad", flat=True)
+                .distinct()
+                .order_by("?")
+                .first()
+            )
+            if ciudad:
+                queryset = queryset.filter(ciudad__iexact=ciudad)
+        serializer = CardSerializer(
+            queryset.order_by("?")[:7], many=True, context={"request": request}
+        )
+        return Response(
+            {"ciudad": ciudad if w_city else None, "cards": serializer.data}
+        )
+
+    @action(detail=False, methods=["GET"])
+    def landing(self, request):
+
+        # 6 ciudades aleatorias
+        ciudades = list(Cards.objects.values_list("ciudad", flat=True).distinct())
+
+        random.shuffle(ciudades)
+
+        ciudades = ciudades[:6]
+
+        # Cards por ciudad
+        ciudades_data = []
+
+        for ciudad in ciudades:
+
+            cards = Cards.objects.filter(ciudad=ciudad).order_by("?")[:7]
+
+            serializer = CardSerializer(cards, many=True, context={"request": request})
+
+            ciudades_data.append({"ciudad": ciudad, "cards": serializer.data})
+
+        # Favoritos (si está logueado)
+        favoritos_data = []
+
+        if not request.user.is_authenticated:
+
+            favoritos = Cards.objects.filter(es_favorito=True).order_by("?")[:7]
+
+            serializer = CardSerializer(
+                favoritos, many=True, context={"request": request}
+            )
+
+            favoritos_data = serializer.data
+
+        return Response({"favoritos": favoritos_data, "ciudades": ciudades_data})
 
     @action(detail=False, methods=["GET"])
     def locations(self, request, pk=None):
@@ -185,9 +244,18 @@ class FavoritoViewSet(
     serializer_class = FavoritoSerializer
 
     def list(self, request):
-        user = request.query_params.get("usuario")
-        queryset = Favorito.objects.filter(usuario=user)
-        serializer = FavoritoSerializer(queryset, many=True)
+        user = request.user
+
+        debug = Usuario.objects.get(pk=1)
+        queryset = Cards.objects.filter(
+            propiedad_id__in=Favorito.objects.filter(usuario=debug).values_list(
+                "propiedad_id", flat=True
+            )
+        )
+
+        # TODO: Descomentar esto cuando ya esté el token
+        # queryset = Favorito.objects.filter(usuario=user)
+        serializer = CardSerializer(queryset, many=True, context={"request": request})
         return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
@@ -198,18 +266,22 @@ class FavoritoViewSet(
 
         propiedad_ = request.data.get("propiedad")
 
+        propiedadObject = Propiedad.objects.get(pk=propiedad_)
+
+        debug = Usuario.objects.get(pk=1)
         favorito, created = Favorito.objects.get_or_create(
-            usuario=1, propiedad=propiedad_
+            usuario=debug, propiedad=propiedadObject
         )
 
         # TODO: Cuando ya esté el token descomentar esto
         # favorito, created = Favorito.objects.get_or_create(
         #     usuario=usuario_,
-        #     propiedad=propiedad_
+        #     propiedad=propiedadObject
         # )
 
         return Response(
-            {"created": created, "id": favorito.id}, status=status.HTTP_201_CREATED
+            {"created": created, "id": favorito.favorito_id},
+            status=status.HTTP_201_CREATED,
         )
 
 

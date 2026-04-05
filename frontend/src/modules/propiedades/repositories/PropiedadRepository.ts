@@ -6,6 +6,7 @@ import {
 import FiltrosPropiedades from "../types/FiltrosPropiedad";
 import Propiedad, { Ubicacion } from "../types/Propiedad";
 import { PaginatedResponse } from "../types/PaginationResponse";
+import { CardsResponse, LandingResponse } from "../types/Card";
 const prefix = "propiedades/";
 const PropiedadRepository = {
   findAll: async (filters: FiltrosPropiedades = {}) => {
@@ -23,9 +24,23 @@ const PropiedadRepository = {
     const res = await api.get<Propiedad>(`${prefix}${id}`);
     return res.data;
   },
-  findAllByHost: async (
-    filters: FiltrosPropiedades,
-  ) => {
+  getCards: async (w_city?: boolean) => {
+    const res = await api.get<CardsResponse>(
+      `${prefix}cards/`,
+      {
+        params: w_city ? { w_city: true } : undefined,
+      },
+    );
+    return res.data;
+  },
+  getLanding: async () => {
+    const res = await api.get<LandingResponse>(
+      `${prefix}landing/`,
+    );
+
+    return res.data;
+  },
+  findAllByHost: async (filters: FiltrosPropiedades) => {
     const res = await api.get<PaginatedResponse<Propiedad>>(
       `${prefix}by_host/`,
       {

@@ -1,7 +1,5 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import Landing from '../modules/propiedades/Landing';
-import Ejemplo from '../modules/propiedades/Ejemplo';
-import RutaRandom from '../modules/propiedades/RutaRandom';
 import Page404 from '../modules/paginas_error/404';
 import PropiedadPage from '../modules/propiedades/PropiedadPage';
 import FiltrosPage from '../modules/propiedades/FiltrosPage';
@@ -11,6 +9,7 @@ import AdminHeader from '../layout/AdminHeader';
 import AdministrarPropiedad from '../modules/propiedades/AdministrarPropiedad';
 import NuevaPropiedad from '../modules/propiedades/NuevaPropiedad';
 import MisPropiedades from '../modules/propiedades/MisPropiedades';
+import MisFavoritos from '../modules/propiedades/MisFavoritos';
 
 export default function Router() {
     return (
@@ -20,13 +19,10 @@ export default function Router() {
                 <Route path="rooms/:idSlug" element={<PropiedadPage />} />
                 <Route path="s/:ciudad_pais/homes" element={<FiltrosPage />} />
                 <Route path="s/homes" element={<FiltrosPage />} />
-                <Route path="ruta" element={<Ejemplo />}>
-                    <Route path="subruta" element={<RutaRandom />} />
-                </Route>
                 <Route path="guest" element={<GuestHeader />}>
                     <Route index element={<Navigate to="explore" />} />
-                    <Route path="explore" element={<h1>Vista principal</h1>} />
-                    <Route path="favorites" index element={<h1>Vista de favoritos</h1>} />
+                    <Route path="explore" element={<h1>Vista principal (here goes the fucking landing)</h1>} />
+                    <Route path="favorites" index element={<MisFavoritos />} />
                     <Route path="my-trips" index element={<h1>Vista de mis reservaciones</h1>} />
                     <Route path="profile" index element={<h1>Vista de mi perfil</h1>} />
                 </Route>

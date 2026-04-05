@@ -320,4 +320,25 @@ class Ubicaciones(models.Model):
     class Meta:
         managed = False
         db_table = "ubicaciones"
-        unique_together = (("ciudad", "region","pais"),)
+        unique_together = (("ciudad", "region", "pais"),)
+
+
+class Cards(models.Model):
+    propiedad_id = models.IntegerField(primary_key=True)
+    ciudad = models.CharField(max_length=25, db_collation="utf8mb4_0900_ai_ci")
+    region = models.CharField(max_length=25, db_collation="utf8mb4_0900_ai_ci")
+    pais = models.CharField(max_length=25, db_collation="utf8mb4_0900_ai_ci")
+    precio_noche = models.DecimalField(max_digits=10, decimal_places=2)
+    slug = models.CharField(max_length=60, db_collation="utf8mb4_0900_ai_ci")
+    portada = models.ImageField(
+        upload_to="propiedades/",  blank=True, null=True)
+    promedio = models.DecimalField(
+        max_digits=7, decimal_places=6, blank=True, null=True
+    )
+    divisa = models.CharField(max_length=50, db_collation="utf8mb4_0900_ai_ci")
+    tipo = models.CharField(max_length=25, db_collation="utf8mb4_0900_ai_ci")
+    es_favorito = models.BooleanField()
+
+    class Meta:
+        managed = False
+        db_table = "cards"

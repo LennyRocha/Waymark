@@ -7,8 +7,11 @@ from .models import (
     CategoriasAmenidad,
     Ubicaciones,
     Favorito,
+    Cards,
 )
 from rest_framework import serializers
+
+from cuentas.models import Usuario
 
 
 class DivisaSerializer(serializers.ModelSerializer):
@@ -38,21 +41,14 @@ class ImagenSerializer(serializers.ModelSerializer):
             "orden",
         )
 
-
-class FavoritoSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Favorito
-        fields = "__all__"
-
-
 class PropiedadSerializer(serializers.ModelSerializer):
     divisa = DivisaSerializer(read_only=True)
     tipo = TipoPropSerializer(source="tipo_propiedad", read_only=True)
     amenidades = AmenidadSerializer(many=True, read_only=True)
-    
+
     check_in = serializers.TimeField(format="%H:%M")
     check_out = serializers.TimeField(format="%H:%M")
-    
+
     activa = serializers.BooleanField(read_only=True)
 
     divisa_id = serializers.PrimaryKeyRelatedField(
@@ -141,4 +137,61 @@ class CategoriaAmenidadSerializer(serializers.ModelSerializer):
 class UbicacionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ubicaciones
+        fields = "__all__"
+
+
+class CardSerializer(serializers.ModelSerializer):
+    es_mi_favorito = serializers.SerializerMethodField()
+    favorito_id = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Cards
+        fields = "__all__"
+
+    def get_es_mi_favorito(self, obj):
+        user = self.context.get("request").user
+
+        # TODO: eliminar debug y descomentar el return
+        """ 
+        if not user.is_authenticated:
+            return False
+            
+        return Favorito.objects.filter(
+            usuario=user,
+            propiedad_id=obj.propiedad_id
+        ).exists()
+        """
+        debug = Usuario.objects.get(pk=1)
+        return Favorito.objects.filter(
+            usuario=debug, propiedad_id=obj.propiedad_id
+        ).exists()
+
+    def get_favorito_id(self, obj):
+        user = self.context.get("request").user
+
+        # TODO: eliminar debug y descomentar el return
+        """ 
+            if not user.is_authenticated:
+                return False
+                
+            fav = Favorito.objects.get(
+                usuario=user,
+                propiedad_id=obj.propiedad_id
+            )
+            
+            return fav.favorito_id
+            """
+
+        debug = Usuario.objects.get(pk=1)
+        fav = Favorito.objects.filter(
+            usuario=debug, propiedad_id=obj.propiedad_id
+        ).first()
+
+        if fav:
+            return fav.favorito_id
+        return None
+
+class FavoritoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Favorito
         fields = "__all__"

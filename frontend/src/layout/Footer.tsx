@@ -10,8 +10,8 @@ export default function Footer() {
                         {new Date().getFullYear() + ' '}
                         Synverge Inc. Todos los derechos reservados.
                     </div>
-                    <div className="text-text-secondary px-4 w-full text-center sm:w-auto sm:text-left">
-                        Powered by <CustomLink to="www.utez.edu.mx">UTEZ</CustomLink>
+                    <div className="text-text-secondary px-4 w-full text-center sm:w-auto sm:text-left flex gap-1">
+                        Powered by <CustomLink disabled={false}  to="www.utez.edu.mx">UTEZ</CustomLink>
                     </div>
                 </div>
             </div>

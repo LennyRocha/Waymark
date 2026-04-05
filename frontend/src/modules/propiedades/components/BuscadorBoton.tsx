@@ -5,7 +5,12 @@ import DropdownParent from "../../../components/DropdownParent";
 import CustomDropdown from "../../../components/CustomDropdown";
 import Accordion from "../../../components/Accordion";
 
-export default function BuscadorBoton() {
+type Props = {
+  isWaiting: boolean;
+};
+export default function BuscadorBoton({
+  isWaiting = false,
+}: Readonly<Props>) {
   const [vis, setVis] = useState(false);
   const buttonReff = useRef<HTMLButtonElement | null>(null);
 

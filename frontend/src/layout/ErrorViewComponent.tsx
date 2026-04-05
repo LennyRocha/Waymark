@@ -41,8 +41,11 @@ export default function ErrorViewComponent({
         name={icon}
         size={48}
         className="text-text-secondary"
+        fill="var(--color-border)"
       />
-      <h5 className="text-text-secondary">¡Ocurrió un error!</h5>
+      <h5 className="text-text-secondary">
+        ¡Ocurrió un error!
+      </h5>
       <h6 className="text-text-secondary">
         {" "}
         {getAxiosErrorMessage(error)}

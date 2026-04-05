@@ -11,7 +11,8 @@ import useSetPageTitle from '../../utils/setPageTitle';
 import { Dot, MapPinHouse } from 'lucide-react';
 import ReactMarkdown from "react-markdown";
 import Calendar from 'react-calendar';
-import Map, { Marker } from 'react-map-gl/mapbox'
+import Map, { Marker } from 'react-map-gl/mapbox';
+import "react-calendar/dist/Calendar.css";
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN
 const MAX_LENGTH = 500;

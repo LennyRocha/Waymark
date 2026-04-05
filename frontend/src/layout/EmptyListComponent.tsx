@@ -2,11 +2,14 @@ import { DatabaseZap } from "lucide-react";
 import { motion } from "framer-motion";
 
 type Props = {
-    titulo?: string;
-    mensaje: string;
+  titulo?: string;
+  mensaje: string;
 };
 
-export default function EmptyListComponent({ titulo, mensaje }: Readonly<Props>) {
+export default function EmptyListComponent({
+  titulo,
+  mensaje,
+}: Readonly<Props>) {
   return (
     <motion.div
       className="w-full h-full flex items-center justify-center p-4 flex-col gap-2"
@@ -17,6 +20,7 @@ export default function EmptyListComponent({ titulo, mensaje }: Readonly<Props>)
       <DatabaseZap
         size={48}
         className="text-text-secondary"
+        fill="var(--color-border)"
       />
       {titulo && (
         <h5 className="text-text-secondary">{titulo}</h5>

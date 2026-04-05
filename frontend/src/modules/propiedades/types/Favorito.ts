@@ -4,3 +4,7 @@ export default interface Favorito {
   propiedad: number;
   created_at: Date;
 }
+
+export interface FavoritoRequest {
+  propiedad: number;
+}

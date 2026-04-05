@@ -4,7 +4,7 @@ import React, {
   useState,
   type RefObject,
 } from "react";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   MapPin,
   Minus,
@@ -18,6 +18,8 @@ import DropdownParent from "../../../components/DropdownParent";
 import { Ubicacion } from "../types/Propiedad";
 import { CustomCheckBox } from "../../../components/CustomInputs";
 import Calendar from "react-calendar";
+import "react-calendar/dist/Calendar.css";
+import "../css/propiedades.css";
 
 type Functions = {
   setUbicacion: (ciudad: string) => void;
@@ -81,11 +83,31 @@ const MenuDestino = ({
 const MenuFechas = ({
   anchorRef,
   visible,
+  functions,
 }: Readonly<DropdownMenuProps>) => {
-  type ValuePiece = Date | null;
-  type Value = ValuePiece | [ValuePiece, ValuePiece];
-  const [fecha1, setFecha1] = useState<Value>(new Date());
-  const [fecha2, setFecha2] = useState<Value>(new Date());
+  const [range, setRange] = useState<[Date, Date] | null>(
+    null,
+  );
+
+  const today = new Date();
+  const maxDate = new Date();
+  maxDate.setFullYear(today.getFullYear() + 2);
+
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString("es-MX", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  };
+
+  React.useEffect(() => {
+    if (range) {
+      functions?.setCheckin(formatDate(range[0]));
+      functions?.setCheckout(formatDate(range[1]));
+    }
+  }, [range]);
+
   return (
     <CustomDropdown
       anchorRef={anchorRef}
@@ -100,9 +122,20 @@ const MenuFechas = ({
       <p className="text-sm text-text-secondary">
         Aquí va el calendario
       </p>
-      <div className="flex gap-4">
-        <Calendar value={fecha1} onChange={setFecha1} />
-        <Calendar value={fecha2} onChange={setFecha2} />
+      <div className="flex gap-6">
+        <Calendar
+          selectRange
+          value={range}
+          onChange={(value) =>
+            setRange(value as [Date, Date])
+          }
+          minDate={today}
+          maxDate={maxDate}
+          showDoubleView // ⭐ CLAVE
+          next2Label={null}
+          prev2Label={null}
+          locale="es-MX"
+        />
       </div>
     </CustomDropdown>
   );
@@ -156,6 +189,44 @@ const MenuHuespedes = ({
   );
 };
 
+const parseDateString = (dateStr?: string) => {
+  if (!dateStr) return null;
+
+  const [day, month, year] = dateStr.split("/");
+
+  return new Date(
+    Number(year),
+    Number(month) - 1,
+    Number(day),
+  );
+};
+
+const formatShortMonthDate = (date?: Date | null) => {
+  if (!date) return "";
+
+  return date
+    .toLocaleDateString("es-MX", {
+      month: "short",
+      day: "numeric",
+    })
+    .replace(".", "");
+};
+
+const getFechasTexto = (
+  checkin?: string,
+  checkout?: string,
+) => {
+  const startDate = parseDateString(checkin);
+
+  const endDate = parseDateString(checkout);
+
+  if (!startDate) return "";
+
+  if (!endDate) return formatShortMonthDate(startDate);
+
+  return `${formatShortMonthDate(startDate)} - ${formatShortMonthDate(endDate)}`;
+};
+
 type BuscadorProps = {
   scrolled: boolean;
   setScrolled: (value: boolean) => void;
@@ -207,11 +278,15 @@ const Buscador = ({
     content,
   } = useParamsValues();
 
-  const filteredLocations = locations.filter((loc) =>
-    `${loc.ciudad}, ${loc.pais}`
-      .toLowerCase()
-      .includes(ubicacion.toLowerCase()),
+  const filteredLocations = filterLocations(
+    locations,
+    ubicacion,
   );
+
+  function cleanDates() {
+    setCheckin("");
+    setCheckout("");
+  }
 
   const functions = {
     setUbicacion,
@@ -232,22 +307,7 @@ const Buscador = ({
   };
 
   const params = new URLSearchParams();
-
-  if (checkin) {
-    params.set("checkin", checkin);
-  }
-  if (checkout) {
-    params.set("checkout", checkout);
-  }
-  if (huespedes) {
-    params.set("adults", huespedes.toString());
-  }
-  if (conPets) {
-    params.set("allow_pets", "true");
-  }
-  if (conKids) {
-    params.set("allow_children", "true");
-  }
+  makeQuery(params, values);
 
   const query = ubicacion
     ? ubicacion.replace(", ", "-")
@@ -288,8 +348,16 @@ const Buscador = ({
           isWaiting={isWaiting}
           onChange={(text) => setUbicacion(text)}
           readonly={false}
-          cleanInput={() => setUbicacion("")}
-        />
+        >
+          <SearchButton
+            focus={focus}
+            scrolled={scrolled}
+            showButton={false}
+            onClick={() => navigate(url)}
+            cleanInput={() => setUbicacion("")}
+            thisFocus={inputIdx === 1}
+          />
+        </SearchSection>
 
         <Divider />
 
@@ -301,11 +369,20 @@ const Buscador = ({
           scrolled={scrolled}
           open={open}
           close={close}
+          value={getFechasTexto(checkin, checkout)}
           refProp={input2Ref}
           isWaiting={isWaiting}
           readonly
-          cleanInput={() => {}}
-        />
+        >
+          <SearchButton
+            focus={focus}
+            scrolled={scrolled}
+            showButton={false}
+            onClick={() => navigate(url)}
+            cleanInput={cleanDates}
+            thisFocus={inputIdx === 2}
+          />
+        </SearchSection>
 
         <Divider />
 
@@ -322,16 +399,18 @@ const Buscador = ({
           hasButton
           isWaiting={isWaiting}
           readonly
-          cleanInput={() => {
-            setHuespedes(1);
-            setConPets(false);
-            setConKids(false);
-          }}
         >
           <SearchButton
             focus={focus}
             scrolled={scrolled}
+            showButton
             onClick={() => navigate(url)}
+            thisFocus={inputIdx === 3}
+            cleanInput={() => {
+              setHuespedes(1);
+              setConPets(false);
+              setConKids(false);
+            }}
           />
         </SearchSection>
       </motion.nav>
@@ -363,6 +442,41 @@ const Buscador = ({
     </DropdownParent>
   );
 };
+
+function makeQuery(
+  params: URLSearchParams,
+  values: Values,
+) {
+  const { checkin, checkout, huespedes, conPets, conKids } =
+    values;
+
+  if (checkin) {
+    params.set("checkin", checkin);
+  }
+  if (checkout) {
+    params.set("checkout", checkout);
+  }
+  if (huespedes) {
+    params.set("adults", huespedes.toString());
+  }
+  if (conPets) {
+    params.set("allow_pets", "true");
+  }
+  if (conKids) {
+    params.set("allow_children", "true");
+  }
+}
+
+function filterLocations(
+  locations: Ubicacion[],
+  ubicacion: string,
+) {
+  return locations.filter((loc) =>
+    `${loc.ciudad}, ${loc.pais}`
+      .toLowerCase()
+      .includes(ubicacion.toLowerCase()),
+  );
+}
 
 function useParamsValues() {
   const [huespedes, setHuespedes] = useState<number | null>(
@@ -415,21 +529,6 @@ type SectionProps = {
   hasButton?: boolean;
   isWaiting?: boolean;
   readonly: boolean;
-  cleanInput: () => void;
-};
-
-const fuckOrClick = (
-  scrolled: boolean,
-  open: (idx: number) => void,
-  idx: number,
-) => {
-  const handle = (e: React.FocusEvent | React.MouseEvent) => {
-    if (!scrolled) {
-      e.stopPropagation();
-      open(idx);
-    }
-  };
-  return handle;
 };
 
 const SearchSection = ({
@@ -447,18 +546,23 @@ const SearchSection = ({
   hasButton = false,
   isWaiting = false,
   readonly = false,
-  cleanInput = () => {},
 }: SectionProps) => {
-  const handleClick = fuckOrClick(scrolled, open, idx);
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!scrolled) open(idx);
+  };
 
-  const handleFocus = fuckOrClick(scrolled, open, idx);
+  const handleFocus = (e: React.FocusEvent) => {
+    e.stopPropagation();
+    if (!scrolled) open(idx);
+  };
 
   return (
     <motion.div
       layout
       ref={refProp}
       onClick={handleClick}
-      className={`cursor-pointer relative w-auto transition delay-150 duration-300 ease 
+      className={`relative w-auto transition delay-150 duration-300 ease 
             ${!scrolled && inputIdx !== idx && !isWaiting ? "hover:bg-border" : ""}
             ${inputIdx === idx ? "bg-white" : "bg-transparent"} ${hasButton ? "flex-2" : "flex-1"} ${isWaiting && "opacity-50"}
             rounded-full px-6 py-2 h-full flex flex-col justify-center flex-1 relative`}
@@ -488,25 +592,21 @@ const SearchSection = ({
         disabled={scrolled || isWaiting}
         readOnly={readonly}
       />
-
-      {idx === inputIdx && value && (
-        <X
-          className={`absolute top-6 mx-2 bg-white ${inputIdx === 3 ? "left-38" : "right-4"}`}
-          color="var(--color-text-primary)"
-          size={24}
-          onClick={cleanInput}
-        />
-      )}
       {children}
     </motion.div>
   );
 };
+
+const MotionX = motion.create(X);
 
 type SearchButtonProps = {
   focus: boolean;
   scrolled: boolean;
   onClick: () => void;
   isWaiting?: boolean;
+  cleanInput?: () => void;
+  showButton?: boolean;
+  thisFocus?: boolean;
 };
 
 const SearchButton = ({
@@ -514,24 +614,46 @@ const SearchButton = ({
   scrolled,
   onClick,
   isWaiting = false,
+  cleanInput = () => {},
+  showButton = true,
+  thisFocus = false,
 }: SearchButtonProps) => {
   return (
-    <motion.button
-      className="absolute right-2 flex items-center justify-center gap-2 text-white rounded-full overflow-hidden outline-none h-auto"
-      animate={{
-        width: focus ? 120 : 50,
-        background: focus
-          ? "linear-gradient(to right, var(--color-primary-500), var(--color-secondary-500))"
-          : "var(--color-primary-500)",
-        padding: scrolled ? "2px" : "12px",
-      }}
-      disabled={scrolled || isWaiting}
-      transition={{ duration: 0.4 }}
-      onClick={onClick}
+    <motion.div
+      className={`absolute ${showButton ? "right-2" : "right-1/12"} flex  items-center`}
     >
-      <Search className="mr-1" />
-      {focus && "Buscar"}
-    </motion.button>
+      <AnimatePresence mode="wait">
+        {thisFocus && (
+          <MotionX
+            initial={{ opacity: 0 }}
+            animate={{ opacity: focus ? 1 : 0 }}
+            transition={{ duration: 0.3 }}
+            color="var(--color-text-primary)"
+            size={24}
+            onClick={cleanInput}
+            className={`mt-4 cursor-pointer  p-1 transition durarion-300  ${thisFocus ? "bg-white" : "bg-transparent"}`}
+          />
+        )}
+      </AnimatePresence>
+      {showButton && (
+        <motion.button
+          className=" flex items-center justify-center gap-2 text-white rounded-full overflow-hidden outline-none h-auto"
+          animate={{
+            width: focus ? 120 : 50,
+            background: focus
+              ? "linear-gradient(to right, var(--color-primary-500), var(--color-secondary-500))"
+              : "var(--color-primary-500)",
+            padding: scrolled ? "2px" : "12px",
+          }}
+          disabled={scrolled || isWaiting}
+          transition={{ duration: 0.4 }}
+          onClick={onClick}
+        >
+          <Search className="mr-1" />
+          {focus && "Buscar"}
+        </motion.button>
+      )}
+    </motion.div>
   );
 };
 
