@@ -84,10 +84,10 @@ const MenuFechas = ({
   visible,
   functions,
 }: Readonly<DropdownMenuProps>) => {
-  const [range, setRange] = useState<[Date, Date] | null>(
-    null,
-  );
+  type ValuePiece = Date | null;
+  type Value = ValuePiece | [ValuePiece, ValuePiece];
 
+  const [range, setRange] = useState<Value>(null);
   const today = new Date();
   const maxDate = new Date();
   maxDate.setFullYear(today.getFullYear() + 2);
@@ -101,11 +101,32 @@ const MenuFechas = ({
   };
 
   React.useEffect(() => {
-    if (range) {
-      functions?.setCheckin(formatDate(range[0]));
-      functions?.setCheckout(formatDate(range[1]));
+    if (!range) return;
+
+    if (Array.isArray(range)) {
+      if (range[0])
+        functions?.setCheckin(formatDate(range[0]));
+
+      if (range[1])
+        functions?.setCheckout(formatDate(range[1]));
+    } else {
+      // modo single
+      functions?.setCheckin(formatDate(range));
+
+      functions?.setCheckout("");
     }
   }, [range]);
+
+  type CalendarMode = "single" | "range";
+
+  const [calendarMode, setCalendarMode] =
+    useState<CalendarMode>("range");
+
+  React.useEffect(() => {
+    setRange(null);
+    functions?.setCheckin("");
+    functions?.setCheckout("");
+  }, [calendarMode]);
 
   return (
     <CustomDropdown
@@ -113,27 +134,58 @@ const MenuFechas = ({
       visible={visible}
       layoutId="menu"
       align="center"
-      width={700}
+      width={calendarMode === "range" ? 700 : 350}
     >
-      <p className="text-xs font-bold text-text-secondary uppercase mb-2">
-        Fechas
-      </p>
-      <p className="text-sm text-text-secondary">
-        Aquí va el calendario
-      </p>
-      <div className="flex gap-6">
+      <AnimatePresence mode="wait">
+        <div className="flex gap-2 p-1 bg-bg-secondary items-center justify-center">
+          <motion.button
+            className="rounded-md text-text-primary px-4 py-2"
+            animate={{
+              background:
+                calendarMode === "range"
+                  ? "var(--color-border)"
+                  : "transparent",
+              color:
+                calendarMode === "range"
+                  ? "black"
+                  : "var(--color-text-primary)",
+            }}
+            onClick={() => setCalendarMode("range")}
+          >
+            Rango
+          </motion.button>
+
+          <motion.button
+            className="rounded-md text-text-primary px-4 py-2"
+            animate={{
+              background:
+                calendarMode === "single"
+                  ? "var(--color-border)"
+                  : "transparent",
+              color:
+                calendarMode === "single"
+                  ? "black"
+                  : "var(--color-text-primary)",
+            }}
+            onClick={() => setCalendarMode("single")}
+          >
+            Día
+          </motion.button>
+        </div>
+      </AnimatePresence>
+      <div className="flex gap-6 items-center justify-center">
         <Calendar
-          selectRange
+          selectRange={calendarMode === "range"}
           value={range}
-          onChange={(value) =>
-            setRange(value as [Date, Date])
-          }
+          onChange={(value) => setRange(value)}
           minDate={today}
           maxDate={maxDate}
-          showDoubleView // ⭐ CLAVE
+          showDoubleView={calendarMode === "range"}
           next2Label={null}
           prev2Label={null}
           locale="es-MX"
+          minDetail="month"
+          maxDetail="month"
         />
       </div>
     </CustomDropdown>
@@ -530,6 +582,22 @@ type SectionProps = {
   readonly: boolean;
 };
 
+const fuckOrClick = (
+  scrolled: boolean,
+  open: (idx: number) => void,
+  idx: number,
+) => {
+  function handleStop(
+    e: React.MouseEvent | React.FocusEvent<HTMLDivElement>,
+  ) {
+    if (!scrolled) {
+      e.stopPropagation();
+      open(idx);
+    }
+  }
+  return handleStop;
+};
+
 const SearchSection = ({
   idx,
   label,
@@ -546,19 +614,8 @@ const SearchSection = ({
   isWaiting = false,
   readonly = false,
 }: SectionProps) => {
-  const handleClick = (e: React.MouseEvent) => {
-    if (!scrolled) {
-          e.stopPropagation();
-      open(idx)
-    };
-  };
-
-  const handleFocus = (e: React.FocusEvent) => {
-    if (!scrolled){ 
-      e.stopPropagation();
-      open(idx);
-    }
-  };
+  const handleClick = fuckOrClick(scrolled, open, idx);
+  const handleFocus = fuckOrClick(scrolled, open, idx);
 
   return (
     <motion.div
