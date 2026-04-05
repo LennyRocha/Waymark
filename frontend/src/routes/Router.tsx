@@ -10,6 +10,7 @@ import AdministrarPropiedad from '../modules/propiedades/AdministrarPropiedad';
 import NuevaPropiedad from '../modules/propiedades/NuevaPropiedad';
 import MisPropiedades from '../modules/propiedades/MisPropiedades';
 import MisFavoritos from '../modules/propiedades/MisFavoritos';
+import LandingGuest from '../modules/propiedades/LandingGuest';
 
 export default function Router() {
     return (
@@ -21,7 +22,7 @@ export default function Router() {
                 <Route path="s/homes" element={<FiltrosPage />} />
                 <Route path="guest" element={<GuestHeader />}>
                     <Route index element={<Navigate to="explore" />} />
-                    <Route path="explore" element={<h1>Vista principal (here goes the fucking landing)</h1>} />
+                    <Route path="explore" element={<LandingGuest />} />
                     <Route path="favorites" index element={<MisFavoritos />} />
                     <Route path="my-trips" index element={<h1>Vista de mis reservaciones</h1>} />
                     <Route path="profile" index element={<h1>Vista de mi perfil</h1>} />

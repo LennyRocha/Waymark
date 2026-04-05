@@ -18,7 +18,7 @@ export default function MisFavoritos({}: Props) {
     {
       label: "Favoritos",
       href: "/guest/favorites",
-      disabed: true,
+      disabled: true,
     },
   ];
   const favoritos = useFavoritos();

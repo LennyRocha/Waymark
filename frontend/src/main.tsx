@@ -8,6 +8,7 @@ import "./index.css";
 import App from "./App";
 import toast from "react-hot-toast";
 import { getAxiosErrorMessage } from "./utils/getAxiosErrorMessage";
+import "react-calendar/dist/Calendar.css";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -15,13 +16,14 @@ const queryClient = new QueryClient({
       refetchOnReconnect: true,
       refetchOnWindowFocus: false,
       refetchOnMount: true,
-            retryDelay: attempt =>
+      retryDelay: (attempt) =>
         Math.min(1000 * 2 ** attempt, 5000),
       staleTime: 1000 * 60 * 5, // 5 min
       cacheTime: 1000 * 60 * 10, // 10 min
       onError: (error) => {
         toast.error(
-         getAxiosErrorMessage(error) || "Ocurrió un error al cargar los datos. Por favor, intenta de nuevo.",
+          getAxiosErrorMessage(error) ||
+            "Ocurrió un error al cargar los datos. Por favor, intenta de nuevo.",
           { duration: 5000 },
         );
       },

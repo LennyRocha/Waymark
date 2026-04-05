@@ -18,7 +18,6 @@ import DropdownParent from "../../../components/DropdownParent";
 import { Ubicacion } from "../types/Propiedad";
 import { CustomCheckBox } from "../../../components/CustomInputs";
 import Calendar from "react-calendar";
-import "react-calendar/dist/Calendar.css";
 import "../css/propiedades.css";
 
 type Functions = {
@@ -331,7 +330,7 @@ const Buscador = ({
           paddingTop: scrolled ? 4 : 2,
           paddingBottom: scrolled ? 4 : 2,
         }}
-        className={`w-full max-w-[850px] mx-auto shadow-lg rounded-full flex items-center gap-1 px-[2px] ${
+        className={`cursor-pointer w-full max-w-[850px] mx-auto shadow-lg rounded-full flex items-center gap-1 px-[2px] ${
           inputIdx === 0 ? "bg-white" : "bg-border"
         }`}
       >
@@ -548,13 +547,17 @@ const SearchSection = ({
   readonly = false,
 }: SectionProps) => {
   const handleClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!scrolled) open(idx);
+    if (!scrolled) {
+          e.stopPropagation();
+      open(idx)
+    };
   };
 
   const handleFocus = (e: React.FocusEvent) => {
-    e.stopPropagation();
-    if (!scrolled) open(idx);
+    if (!scrolled){ 
+      e.stopPropagation();
+      open(idx);
+    }
   };
 
   return (
