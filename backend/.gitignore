@@ -8,3 +8,6 @@ backend/settings.py
 models.txt
 
 venv
+
+__pycache__/
+*.pyc
