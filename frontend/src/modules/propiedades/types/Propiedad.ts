@@ -1,5 +1,5 @@
 import Amenidad from "./Amenidad";
-import Divisa from "./Divisa";
+import Divisa from "../../divisas/types/Divisa";
 import Imagen from "./Imagen";
 import TipoPropiedad from "./TipoPropiedad";
 
@@ -11,9 +11,10 @@ export default interface Propiedad {
 
   pais: string;
   ciudad: string;
+  region: string;
   direccion: string;
 
-  activa: number | null;
+  activa: boolean;
 
   coordenadas: {
     lat: number;
@@ -54,5 +55,6 @@ export default interface Propiedad {
 
 export type Ubicacion = {
   pais: string;
+  region: string;
   ciudad: string;
 };

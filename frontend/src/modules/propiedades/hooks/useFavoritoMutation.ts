@@ -1,20 +1,16 @@
 import { useMutation } from "@tanstack/react-query";
 import FavoritoRepository from "../repositories/FavoritoRepository";
-import Favorito from "../types/Favorito";
+import { FavoritoRequest } from "../types/Favorito";
 
-type accion = "post" | "delete";
-export default function useCreatePropiedad(
-  props = {},
-  accion: accion = "post",
-) {
-  if (accion === "post") {
-    return useMutation({
-      mutationFn: (data: Favorito) =>
-        FavoritoRepository.save(data),
-      ...props,
-    });
-  }
+export function useFavoritoPost(props = {}) {
+  return useMutation({
+    mutationFn: (data: FavoritoRequest) =>
+      FavoritoRepository.save(data),
+    ...props,
+  });
+}
 
+export function useFavoritoDelete(props = {}) {
   return useMutation({
     mutationFn: (id: number) =>
       FavoritoRepository.delete(id),

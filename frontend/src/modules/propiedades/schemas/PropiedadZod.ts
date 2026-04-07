@@ -1,4 +1,13 @@
 import { z } from "zod";
+import Imagen from "../types/Imagen";
+
+const defaultImages: Imagen[] = Array.from(
+  { length: 10 },
+  (_, i) => ({
+    prop_ima_id: 0,
+    orden: i + 1,
+  }),
+);
 
 export const PropiedadSchema = z
   .object({
@@ -9,18 +18,14 @@ export const PropiedadSchema = z
         50,
         "El título asignado no debe exceder los 50 carácteres",
       )
-      .regex(
-        /^[a-zA-ZáéíóúÁÉÍÓÚ ]+$/,
-        "No puedes incluir números ni símbolos",
-      )
       .default(""),
 
     descripcion: z
       .string()
       .min(1, "Este campo no puede estar vacío")
       .max(
-        500,
-        "La descripción asignada no debe exceder los 500 carácteres",
+        3000,
+        "La descripción asignada no debe exceder los 3000 carácteres",
       )
       .default(""),
 
@@ -36,6 +41,15 @@ export const PropiedadSchema = z
       .max(
         25,
         "La ciudad no debe exceder los 25 carácteres",
+      )
+      .default(""),
+
+    region: z
+      .string()
+      .min(1, "Este campo no puede estar vacío")
+      .max(
+        25,
+        "La region no debe exceder los 25 carácteres",
       )
       .default(""),
 
@@ -56,17 +70,17 @@ export const PropiedadSchema = z
       })
       .default({
         lat: 0,
-        lng:  0,
+        lng: 0,
       }),
 
     precio_noche: z.coerce
       .number()
       .min(
-        1.0,
+        1,
         "El precio asignado no debe ser menor o igual a 0",
       )
       .max(9999999.99, "El precio dado es demasiado grande")
-      .default(1.0),
+      .default(100),
 
     divisa_id: z.coerce
       .number()
@@ -134,8 +148,6 @@ export const PropiedadSchema = z
       .min(1, "Este campo no puede estar vacío")
       .default(0),
 
-    anfitrion_id: z.coerce.number().min(1).default(1),
-
     amenidades_ids: z
       .array(z.coerce.number())
       .min(1, "Debe seleccionar al menos una amenidad")
@@ -146,20 +158,26 @@ export const PropiedadSchema = z
         z.object({
           prop_ima_id: z.number().optional(),
 
-          orden: z.number().min(1).max(10),
+          orden: z.number().min(1).max(10).optional(),
 
-          url: z.string().optional(),
-
-          foto: z.instanceof(File).optional(),
+          url: z
+            .union([z.instanceof(File), z.string()])
+            .optional(),
         }),
       )
       .max(10, "Solo se permiten máximo 10 imágenes")
-      .default([]),
+      .default(() => defaultImages),
   })
 
   .refine((data) => data.check_out > data.check_in, {
-    message: "Check-out debe ser después del check-in",
+    message:
+      "La hora de salida debe ser después de la hora de entrada",
     path: ["check_out"],
+  })
+  .refine((data) => data.check_in < data.check_out, {
+    message:
+      "La hora de entrada debe ser antes de la hora de salida",
+    path: ["check_in"],
   });
 
 export type PropiedadForm = z.infer<typeof PropiedadSchema>;

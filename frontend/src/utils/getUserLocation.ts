@@ -2,7 +2,7 @@ export const getUserLocation = () => {
   return new Promise<{ lat: number; lng: number }>(
     (resolve, reject) => {
       if (!navigator.geolocation) {
-        reject("Geolocation not supported");
+        reject(new Error("Geolocation not supported"));
         return;
       }
 
@@ -13,7 +13,9 @@ export const getUserLocation = () => {
             lng: position.coords.longitude,
           });
         },
-        reject,
+        (error) => {
+          reject(new Error(error.message));
+        },
         {
           enableHighAccuracy: true,
           timeout: 5000,

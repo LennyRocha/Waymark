@@ -6,6 +6,5 @@ export default function usePropiedades(filters: FiltrosPropiedades = {}) {
   return useQuery({
     queryKey: ["propiedades", filters],
     queryFn: () => PropiedadRepository.findAll(filters),
-    enabled: !!filters
   });
 }

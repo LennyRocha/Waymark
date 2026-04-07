@@ -2,7 +2,7 @@
 initialdata/*
 
 static/*
-
+backend/settings.py
 models.txt
 
 venv

@@ -3,7 +3,7 @@ import PropiedadRepository from "../repositories/PropiedadRepository";
 import { PropiedadForm, PropiedadUpdate } from "../schemas/PropiedadZod";
 
 type accion = "post" | "put" | "delete";
-export default function useCreatePropiedad(
+export default function usePropiedadMutation(
   props = {},
   accion: accion = "post",
 ) {

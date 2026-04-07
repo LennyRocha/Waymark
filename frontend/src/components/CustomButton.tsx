@@ -6,11 +6,11 @@ import React from "react";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "secondary" | "tertiary";
-  isWaiting: boolean;
-  fullWidth: boolean;
-  customWidth: string;
-  iconName: IconName | undefined;
-  size: "small" | "medium" | "large";
+  isWaiting?: boolean;
+  fullWidth?: boolean;
+  customWidth?: string;
+  iconName?: IconName | undefined;
+  size?: "small" | "medium" | "large";
 }
 const CustomButton: React.FC<ButtonProps> = ({
   children,
@@ -25,16 +25,34 @@ const CustomButton: React.FC<ButtonProps> = ({
   const Defclass = React.useMemo<string>(() => {
     switch (variant) {
       case "primary":
-        return `text-white 
-        bg-gradient-to-r 
-        from-primary-500 to-secondary-500 
-        hover:from-secondary-500 hover:to-primary-500 
-        active:from-secondary-600 active:to-secondary-600
-        disabled:from-gray-300 disabled:to-gray-300`;
+        return [
+          "text-white",
+          "bg-gradient-to-r",
+          "from-primary-500 to-secondary-500",
+          "hover:from-secondary-500 hover:to-primary-500",
+          "active:from-secondary-600 active:to-secondary-600",
+          "disabled:from-gray-300 disabled:to-gray-300",
+        ].join(" ");
       case "secondary":
-        return `text-white bg-text-primary active:bg-black hover:bg-[#111111]  disabled:bg-gray-400`;
+        return [
+          "text-white",
+          "bg-text-primary",
+          "active:bg-black",
+          "hover:bg-[#111111]",
+          "disabled:bg-gray-400",
+        ].join(" ");
       case "tertiary":
-        return `text-text-primary border-2 border-text-primary  hover:bg-gray-100 active:bg-border bg-transparent  disabled:bg-gray-400 disabled:text-white disabled:bg-gray-400 disabled:border-0 focus:ring-offset-1`;
+        return [
+          "text-text-primary",
+          "border-2 border-text-primary",
+          "hover:bg-gray-100",
+          "active:bg-border",
+          "bg-transparent",
+          "disabled:bg-gray-400 disabled:text-white disabled:border-0",
+          "focus:ring-offset-1",
+        ].join(" ");
+      default:
+        return "";
     }
   }, [variant]);
   const sizeClass = React.useMemo(() => {
@@ -49,8 +67,8 @@ const CustomButton: React.FC<ButtonProps> = ({
   }, [size]);
   return (
     <button
-      className={` flex items-center justify-center gap-2 ${sizeClass} px-[24px] font-semibold rounded-lg hover:inset-shadow-2xl inset-shadow-gray-500 focus:outline-none focus:ring-2  focus:ring-text-primary  transition delay-150 duration-300 ease-in-out disabled:cursor-not-allowed
-        disabled:opacity-70 ${customWidth === "" ? "w-auto" : customWidth} ${Defclass}`}
+      className={`cursor-pointer flex items-center justify-center gap-2 ${sizeClass} px-[24px] font-semibold rounded-lg hover:inset-shadow-2xl inset-shadow-gray-500 focus:outline-none focus:ring-2  focus:ring-text-primary  transition delay-150 duration-300 ease-in-out disabled:cursor-not-allowed
+        disabled:opacity-70 ${fullWidth && "w-full" } ${customWidth === "" ? "w-auto" : customWidth} ${Defclass}`}
       {...props}
       disabled={props.disabled || isWaiting}
     >
