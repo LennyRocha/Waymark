@@ -1,0 +1,14 @@
+.env
+initialdata/*
+
+static/*
+backend/settings.py
+models.txt
+
+venv
+
+sonar-project.properties
+
+__pycache__/
+*.pyc
+*.pyo

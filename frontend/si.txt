@@ -1,1 +1,0 @@
-Aquí se supone va el front con react

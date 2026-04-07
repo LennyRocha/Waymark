@@ -1,0 +1,76 @@
+.react-calendar__tile--rangeStart {
+    background-color: var(--color-text-primary);
+    color: white !important;
+}
+
+.react-calendar__tile--rangeEnd {
+    background-color: var(--color-text-primary);
+    color: white !important;
+}
+
+.react-calendar__tile {
+    border-radius: 50%;
+    padding: 10px 0 !important;
+    margin: 1px 0 !important;
+    transition: all cubic-bezier(0.075, 0.82, 0.165, 1) 0.3s !important;
+    border: 2px solid transparent !important;
+}
+
+.react-calendar {
+    border: none !important;
+    width: 100%;
+    font-family: Montserrat, sans-serif !important;
+}
+
+.react-calendar__tile--now {
+    background-color: var(--color-primary-500) !important;
+    color: white !important;
+}
+
+.react-calendar__tile--rangeStart,
+.react-calendar__tile--rangeEnd {
+    background-color: var(--color-text-primary) !important;
+    color: white !important;
+    border-color: black !important;
+}
+
+.react-calendar__tile--rangeBothEnds {
+    background-color: var(--color-text-primary) !important;
+    color: white !important;
+    border-color: black !important;
+}
+
+.react-calendar__tile--range:not(.react-calendar__tile--rangeStart):not(.react-calendar__tile--rangeEnd):not(.react-calendar__tile--rangeBothEnds) {
+    background-color: var(--color-gray-100) !important;
+    color: var(--color-text-secondary) !important;
+    border-radius: 8px !important;
+}
+
+.react-calendar__tile--range:not(.react-calendar__tile--rangeStart):not(.react-calendar__tile--rangeEnd):not(.react-calendar__tile--rangeBothEnds):hover {
+    background-color: var(--color-gray-50) !important;
+}
+
+.react-calendar__tile:hover:not(.react-calendar__tile--active):not(.react-calendar__tile--now):not(.react-calendar__tile--rangeStart):not(.react-calendar__tile--rangeEnd):not(.react-calendar__tile--rangeBothEnds):not(.react-calendar__month-view__days__day--neighboringMonth):not(.react-calendar__tile--disabled) {
+    background-color: transparent !important;
+    color: black !important;
+    border-color: black !important;
+}
+
+.react-calendar__navigation button:first-child,
+.react-calendar__navigation button:last-child {
+    background-color: var(--color-border) !important;
+    border-radius: 16px !important;
+    cursor: pointer !important;
+    font-size: larger !important;
+}
+
+.react-calendar__navigation button:first-child:hover,
+.react-calendar__navigation button:last-child:hover {
+    background-color: var(--color-gray-100) !important;
+}
+
+.react-calendar__navigation__label {
+    background-color: transparent !important;
+    font-weight: 600;
+    font-size: 14px;
+}
