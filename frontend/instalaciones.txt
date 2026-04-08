@@ -53,3 +53,6 @@ npm install @cameratajs/react-date-range-input
 
 #Markdown
 npm install react-markdown
+
+#Decode token
+npm install jwt-decode

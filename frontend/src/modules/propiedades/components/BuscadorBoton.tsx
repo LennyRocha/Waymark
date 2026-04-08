@@ -4,12 +4,16 @@ import { motion } from "framer-motion";
 import DropdownParent from "../../../components/DropdownParent";
 import CustomDropdown from "../../../components/CustomDropdown";
 import Accordion from "../../../components/Accordion";
+import { Ubicacion } from "../types/Propiedad";
+import CustomButton from "../../../components/CustomButton";
 
 type Props = {
   isWaiting: boolean;
+  locations: Ubicacion[];
 };
 export default function BuscadorBoton({
   isWaiting = false,
+  locations = [],
 }: Readonly<Props>) {
   const [vis, setVis] = useState(false);
   const buttonReff = useRef<HTMLButtonElement | null>(null);
@@ -54,9 +58,12 @@ export default function BuscadorBoton({
         anchorRef={buttonReff}
         useParentWidth
       >
-        <div className="si">
-          <p>Contenido</p>
+        <div className="w-full">
           <Accordion items={items} />
+          <div className="flex justify-between items-center mt-6">
+            <CustomButton size="small" variant="tertiary" >Borrar</CustomButton>
+            <CustomButton size="small" >Buscar</CustomButton>
+          </div>
         </div>
       </CustomDropdown>
     </DropdownParent>

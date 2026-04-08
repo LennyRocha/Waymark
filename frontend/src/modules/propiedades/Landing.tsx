@@ -21,6 +21,8 @@ import CustomLoader from "../../layout/CustomLoader";
 import ErrorViewComponent from "../../layout/ErrorViewComponent";
 import EmptyListComponent from "../../layout/EmptyListComponent";
 import { Ubicacion } from "./types/Propiedad";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
 export default function Landing() {
   const ubicaciones = useUbicaciones();
@@ -146,6 +148,10 @@ const Header = ({
   isWaiting = false,
   ubicaciones = [],
 }: HeaderProps) => {
+  const navigate = useNavigate();
+
+  const auth = useAuth();
+
   const { scrollY } = useScroll();
   const [scrolled, setScrolled] = useState(false);
   const [show, setShow] = useState(false);
@@ -155,7 +161,7 @@ const Header = ({
   const buttonRef = useRef(null);
 
   const [isSmall, setIsSmall] = useState(
-    window.innerWidth <= 745,
+    window.innerWidth <= 767,
   );
   const [showLink, setShowLink] = useState(
     window.innerWidth >= 1125,
@@ -165,7 +171,7 @@ const Header = ({
   );
 
   function updateWidth() {
-    setIsSmall(window.innerWidth <= 745);
+    setIsSmall(window.innerWidth <= 767);
     setShowLink(window.innerWidth >= 1125);
     setShowBrand(window.innerWidth >= 950);
   }
@@ -203,7 +209,10 @@ const Header = ({
   return (
     <motion.header className="sticky top-0 z-10 flex flex-col items-center w-full bg-gradient-to-b from-white via-white to-gray-50 to-80% p-[1.25rem] border-b border-border">
       {isSmall ? (
-        <BuscadorBoton isWaiting={isWaiting} />
+        <BuscadorBoton
+          locations={ubicaciones}
+          isWaiting={isWaiting}
+        />
       ) : (
         <>
           <nav className="max-w-[1450px] w-full flex flex-col md:flex-row items-center md:justify-between justify-center">
@@ -223,11 +232,21 @@ const Header = ({
               classes=" flex flex-row gap-2 justify-center items-center"
               hideFunction={setShow}
             >
-              {showLink && (
-                <h6 className="font-bold">
-                  Conviertete en anfitrión
-                </h6>
-              )}
+              {showLink &&
+                (!auth?.isAuthenticated ||
+                  (auth.userRole !== "anfitrion" &&
+                    auth.userRole !== "ambos")) && (
+                  <button
+                    className="font-bold"
+                    onClick={() =>
+                      navigate("/become-a-host")
+                    }
+                    title="Convertirte en anfitrión"
+                    aria-label="Convertirte en anfitrión"
+                  >
+                    Conviertete en anfitrión
+                  </button>
+                )}
               <button
                 aria-label="abrir menú lateral"
                 ref={buttonRef}
@@ -247,29 +266,65 @@ const Header = ({
                   Menú
                 </p>
                 <div className="w-full bg-border h-[1px]"></div>
-                <ul>
-                  <li className="py-4 px-2 text-left text-nowrap">
-                    <CustomLink to="/">
-                      Convierte en anfitrión
-                    </CustomLink>
-                  </li>
-                  <li>
-                    <div className="w-full bg-border h-[1px]"></div>
-                  </li>
-                  <li className="py-4 px-2 text-left text-nowrap">
-                    <CustomLink to="/">
-                      Buscar a un anfitrión
-                    </CustomLink>
-                  </li>
-                  <li>
-                    <div className="w-full bg-border h-[1px]"></div>
-                  </li>
-                  <li className="py-4 px-2 text-left text-nowrap">
-                    <CustomLink to="/login">
-                      Iniciar sesión
-                    </CustomLink>
-                  </li>
-                </ul>
+                {!auth?.isAuthenticated ||
+                (auth.userRole !== "anfitrion" &&
+                  auth.userRole !== "ambos") ? (
+                  <ul>
+                    <li className="py-4 px-2 text-left text-nowrap">
+                      <CustomLink to="/become-a-host">
+                        Convierte en anfitrión
+                      </CustomLink>
+                    </li>
+                    <li>
+                      <div className="w-full bg-border h-[1px]"></div>
+                    </li>
+                    <li className="py-4 px-2 text-left text-nowrap">
+                      <CustomLink to="/search-hosts">
+                        Buscar a un anfitrión
+                      </CustomLink>
+                    </li>
+                    <li>
+                      <div className="w-full bg-border h-[1px]"></div>
+                    </li>
+                    <li className="py-4 px-2 text-left text-nowrap">
+                      <CustomLink to="/login">
+                        Iniciar sesión
+                      </CustomLink>
+                    </li>
+                  </ul>
+                ) : (
+                  <ul>
+                    <li className="py-4 px-2 text-left text-nowrap">
+                      <CustomLink to="/favorites">
+                        Favoritos
+                      </CustomLink>
+                    </li>
+                    <li>
+                      <div className="w-full bg-border h-[1px]"></div>
+                    </li>
+                    <li className="py-4 px-2 text-left text-nowrap">
+                      <CustomLink to="/my-trips">
+                        Mis reservaciones
+                      </CustomLink>
+                    </li>
+                    <li>
+                      <div className="w-full bg-border h-[1px]"></div>
+                    </li>
+                    <li className="py-4 px-2 text-left text-nowrap">
+                      <CustomLink to="/search-hosts">
+                        Buscar a un anfitrión
+                      </CustomLink>
+                    </li>
+                    <li>
+                      <div className="w-full bg-border h-[1px]"></div>
+                    </li>
+                    <li className="py-4 px-2 text-left text-nowrap">
+                      <CustomLink to="/profile">
+                        Mi perfil
+                      </CustomLink>
+                    </li>
+                  </ul>
+                )}
               </CustomDropdown>
             </DropdownParent>
           </nav>
