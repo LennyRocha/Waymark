@@ -246,38 +246,28 @@ class FavoritoViewSet(
     def list(self, request):
         user = request.user
 
-        debug = Usuario.objects.get(pk=1)
         queryset = Cards.objects.filter(
-            propiedad_id__in=Favorito.objects.filter(usuario=debug).values_list(
+            propiedad_id__in=Favorito.objects.filter(usuario=user).values_list(
                 "propiedad_id", flat=True
             )
         )
 
-        # TODO: Descomentar esto cuando ya esté el token
-        # queryset = Favorito.objects.filter(usuario=user)
         serializer = CardSerializer(queryset, many=True, context={"request": request})
         return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
         usuario = request.user
-        # TODO: Descomentar esto cuando ya esté el token
-        # if not usuario.is_authenticated:
-        # return not_authenticated_response
+
+        if not usuario.is_authenticated:
+            return not_authenticated_response
 
         propiedad_ = request.data.get("propiedad")
 
-        propiedadObject = Propiedad.objects.get(pk=propiedad_)
+        propiedad_object = Propiedad.objects.get(pk=propiedad_)
 
-        debug = Usuario.objects.get(pk=1)
         favorito, created = Favorito.objects.get_or_create(
-            usuario=debug, propiedad=propiedadObject
+            usuario=usuario, propiedad=propiedad_object
         )
-
-        # TODO: Cuando ya esté el token descomentar esto
-        # favorito, created = Favorito.objects.get_or_create(
-        #     usuario=usuario_,
-        #     propiedad=propiedadObject
-        # )
 
         return Response(
             {"created": created, "id": favorito.favorito_id},
