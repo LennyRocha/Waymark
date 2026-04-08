@@ -703,7 +703,7 @@ const SearchButton = ({
             background: focus
               ? "linear-gradient(to right, var(--color-primary-500), var(--color-secondary-500))"
               : "var(--color-primary-500)",
-            padding: scrolled ? "2px" : "12px",
+            padding: scrolled ? "8px 0" : "12px",
           }}
           disabled={scrolled || isWaiting}
           transition={{ duration: 0.4 }}
