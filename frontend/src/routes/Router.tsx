@@ -11,12 +11,16 @@ import NuevaPropiedad from '../modules/propiedades/NuevaPropiedad';
 import MisPropiedades from '../modules/propiedades/MisPropiedades';
 import MisFavoritos from '../modules/propiedades/MisFavoritos';
 import LandingGuest from '../modules/propiedades/LandingGuest';
+import Login from '../modules/cuentas/Login';
+import Registro from '../modules/cuentas/Registro';
 
 export default function Router() {
     return (
         <BrowserRouter>
             <Routes>
                 <Route path="/" element={<Landing />} />
+                <Route path="login" element={<Login />} />
+                <Route path="registro" element={<Registro />} />
                 <Route path="rooms/:idSlug" element={<PropiedadPage />} />
                 <Route path="s/:ciudad_pais/homes" element={<FiltrosPage />} />
                 <Route path="s/homes" element={<FiltrosPage />} />
