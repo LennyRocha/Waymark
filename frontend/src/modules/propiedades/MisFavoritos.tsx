@@ -16,11 +16,11 @@ export default function MisFavoritos() {
   const links = [
     {
       label: "Inicio",
-      href: "/guest",
+      href: "/",
     },
     {
       label: "Favoritos",
-      href: "/guest/wishlist",
+      href: "/wishlist",
       disabled: true,
     },
   ];
