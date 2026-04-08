@@ -37,7 +37,7 @@ export default function TabsScreen() {
         },
         {
           label: "Favoritos",
-          to: "/favorites",
+          to: "/wishlist",
           icon: <Heart size={24} strokeWidth={1.5} />,
         },
         {
@@ -59,7 +59,7 @@ export default function TabsScreen() {
         },
         {
           label: "Favoritos",
-          to: "/favorites",
+          to: "/wishlist",
           icon: <Heart size={24} strokeWidth={1.5} />,
         },
         {

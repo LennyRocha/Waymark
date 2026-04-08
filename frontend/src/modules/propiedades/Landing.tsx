@@ -295,7 +295,7 @@ const Header = ({
                 ) : (
                   <ul>
                     <li className="py-4 px-2 text-left text-nowrap">
-                      <CustomLink to="/favorites">
+                      <CustomLink to="/wishlist">
                         Favoritos
                       </CustomLink>
                     </li>

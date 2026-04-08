@@ -19,7 +19,7 @@ export default function Router() {
                 <Route path="/" element={<TabsScreen />}>
                     <Route index element={<Landing />} />
                     <Route path="login"  element={<Login />} />
-                    <Route path="favorites"  element={<MisFavoritos />} />
+                    <Route path="wishlist"  element={<MisFavoritos />} />
                     <Route path="my-trips" index element={<h1>Vista de mis reservaciones</h1>} />
                     <Route path="profile" index element={<h1>Vista de mi perfil</h1>} />
                 </Route>

@@ -20,7 +20,7 @@ export default function MisFavoritos() {
     },
     {
       label: "Favoritos",
-      href: "/guest/favorites",
+      href: "/guest/wishlist",
       disabled: true,
     },
   ];
@@ -30,7 +30,7 @@ export default function MisFavoritos() {
     7,
   );
   useSetPageTitle(
-    "Waymark - Encuentra el lugar perfecto para tu próxima aventura",
+    "Mis Favoritos - Waymark",
   );
   const isAuthenticated =
     auth?.isAuthenticated &&
