@@ -48,16 +48,17 @@ INSTALLED_APPS = [
     'rest_framework',
 
     'propiedades',
-    'cuentas'
+    'cuentas',
+    'calificaciones',
 ]
 
-CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': os.getenv("CLOUD_NAME"),
-    'API_KEY': os.getenv("CLOUD_KEY"),
-    'API_SECRET': os.getenv("CLOUD_SECRET"),
-}
+#CLOUDINARY_STORAGE = {
+#    'CLOUD_NAME': os.getenv("CLOUD_NAME"),
+#    'API_KEY': os.getenv("CLOUD_KEY"),
+#    'API_SECRET': os.getenv("CLOUD_SECRET"),
+#}
 
-DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
+#DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
@@ -149,3 +150,6 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
+
+MEDIA_URL = 'media/'
+MEDIA_ROOT = BASE_DIR / 'media'
