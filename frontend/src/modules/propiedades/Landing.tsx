@@ -160,6 +160,7 @@ const Header = ({
   const isAuthenticated = auth?.isAuthenticated;
   const role = auth?.userRole;
   const Links: React.FC = useMemo(() => {
+    //TODO: Agregr links para administradores cuando se implementen
     if (isAuthenticated) {
       switch (role) {
         case "anfitrion":

@@ -35,10 +35,7 @@ export function AuthProvider({
   const [refreshToken, setRefreshToken] = useState<
     string | null
   >(localStorage.getItem("refresh_token"));
-  const isAuthenticated = useMemo(
-    () => !!token || !!refreshToken,
-    [token, refreshToken],
-  );
+  const isAuthenticated = !!token;
 
   function checkAuthOnLoad() {
     if (!isAuthenticated) {
