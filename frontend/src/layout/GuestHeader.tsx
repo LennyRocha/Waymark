@@ -31,6 +31,11 @@ const links: GuestLink[] = [
     text: "Mis reservaciones",
     to: "/guest/my-trips",
   },
+  {
+    name: "reviews",
+    text: "Mis reseñas",
+    to: "/guest/reviews",
+  },
 ];
 
 export default function GuestHeader() {

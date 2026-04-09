@@ -24,3 +24,9 @@ dist-ssr
 *.sw?
 
 .env
+
+sonar-project.properties
+
+__pycache__/
+*.pyc
+*.pyo

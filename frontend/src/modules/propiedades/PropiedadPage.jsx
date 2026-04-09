@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import SeccionReseñas from '../calificaciones/components/SeccionReseñas'
 import { useParams } from 'react-router-dom'
 import Modal from '../../layout/Modal';
 import useAmenidades from './hooks/useAmenidades';
@@ -97,24 +98,12 @@ export default function PropiedadPage() {
 
           <Divider />
 
-          <h1>Texto largo</h1>
-          <h1>Texto largo</h1>
-          <h1>Texto largo</h1>
-          <h1>Texto largo</h1>
-          <h1>Texto largo</h1>
-          <h1>Texto largo</h1>
-          <h1>Texto largo</h1>
-          <h1>Texto largo</h1>
-          <h1>Texto largo</h1>
-          <h1>Texto largo</h1>
-          <h1>Texto largo</h1>
-          <h1>Texto largo</h1>
-          <h1>Texto largo</h1>
-          <h1>Texto largo</h1>
-          <h1>Texto largo</h1>
-
           {/*Aquí irá el calendario */}
           <Calendar value={new Date()} />
+
+          <Divider />
+
+          <SeccionReseñas propiedadId={Number(id)} />
 
         </article>
         <article className='p-6 top-4 sticky  max-md:hidden  md:w-[275px] lg:w-[400px] shadow-md/30 bg-white rounded-xl gap-4 flex flex-col items-start justify-start' >

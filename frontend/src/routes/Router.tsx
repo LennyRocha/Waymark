@@ -11,6 +11,8 @@ import NuevaPropiedad from '../modules/propiedades/NuevaPropiedad';
 import MisPropiedades from '../modules/propiedades/MisPropiedades';
 import MisFavoritos from '../modules/propiedades/MisFavoritos';
 import LandingGuest from '../modules/propiedades/LandingGuest';
+import GestionCalificaciones from '../modules/calificaciones/GestionCalificaciones';
+import MisReseñas from '../modules/calificaciones/MisReseñas';
 
 export default function Router() {
     return (
@@ -25,6 +27,7 @@ export default function Router() {
                     <Route path="explore" element={<LandingGuest />} />
                     <Route path="favorites" index element={<MisFavoritos />} />
                     <Route path="my-trips" index element={<h1>Vista de mis reservaciones</h1>} />
+                    <Route path="reviews" index element={<MisReseñas />} />
                     <Route path="profile" index element={<h1>Vista de mi perfil</h1>} />
                 </Route>
                 <Route path="host" element={<HostHeader />}>
@@ -42,6 +45,7 @@ export default function Router() {
                     <Route path="dashboard" element={<h1>Dashboard todo feo</h1>} />
                     <Route path="users" element={<h1>Vista de usuarios</h1>} />
                     <Route path="documents" index element={<h1>Vista de documentos</h1>} />
+                    <Route path="reviews" index element={<GestionCalificaciones />} />
                     <Route path="currencys" index element={<h1>Vista de mis divisas</h1>} />
                     <Route path="listings" index element={<h1>Vista de alojamientos</h1>} />
                     <Route path="calendar" index element={<h1>Vista de calendario</h1>} />
