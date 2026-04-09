@@ -9,9 +9,7 @@ venv
 
 sonar-project.properties
 
-__pycache__/
-*.pyc
-*.pyo
+media/*
 
 # Python cache
 __pycache__/
