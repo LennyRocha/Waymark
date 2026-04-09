@@ -4,7 +4,7 @@ from rest_framework.decorators import action
 from django.db import transaction
 import random
 
-from backend.backend.interceptors import get_client_ip
+from backend.interceptors import get_client_ip
 from .serializers import (
     PropiedadSerializer,
     DivisaSerializer,
@@ -128,8 +128,14 @@ class PropiedadViewSet(viewsets.ModelViewSet):
         favoritos_data = []
 
         if request.user.is_authenticated:
-            logger.bind(audit=True).info(
-                f"Usuario {request.user.pk} consultó sus favoritos en la landing"
+            logger.bind(
+                audit=True,
+                user_id=request.user.id if request.user else None,
+                ip=get_client_ip(request),
+                action="consultar_favoritos_landing",
+            ).log(
+                "AUDIT",
+                f"Usuario {request.user.pk} consultó sus favoritos en la landing",
             )
 
             favoritos = Cards.objects.filter(es_favorito=True).order_by("?")[:7]
@@ -144,7 +150,12 @@ class PropiedadViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["GET"])
     def locations(self, request, pk=None):
-        logger.bind(audit=True).info("Se realizó una consulta de ubicaciones")
+        logger.bind(
+            audit=True,
+            user_id=request.user.id if request.user else None,
+            ip=get_client_ip(request),
+            action="consultar_ubicaciones",
+        ).log("AUDIT", "Consulta realizada")
         queryset = Ubicaciones.objects.all()
         serializer = UbicacionSerializer(queryset, many=True)
         return Response(serializer.data)
@@ -168,7 +179,12 @@ class PropiedadViewSet(viewsets.ModelViewSet):
 
         host_id = user.pk
 
-        logger.bind(audit=True).info(f"Usuario {host_id} consultó sus propiedades")
+        logger.bind(
+            audit=True,
+            user_id=request.user.id if request.user else None,
+            ip=get_client_ip(request),
+            action="consultar_propiedades_host",
+        ).log("AUDIT", f"Usuario {host_id} consultó sus propiedades")
 
         queryset = (
             Propiedad.objects.select_related("divisa", "tipo_propiedad")
@@ -211,8 +227,14 @@ class PropiedadViewSet(viewsets.ModelViewSet):
 
         try:
             propiedad = serializer.save()
-            logger.bind(audit=True).info(
-                f"Propiedad {propiedad.pk} creada por usuario {anfitrion.pk} desde IP {ip}"
+            logger.bind(
+                audit=True,
+                user_id=request.user.id if request.user else None,
+                ip=get_client_ip(request),
+                action="crear_propiedad",
+            ).log(
+                "AUDIT",
+                f"Propiedad {propiedad.pk} creada por usuario {anfitrion.pk} desde IP {ip}",
             )
 
         except ValidationError as ve:
@@ -252,8 +274,14 @@ class PropiedadViewSet(viewsets.ModelViewSet):
             )
             return not_host_response
         instance = self.get_object()
-        logger.bind(audit=True).info(
-            f"Usuario {request.user.pk} modificó propiedad {instance.pk} desde IP {ip}"
+        logger.bind(
+            audit=True,
+            user_id=request.user.id if request.user else None,
+            ip=get_client_ip(request),
+            action="modificar_propiedad",
+        ).log(
+            "AUDIT",
+            f"Usuario {request.user.pk} modificó propiedad {instance.pk} desde IP {ip}",
         )
         return super().partial_update(request, *args, **kwargs)
 
@@ -276,8 +304,14 @@ class PropiedadViewSet(viewsets.ModelViewSet):
         instance.activa = not instance.activa
         instance.save(update_fields=["activa"])
 
-        logger.bind(audit=True).info(
-            f"Usuario {request.user.pk} modificó propiedad {instance.pk} a {instance.activa} desde IP {ip}"
+        logger.bind(
+            audit=True,
+            user_id=request.user.id if request.user else None,
+            ip=get_client_ip(request),
+            action="cambiar_estado_propiedad",
+        ).log(
+            "AUDIT",
+            f"Usuario {request.user.pk} modificó propiedad {instance.pk} a {instance.activa} desde IP {ip}",
         )
 
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -303,8 +337,14 @@ class DivisaViewSet(
         if user.rol.nombre != "administrador":
             return not_admin_response
 
-        logger.bind(audit=True).info(
-            f"Usuario {user.pk} creó divisa {request.data.get('nombre')} desde IP {ip}"
+        logger.bind(
+            audit=True,
+            user_id=request.user.id if request.user else None,
+            ip=get_client_ip(request),
+            action="crear_divisa",
+        ).log(
+            "AUDIT",
+            f"Usuario {user.pk} creó divisa {request.data.get('nombre')} desde IP {ip}",
         )
         return super().create(request, *args, **kwargs)
 
@@ -319,8 +359,14 @@ class DivisaViewSet(
             return not_admin_response
 
         instance = self.get_object()
-        logger.bind(audit=True).info(
-            f"Usuario {user.pk} está actualizando la divisa {instance.pk} con datos: {request.data} desde IP {ip}"
+        logger.bind(
+            audit=True,
+            user_id=request.user.id if request.user else None,
+            ip=get_client_ip(request),
+            action="actualizar_divisa",
+        ).log(
+            "AUDIT",
+            f"Usuario {user.pk} está actualizando la divisa {instance.pk} con datos: {request.data} desde IP {ip}",
         )
         return super().update(request, *args, **kwargs)
 
@@ -348,8 +394,13 @@ class FavoritoViewSet(
             )
         )
 
-        logger.bind(audit=True).info(
-            f"Usuario {request.user.pk} consultó sus favoritos desde IP {ip}"
+        logger.bind(
+            audit=True,
+            user_id=request.user.id if request.user else None,
+            ip=get_client_ip(request),
+            action="consultar_favoritos",
+        ).log(
+            "AUDIT", f"Usuario {request.user.pk} consultó sus favoritos desde IP {ip}"
         )
 
         serializer = CardSerializer(queryset, many=True, context={"request": request})
@@ -371,8 +422,14 @@ class FavoritoViewSet(
             usuario=usuario, propiedad=propiedad_object
         )
 
-        logger.bind(audit=True).info(
-            f"Usuario {request.user.pk} marcó como favorito la propiedad {propiedad_} (creado: {created}) desde IP {ip}"
+        logger.bind(
+            audit=True,
+            user_id=request.user.id if request.user else None,
+            ip=get_client_ip(request),
+            action="marcar_favorito",
+        ).log(
+            "AUDIT",
+            f"Usuario {request.user.pk} marcó como favorito la propiedad {propiedad_} (creado: {created}) desde IP {ip}",
         )
 
         return Response(
@@ -383,8 +440,14 @@ class FavoritoViewSet(
     def destroy(self, request, *args, **kwargs):
         propiedad_ = self.get_object().propiedad_id
         ip = get_client_ip(request)
-        logger.bind(audit=True).info(
-            f"Usuario {request.user.pk} eliminó la propiedad {propiedad_} de sus favoritos desde IP {ip}"
+        logger.bind(
+            audit=True,
+            user_id=request.user.id if request.user else None,
+            ip=get_client_ip(request),
+            action="eliminar_favorito",
+        ).log(
+            "AUDIT",
+            f"Usuario {request.user.pk} eliminó la propiedad {propiedad_} de sus favoritos desde IP {ip}",
         )
         return super().destroy(request, *args, **kwargs)
 
@@ -480,8 +543,14 @@ class ImagenViewSet(
 
         serializer = ImagenSerializer(lista, many=True)
 
-        logger.bind(audit=True).info(
-            f"Imagenes guardadas para propiedad {propiedad.pk} por usuario {request.user.pk}"
+        logger.bind(
+            audit=True,
+            user_id=request.user.id if request.user else None,
+            ip=get_client_ip(request),
+            action="guardar_imagenes",
+        ).log(
+            "AUDIT",
+            f"Imagenes guardadas para propiedad {propiedad.pk} por usuario {request.user.pk} desde IP {ip}",
         )
 
         return Response(
@@ -544,8 +613,14 @@ class ImagenViewSet(
 
         serializer = ImagenSerializer(saved)
 
-        logger.bind(audit=True).info(
-            f"Imagen {saved.prop_ima_id} guardada para propiedad {propiedad.pk} por usuario {request.user.pk} desde IP {ip}"
+        logger.bind(
+            audit=True,
+            user_id=request.user.id if request.user else None,
+            ip=get_client_ip(request),
+            action="crear_imagen",
+        ).log(
+            "AUDIT",
+            f"Imagen {saved.prop_ima_id} guardada para propiedad {propiedad.pk} por usuario {request.user.pk} desde IP {ip}",
         )
 
         return Response(
@@ -559,7 +634,13 @@ class ImagenViewSet(
     def update(self, request, *args, **kwargs):
         imagen_id = kwargs.get("pk")
         ip = get_client_ip(request)
-        logger.bind(audit=True).info(
-            f"Imagen {imagen_id} actualizada por usuario {request.user.pk} desde IP {ip}"
+        logger.bind(
+            audit=True,
+            user_id=request.user.id if request.user else None,
+            ip=ip,
+            action="actualizar_imagen",
+        ).log(
+            "AUDIT",
+            f"Imagen {imagen_id} actualizada por usuario {request.user.pk} desde IP {ip}",
         )
         return super().update(request, *args, **kwargs)
