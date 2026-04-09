@@ -2,14 +2,16 @@
 initialdata/*
 
 static/*
-
 backend/settings.py
-
 models.txt
 
 venv
 
-media/*
+sonar-project.properties
+
+__pycache__/
+*.pyc
+*.pyo
 
 # Python cache
 __pycache__/

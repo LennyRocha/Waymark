@@ -11,6 +11,7 @@ import MisPropiedades from '../modules/propiedades/MisPropiedades';
 import MisFavoritos from '../modules/propiedades/MisFavoritos';
 import TabsScreen from '../layout/GuestTabs';
 import Login from '../modules/cuentas/Login';
+import Registro from '../modules/cuentas/Registro';
 
 export default function Router() {
     return (
@@ -23,6 +24,8 @@ export default function Router() {
                     <Route path="my-trips" index element={<h1>Vista de mis reservaciones</h1>} />
                     <Route path="profile" index element={<h1>Vista de mi perfil</h1>} />
                 </Route>
+                <Route path="login" element={<Login />} />
+                <Route path="registro" element={<Registro />} />
                 <Route path="rooms/:idSlug" element={<PropiedadPage />} />
                 <Route path="s/:ciudad_pais/homes" element={<FiltrosPage />} />
                 <Route path="s/homes" element={<FiltrosPage />} />

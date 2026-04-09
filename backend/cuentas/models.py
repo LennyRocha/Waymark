@@ -1,31 +1,73 @@
 from django.db import models
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+from django.utils import timezone
 
-# Create your models here.
+
 class Rol(models.Model):
     nombre = models.TextField()
 
     class Meta:
-        managed = False
-        db_table = 'rol'
+        db_table = "rol"
 
-class Usuario(models.Model):
+    def __str__(self):
+        return self.nombre
+
+
+class UsuarioManager(BaseUserManager):
+    def create_user(self, correo, password=None, **extra_fields):
+        if not correo:
+            raise ValueError("El usuario debe tener un correo")
+
+        correo = self.normalize_email(correo)
+        user = self.model(correo=correo, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, correo, password=None, **extra_fields):
+        extra_fields.setdefault("is_staff", True)
+        extra_fields.setdefault("is_superuser", True)
+        extra_fields.setdefault("is_active", True)
+
+        if extra_fields.get("is_staff") is not True:
+            raise ValueError("El superusuario debe tener is_staff=True")
+        if extra_fields.get("is_superuser") is not True:
+            raise ValueError("El superusuario debe tener is_superuser=True")
+
+        return self.create_user(correo, password, **extra_fields)
+
+
+class Usuario(AbstractBaseUser, PermissionsMixin):
     usuario_id = models.AutoField(primary_key=True)
     nombre = models.CharField(max_length=50)
     apellido_p = models.CharField(max_length=50)
     apellido_m = models.CharField(max_length=50, blank=True, null=True)
     telefono = models.CharField(max_length=20)
-    correo = models.CharField(unique=True, max_length=50)
-    contra = models.CharField(unique=True, max_length=255)
-    rol = models.ForeignKey(Rol, models.PROTECT, db_column='rol')
-    foto_perfil = models.CharField(max_length=255, blank=True, null=True)
-    verificado = models.IntegerField(blank=True, null=True)
+    correo = models.EmailField(unique=True, max_length=50)
+
+    password = models.CharField(max_length=255, db_column="contra")
+
+    rol = models.ForeignKey(Rol, on_delete=models.PROTECT, db_column="rol")
+    foto_perfil = models.ImageField(upload_to="usuarios/", blank=True, null=True)
+    verificado = models.BooleanField(default=False)
     ciudad = models.CharField(max_length=50)
     pais = models.CharField(max_length=50)
-    activo = models.IntegerField(blank=True, null=True)
-    created_at = models.DateTimeField(blank=True, null=True)
-    updated_at = models.DateTimeField(blank=True, null=True)
+    activo = models.BooleanField(default=True)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+    created_by = models.IntegerField(blank=True, null=True)
     updated_by = models.IntegerField(blank=True, null=True)
 
+    is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
+
+    objects = UsuarioManager()
+
+    USERNAME_FIELD = "correo"
+    REQUIRED_FIELDS = ["nombre", "apellido_p", "telefono", "rol"]
+
     class Meta:
-        managed = False
-        db_table = 'usuario'
+        db_table = "usuario"
+
+    def __str__(self):
+        return self.correo
