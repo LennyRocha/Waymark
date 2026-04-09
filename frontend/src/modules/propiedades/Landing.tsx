@@ -130,8 +130,8 @@ export const VerMasCard = ({
   direccion = "",
 }: VerMasCardProps) => {
   return (
-    <div className="w-[clamp(138px,13.5%,250px)]   shrink-0   relative flex flex-col items-start justify-flex-start">
-      <div className="flex flex-col items-center justify-center shadow-xl rounded-2xl w-full h-50 aspect-ratio: 4/3">
+    <div className=" w-[clamp(138px,13.5%,250px)] shrink-0   relative flex flex-col items-start justify-start gap-2">
+      <div className="rounded-3xl w-full h-auto max-h-[238px] min-h-[138px] aspect-square flex flex-col items-center justify-center shadow-xl rounded-2xl w-full h-50">
         <GalleryHorizontal
           size={48}
           color="var(--color-secondary-500)"
@@ -160,7 +160,7 @@ const Header = ({
   const isAuthenticated = auth?.isAuthenticated;
   const role = auth?.userRole;
   const Links: React.FC = useMemo(() => {
-    //TODO: Agregr links para administradores cuando se implementen
+    //TODO: Agregr links para administrador
     if (isAuthenticated) {
       switch (role) {
         case "anfitrion":

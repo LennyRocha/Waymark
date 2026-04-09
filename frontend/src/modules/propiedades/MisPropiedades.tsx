@@ -208,7 +208,7 @@ function retrieveColumns(openModal) {
       cell: (row) => (
         <div className="flex items-center justify-center  gap-2 px-2 w-full">
           <span
-            className={`${row.activa ? "bg-green-500" : "bg-red-500"} aspect-square w-2 rounded-full`}
+            className={`${row.activa ? "bg-green-500" : "bg-red-500"} aspect-square w-2 rounded-full shrink-0`}
           ></span>
           <p className="text-left text-text-secondary font-bold">
             {row.activa ? "Activa" : "Inactiva"}

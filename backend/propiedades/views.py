@@ -130,7 +130,7 @@ class PropiedadViewSet(viewsets.ModelViewSet):
         if request.user.is_authenticated:
             logger.bind(
                 audit=True,
-                user_id=request.user.id if request.user else None,
+                user_id=request.user.pk if request.user else None,
                 ip=get_client_ip(request),
                 action="consultar_favoritos_landing",
             ).log(
@@ -152,7 +152,7 @@ class PropiedadViewSet(viewsets.ModelViewSet):
     def locations(self, request, pk=None):
         logger.bind(
             audit=True,
-            user_id=request.user.id if request.user else None,
+            user_id=request.user.pk if request.user else None,
             ip=get_client_ip(request),
             action="consultar_ubicaciones",
         ).log("AUDIT", "Consulta realizada")
@@ -181,7 +181,7 @@ class PropiedadViewSet(viewsets.ModelViewSet):
 
         logger.bind(
             audit=True,
-            user_id=request.user.id if request.user else None,
+            user_id=request.user.pk if request.user else None,
             ip=get_client_ip(request),
             action="consultar_propiedades_host",
         ).log("AUDIT", f"Usuario {host_id} consultó sus propiedades")
@@ -229,7 +229,7 @@ class PropiedadViewSet(viewsets.ModelViewSet):
             propiedad = serializer.save()
             logger.bind(
                 audit=True,
-                user_id=request.user.id if request.user else None,
+                user_id=request.user.pk if request.user else None,
                 ip=get_client_ip(request),
                 action="crear_propiedad",
             ).log(
@@ -276,7 +276,7 @@ class PropiedadViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
         logger.bind(
             audit=True,
-            user_id=request.user.id if request.user else None,
+            user_id=request.user.pk if request.user else None,
             ip=get_client_ip(request),
             action="modificar_propiedad",
         ).log(
@@ -306,7 +306,7 @@ class PropiedadViewSet(viewsets.ModelViewSet):
 
         logger.bind(
             audit=True,
-            user_id=request.user.id if request.user else None,
+            user_id=request.user.pk if request.user else None,
             ip=get_client_ip(request),
             action="cambiar_estado_propiedad",
         ).log(
@@ -339,7 +339,7 @@ class DivisaViewSet(
 
         logger.bind(
             audit=True,
-            user_id=request.user.id if request.user else None,
+            user_id=request.user.pk if request.user else None,
             ip=get_client_ip(request),
             action="crear_divisa",
         ).log(
@@ -361,7 +361,7 @@ class DivisaViewSet(
         instance = self.get_object()
         logger.bind(
             audit=True,
-            user_id=request.user.id if request.user else None,
+            user_id=request.user.pk if request.user else None,
             ip=get_client_ip(request),
             action="actualizar_divisa",
         ).log(
@@ -396,7 +396,7 @@ class FavoritoViewSet(
 
         logger.bind(
             audit=True,
-            user_id=request.user.id if request.user else None,
+            user_id=request.user.pk if request.user else None,
             ip=get_client_ip(request),
             action="consultar_favoritos",
         ).log(
@@ -424,7 +424,7 @@ class FavoritoViewSet(
 
         logger.bind(
             audit=True,
-            user_id=request.user.id if request.user else None,
+            user_id=request.user.pk if request.user else None,
             ip=get_client_ip(request),
             action="marcar_favorito",
         ).log(
@@ -442,7 +442,7 @@ class FavoritoViewSet(
         ip = get_client_ip(request)
         logger.bind(
             audit=True,
-            user_id=request.user.id if request.user else None,
+            user_id=request.user.pk if request.user else None,
             ip=get_client_ip(request),
             action="eliminar_favorito",
         ).log(
@@ -545,7 +545,7 @@ class ImagenViewSet(
 
         logger.bind(
             audit=True,
-            user_id=request.user.id if request.user else None,
+            user_id=request.user.pk if request.user else None,
             ip=get_client_ip(request),
             action="guardar_imagenes",
         ).log(
@@ -615,7 +615,7 @@ class ImagenViewSet(
 
         logger.bind(
             audit=True,
-            user_id=request.user.id if request.user else None,
+            user_id=request.user.pk if request.user else None,
             ip=get_client_ip(request),
             action="crear_imagen",
         ).log(
@@ -636,7 +636,7 @@ class ImagenViewSet(
         ip = get_client_ip(request)
         logger.bind(
             audit=True,
-            user_id=request.user.id if request.user else None,
+            user_id=request.user.pk if request.user else None,
             ip=ip,
             action="actualizar_imagen",
         ).log(
