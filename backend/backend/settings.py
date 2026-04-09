@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 from pathlib import Path
 import os
+from datetime import timedelta
 from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -46,10 +47,21 @@ INSTALLED_APPS = [
     'cloudinary',
     'corsheaders',
     'rest_framework',
-
+    'rest_framework_simplejwt',
     'propiedades',
     'cuentas'
 ]
+
+AUTH_USER_MODEL = 'cuentas.Usuario'
+
+
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    "USER_ID_FIELD": "usuario_id",
+    "USER_ID_CLAIM": "user_id",
+}
 
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': os.getenv("CLOUD_NAME"),
@@ -121,16 +133,22 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+
 REST_FRAMEWORK = {
-    "DEFAULT_FILTER_BACKENDS": [
-        "django_filters.rest_framework.DjangoFilterBackend"
-    ]
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend',
+    ],
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ],
 }
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",  # Puerto por defecto de Vite
     "http://127.0.0.1:5173",
 ]
+
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
