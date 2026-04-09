@@ -9,6 +9,7 @@ import App from "./App";
 import toast from "react-hot-toast";
 import { getAxiosErrorMessage } from "./utils/getAxiosErrorMessage";
 import "react-calendar/dist/Calendar.css";
+import { AuthProvider } from "./context/AuthContext";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -41,8 +42,10 @@ if (!rootElement) {
 
 createRoot(rootElement).render(
   <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <App />
-    </QueryClientProvider>
+    <AuthProvider>
+      <QueryClientProvider client={queryClient}>
+        <App />
+      </QueryClientProvider>
+    </AuthProvider>
   </StrictMode>,
 );

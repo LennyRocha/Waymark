@@ -22,9 +22,9 @@ const links: GuestLink[] = [
     to: "/guest/explore",
   },
   {
-    name: "favorites",
+    name: "wishlist",
     text: "Favoritos",
-    to: "/guest/favorites",
+    to: "/guest/wishlist",
   },
   {
     name: "my-trips",

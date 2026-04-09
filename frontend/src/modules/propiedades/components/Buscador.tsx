@@ -20,7 +20,7 @@ import { CustomCheckBox } from "../../../components/CustomInputs";
 import Calendar from "react-calendar";
 import "../css/propiedades.css";
 
-type Functions = {
+export type Functions = {
   setUbicacion: (ciudad: string) => void;
   setCheckin: (checkin: string) => void;
   setCheckout: (checkout: string) => void;
@@ -28,7 +28,7 @@ type Functions = {
   setConKids: (conKids: boolean | undefined) => void;
   setHuespedes: (huespedes: number | null) => void;
 };
-type Values = {
+export type Values = {
   ubicacion: string;
   checkin: string;
   checkout: string;
@@ -36,6 +36,7 @@ type Values = {
   conKids: boolean | undefined;
   huespedes: number | null;
 };
+
 type DropdownMenuProps = {
   anchorRef: RefObject<HTMLElement | null>;
   visible: boolean;
@@ -494,7 +495,7 @@ const Buscador = ({
   );
 };
 
-function makeQuery(
+export function makeQuery(
   params: URLSearchParams,
   values: Values,
 ) {
@@ -529,7 +530,7 @@ function filterLocations(
   );
 }
 
-function useParamsValues() {
+export function useParamsValues() {
   const [huespedes, setHuespedes] = useState<number | null>(
     null,
   );
@@ -703,7 +704,7 @@ const SearchButton = ({
             background: focus
               ? "linear-gradient(to right, var(--color-primary-500), var(--color-secondary-500))"
               : "var(--color-primary-500)",
-            padding: scrolled ? "2px" : "12px",
+            padding: scrolled ? "8px 0" : "12px",
           }}
           disabled={scrolled || isWaiting}
           transition={{ duration: 0.4 }}
@@ -734,7 +735,7 @@ const SelectNav = ({
 }: Readonly<NavProps>) => {
   return (
     <nav className="flex justify-between items-center  gap-4">
-      <strong>{label}</strong>
+      <strong className="text-[14px]">{label}</strong>
       <div className="flex flex-row items-center justify-center gap-2 mb-2">
         <button
           type="button"
@@ -781,7 +782,7 @@ const CheckNav = ({
 }: Readonly<CheckNavProps>) => {
   return (
     <div className="flex justify-between items-center my-2 gap-4">
-      <strong>{question}</strong>
+      <strong className="text-[14px]">{question}</strong>
       <CustomCheckBox
         checked={checked}
         onChange={(e) => onChange(e.target.checked)}
