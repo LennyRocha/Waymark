@@ -341,6 +341,10 @@ export default function NuevaPropiedad() {
 
   const links = [
     {
+      label: "Inicio",
+      href: "/",
+    },
+    {
       label: "Anfitrión",
       href: "/host",
     },

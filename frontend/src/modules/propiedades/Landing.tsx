@@ -1,6 +1,11 @@
 // @ts-nocheck
 /* eslint-disable no-unused-vars */
-import { useState, useRef, useEffect } from "react";
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useMemo,
+} from "react";
 import PropiedadCard from "./components/PropiedadCard";
 import { GalleryHorizontal, Menu } from "lucide-react";
 import {
@@ -152,6 +157,169 @@ const Header = ({
 
   const auth = useAuth();
 
+  const isAuthenticated = auth?.isAuthenticated;
+  const role = auth?.userRole;
+  const Links: React.FC = useMemo(() => {
+    if (isAuthenticated) {
+      switch (role) {
+        case "anfitrion":
+          return (
+            <ul>
+              <li className="py-4 px-2 text-left text-nowrap">
+                <CustomLink to="/host/today">
+                  Solicitudes
+                </CustomLink>
+              </li>
+              <li>
+                <div className="w-full bg-border h-[1px]"></div>
+              </li>
+              <li className="py-4 px-2 text-left text-nowrap">
+                <CustomLink to="/host/calendar">
+                  Calendario
+                </CustomLink>
+              </li>
+              <li>
+                <div className="w-full bg-border h-[1px]"></div>
+              </li>
+              <li className="py-4 px-2 text-left text-nowrap">
+                <CustomLink to="/host/listings">
+                  Mis alojamientos
+                </CustomLink>
+              </li>
+              <li>
+                <div className="w-full bg-border h-[1px]"></div>
+              </li>
+              <li className="py-4 px-2 text-left text-nowrap">
+                <CustomLink to="/search-hosts">
+                  Buscar a un anfitrión
+                </CustomLink>
+              </li>
+              <li>
+                <div className="w-full bg-border h-[1px]"></div>
+              </li>
+              <li className="py-4 px-2 text-left text-nowrap">
+                <CustomLink to="/profile">
+                  Mi perfil
+                </CustomLink>
+              </li>
+            </ul>
+          );
+        case "ambos":
+          return (
+            <ul>
+              {" "}
+              <li className="py-4 px-2 text-left text-nowrap">
+                <CustomLink to="/host/today">
+                  Solicitudes
+                </CustomLink>
+              </li>
+              <li>
+                <div className="w-full bg-border h-[1px]"></div>
+              </li>
+              <li className="py-4 px-2 text-left text-nowrap">
+                <CustomLink to="/wishlist">
+                  Favoritos
+                </CustomLink>
+              </li>
+              <li>
+                <div className="w-full bg-border h-[1px]"></div>
+              </li>
+              <li className="py-4 px-2 text-left text-nowrap">
+                <CustomLink to="/host/calendar">
+                  Calendario
+                </CustomLink>
+              </li>
+              <li>
+                <div className="w-full bg-border h-[1px]"></div>
+              </li>
+              <li className="py-4 px-2 text-left text-nowrap">
+                <CustomLink to="/host/listings">
+                  Mis alojamientos
+                </CustomLink>
+              </li>
+              <li>
+                <div className="w-full bg-border h-[1px]"></div>
+              </li>
+              <li className="py-4 px-2 text-left text-nowrap">
+                <CustomLink to="/search-hosts">
+                  Buscar a un anfitrión
+                </CustomLink>
+              </li>
+              <li>
+                <div className="w-full bg-border h-[1px]"></div>
+              </li>
+              <li className="py-4 px-2 text-left text-nowrap">
+                <CustomLink to="/profile">
+                  Mi perfil
+                </CustomLink>
+              </li>
+            </ul>
+          );
+        case "turista":
+        default:
+          return (
+            <ul>
+              <li className="py-4 px-2 text-left text-nowrap">
+                <CustomLink to="/wishlist">
+                  Favoritos
+                </CustomLink>
+              </li>
+              <li>
+                <div className="w-full bg-border h-[1px]"></div>
+              </li>
+              <li className="py-4 px-2 text-left text-nowrap">
+                <CustomLink to="/my-trips">
+                  Mis reservaciones
+                </CustomLink>
+              </li>
+              <li>
+                <div className="w-full bg-border h-[1px]"></div>
+              </li>
+              <li className="py-4 px-2 text-left text-nowrap">
+                <CustomLink to="/search-hosts">
+                  Buscar a un anfitrión
+                </CustomLink>
+              </li>
+              <li>
+                <div className="w-full bg-border h-[1px]"></div>
+              </li>
+              <li className="py-4 px-2 text-left text-nowrap">
+                <CustomLink to="/profile">
+                  Mi perfil
+                </CustomLink>
+              </li>
+            </ul>
+          );
+      }
+    } else {
+      return (
+        <ul>
+          <li className="py-4 px-2 text-left text-nowrap">
+            <CustomLink to="/become-a-host">
+              Convierte en anfitrión
+            </CustomLink>
+          </li>
+          <li>
+            <div className="w-full bg-border h-[1px]"></div>
+          </li>
+          <li className="py-4 px-2 text-left text-nowrap">
+            <CustomLink to="/search-hosts">
+              Buscar a un anfitrión
+            </CustomLink>
+          </li>
+          <li>
+            <div className="w-full bg-border h-[1px]"></div>
+          </li>
+          <li className="py-4 px-2 text-left text-nowrap">
+            <CustomLink to="/login">
+              Iniciar sesión
+            </CustomLink>
+          </li>
+        </ul>
+      );
+    }
+  }, [isAuthenticated, role]);
+
   const { scrollY } = useScroll();
   const [scrolled, setScrolled] = useState(false);
   const [show, setShow] = useState(false);
@@ -259,72 +427,13 @@ const Header = ({
                 anchorRef={buttonRef}
                 visible={show}
                 align="right"
-                width={"250px"}
+                width={"275px"}
                 layoutId="drop_menu"
               >
                 <p className="text-xs font-bold text-left px-2 font-[cabin] mb-2">
                   Menú
                 </p>
-                <div className="w-full bg-border h-[1px]"></div>
-                {!auth?.isAuthenticated ||
-                (auth.userRole !== "anfitrion" &&
-                  auth.userRole !== "ambos") ? (
-                  <ul>
-                    <li className="py-4 px-2 text-left text-nowrap">
-                      <CustomLink to="/become-a-host">
-                        Convierte en anfitrión
-                      </CustomLink>
-                    </li>
-                    <li>
-                      <div className="w-full bg-border h-[1px]"></div>
-                    </li>
-                    <li className="py-4 px-2 text-left text-nowrap">
-                      <CustomLink to="/search-hosts">
-                        Buscar a un anfitrión
-                      </CustomLink>
-                    </li>
-                    <li>
-                      <div className="w-full bg-border h-[1px]"></div>
-                    </li>
-                    <li className="py-4 px-2 text-left text-nowrap">
-                      <CustomLink to="/login">
-                        Iniciar sesión
-                      </CustomLink>
-                    </li>
-                  </ul>
-                ) : (
-                  <ul>
-                    <li className="py-4 px-2 text-left text-nowrap">
-                      <CustomLink to="/wishlist">
-                        Favoritos
-                      </CustomLink>
-                    </li>
-                    <li>
-                      <div className="w-full bg-border h-[1px]"></div>
-                    </li>
-                    <li className="py-4 px-2 text-left text-nowrap">
-                      <CustomLink to="/my-trips">
-                        Mis reservaciones
-                      </CustomLink>
-                    </li>
-                    <li>
-                      <div className="w-full bg-border h-[1px]"></div>
-                    </li>
-                    <li className="py-4 px-2 text-left text-nowrap">
-                      <CustomLink to="/search-hosts">
-                        Buscar a un anfitrión
-                      </CustomLink>
-                    </li>
-                    <li>
-                      <div className="w-full bg-border h-[1px]"></div>
-                    </li>
-                    <li className="py-4 px-2 text-left text-nowrap">
-                      <CustomLink to="/profile">
-                        Mi perfil
-                      </CustomLink>
-                    </li>
-                  </ul>
-                )}
+                {Links}
               </CustomDropdown>
             </DropdownParent>
           </nav>

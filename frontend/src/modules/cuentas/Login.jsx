@@ -6,8 +6,8 @@ function routeByRole(roleName = "") {
   const role = roleName.trim().toLowerCase();
 
   if (role.includes("admin")) return "/admin/dashboard";
-  if (role.includes("anfit")) return "/host/today";
-  return "/guest/explore";
+  if (role.includes("anfit") || role.includes("ambos")) return "/host/today";
+  return "/";
 }
 
 export default function Login() {
@@ -83,7 +83,7 @@ export default function Login() {
 
           <div className="grid gap-1.5">
             <label className="font-semibold text-[var(--t_primario)]" htmlFor="password">
-              Contrasena
+              Contraseña
             </label>
             <input
               id="password"
@@ -91,7 +91,7 @@ export default function Login() {
               type="password"
               value={form.password}
               onChange={handleChange}
-              placeholder="Tu contrasena"
+              placeholder="Tu contraseña"
               autoComplete="current-password"
               required
               className="w-full rounded-xl border border-[#d8dbe5] px-3.5 py-3 text-[var(--t_primario)] outline-none transition focus:border-[var(--primario)] focus:shadow-[0_0_0_3px_rgba(191,6,3,0.15)]"

@@ -47,6 +47,10 @@ not_host_response = Response(
     {"error": "User is not a host"}, status=status.HTTP_403_FORBIDDEN
 )
 
+not_admin_response = Response(
+    {"error": "User is not an admin"}, status=status.HTTP_403_FORBIDDEN
+)
+
 
 class PropiedadViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
@@ -132,21 +136,20 @@ class PropiedadViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["GET"])
     def by_host(self, request):
-        # TODO: Cuando ya esté el token usar esto
-        host_id = request.user.id
+        user = request.user
 
-        # TODO: Descomentar esto cuando ya esté el token
-        # if not request.user.is_authenticated:
-        # return not_authenticated_response
+        if not request.user.is_authenticated:
+            return not_authenticated_response
 
-        # TODO: Descomentar esto cuando ya esté el token
-        # if not request.user.is_host:
-        # return not_host_response
+        if request.user.rol.nombre != "anfitrion" and request.user.rol.nombre !=  "ambos":
+            return not_host_response
+
+        host_id = user.pk
 
         queryset = (
             Propiedad.objects.select_related("divisa", "tipo_propiedad")
             .prefetch_related("amenidades", "imagenes")
-            .filter(anfitrion=1)
+            .filter(anfitrion=host_id)
         )
 
         serializer = self.get_serializer(queryset, many=True)
@@ -155,19 +158,14 @@ class PropiedadViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         anfitrion = request.user
 
-        # TODO: Descomentar esto cuando ya esté el token
-        # if not anfitrion.is_authenticated:
-        # return not_authenticated_response
+        if not request.user.is_authenticated:
+            return not_authenticated_response
 
-        # TODO: Descomentar esto cuando ya esté el token
-        # if not anfitrion.is_host:
-        # return not_host_response
-
-        # TODO: Cuando ya esté el token quitar esto
-        debug_anfitrion = Usuario.objects.get(pk=1)
+        if request.user.rol.nombre != "anfitrion" and request.user.rol.nombre != "ambos":
+            return not_host_response
 
         serializer = PropiedadSerializer(
-            data=request.data, context={"anfitrion": debug_anfitrion}
+            data=request.data, context={"anfitrion": anfitrion}
         )
 
         # serializer.is_valid(raise_exception=True)
@@ -200,23 +198,21 @@ class PropiedadViewSet(viewsets.ModelViewSet):
         )
 
     def partial_update(self, request, *args, **kwargs):
-        # TODO: Descomentar esto cuando ya esté el token
-        # if not request.user.is_authenticated:
-        # return not_authenticated_response
+        if not request.user.is_authenticated:
+            return not_authenticated_response
 
-        # TODO: Descomentar esto cuando ya esté el token
-        # if not request.user.is_host:
-        # return not_host_response
+        if request.user.rol.nombre != "anfitrion" and request.user.rol.nombre != "ambos":
+            return not_host_response
+
         return super().partial_update(request, *args, **kwargs)
 
     def destroy(self, request, *args, **kwargs):
-        # TODO: Descomentar esto cuando ya esté el token
-        # if not request.user.is_authenticated:
-        # return not_authenticated_response
+        if not request.user.is_authenticated:
+            return not_authenticated_response
 
-        # TODO: Descomentar esto cuando ya esté el token
-        # if not request.user.is_host:
-        # return not_host_response
+        if request.user.rol.nombre != "anfitrion" and request.user.rol.nombre != "ambos ":
+            return not_host_response
+
         instance = self.get_object()
         instance.activa = not instance.activa
         instance.save(update_fields=["activa"])
@@ -233,6 +229,24 @@ class DivisaViewSet(
     queryset = Divisa.objects.all().order_by("nombre")
     serializer_class = DivisaSerializer
 
+    def create(self, request, *args, **kwargs):
+        user = request.user
+        if not user.is_authenticated:
+            return not_authenticated_response
+
+        if user.rol.nombre != "administrador":
+            return not_admin_response
+        return super().create(request, *args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        user = request.user
+        if not user.is_authenticated:
+            return not_authenticated_response
+
+        if user.rol.nombre != "administrador":
+            return not_admin_response
+        return super().update(request, *args, **kwargs)
+
 
 class FavoritoViewSet(
     viewsets.GenericViewSet,
@@ -245,6 +259,9 @@ class FavoritoViewSet(
 
     def list(self, request):
         user = request.user
+
+        if not user.is_authenticated:
+            return not_authenticated_response
 
         queryset = Cards.objects.filter(
             propiedad_id__in=Favorito.objects.filter(usuario=user).values_list(

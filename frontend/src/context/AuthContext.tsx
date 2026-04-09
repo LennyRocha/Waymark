@@ -5,13 +5,17 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { jwtDecode } from "jwt-decode";
 import Role from "../types/Rol";
+
 type AuthContextValue = {
   token: string | null;
   isAuthenticated: boolean;
   userRole: Role;
   setAuthToken: (token: string | null) => void;
+  setAuthRefreshToken: (token: string | null) => void;
+  refreshToken?: string | null;
+  handleLogout?: () => void;
+  checkAuthOnLoad?: () => void;
 };
 
 const AuthContext = createContext<
@@ -22,34 +26,59 @@ type AuthProviderProps = {
   children?: ReactNode;
 };
 
-type DecodedToken = {
-  role: Role;
-  exp: number;
-  iat: number;
-  sub: string;
-};
-
 export function AuthProvider({
   children,
 }: Readonly<AuthProviderProps>) {
   const [token, setToken] = useState<string | null>(
-    localStorage.getItem("token"),
+    localStorage.getItem("access_token"),
   );
-  const isAuthenticated = useMemo(() => !!token, [token]);
+  const [refreshToken, setRefreshToken] = useState<
+    string | null
+  >(localStorage.getItem("refresh_token"));
+  const isAuthenticated = useMemo(
+    () => !!token || !!refreshToken,
+    [token, refreshToken],
+  );
+
+  function checkAuthOnLoad() {
+    if (!isAuthenticated) {
+      globalThis.location.replace("/");
+    }
+  }
 
   const userRole = useMemo<Role>(() => {
     if (!token) return null;
-    const decoded = jwtDecode<DecodedToken>(token);
-    return decoded?.role;
+    const role = localStorage.getItem("user_role");
+    if (role) return role as Role;
+    return null;
   }, [token]);
 
   const setAuthToken = (newToken: string | null) => {
     if (newToken) {
-      localStorage.setItem("token", newToken);
+      localStorage.setItem("access_token", newToken);
       setToken(newToken);
     } else {
-      localStorage.removeItem("token");
+      localStorage.removeItem("access_token");
       setToken(null);
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+    localStorage.removeItem("user_role");
+    setToken(null);
+    setRefreshToken(null);
+    globalThis.location.reload();
+  };
+
+  const setAuthRefreshToken = (newToken: string | null) => {
+    if (newToken) {
+      localStorage.setItem("refresh_token", newToken);
+      setRefreshToken(newToken);
+    } else {
+      localStorage.removeItem("refresh_token");
+      setRefreshToken(null);
     }
   };
 
@@ -59,8 +88,13 @@ export function AuthProvider({
       isAuthenticated,
       userRole,
       setAuthToken,
+      setAuthRefreshToken,
+      refreshToken,
+      handleLogout,
+      checkAuthOnLoad,
     };
-  }, []);
+  }, [token, isAuthenticated, userRole, refreshToken]);
+
   return (
     <AuthContext.Provider value={value}>
       {children}

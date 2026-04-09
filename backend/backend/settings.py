@@ -30,7 +30,7 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 
@@ -63,13 +63,17 @@ SIMPLE_JWT = {
     "USER_ID_CLAIM": "user_id",
 }
 
-CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': os.getenv("CLOUD_NAME"),
-    'API_KEY': os.getenv("CLOUD_KEY"),
-    'API_SECRET': os.getenv("CLOUD_SECRET"),
-}
+# CLOUDINARY_STORAGE = {
+#     'CLOUD_NAME': os.getenv("CLOUD_NAME"),
+#     'API_KEY':  os.getenv("CLOUD_KEY"),
+#     'API_SECRET': os.getenv("CLOUD_SECRET"),
+# }
 
-DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
+# DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
+
+#Mientras está  en desarrollo
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR/'media'
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",

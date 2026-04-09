@@ -8,6 +8,7 @@ import {
 } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { Menu } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 type HostLink = {
   name: string;
@@ -33,6 +34,8 @@ export default function HostHeader() {
   const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(false);
+
+  const auth = useAuth();
 
   useEffect(() => {
     setOpen(false);
@@ -95,14 +98,16 @@ export default function HostHeader() {
             ))}
           </div>
           <div className="hidden lg:flex lg:flex-1 lg:justify-end gap-2">
-            <button
-              className="font-bold"
-              onClick={() => navigate("/host/explore")}
-              title="Cambiar a exploración"
-              aria-label="Cambiar a exploración"
-            >
-              Cambiar a exploración
-            </button>
+            {auth?.userRole === "ambos" && (
+              <button
+                className="font-bold"
+                onClick={() => navigate("/")}
+                title="Cambiar a exploración"
+                aria-label="Cambiar a exploración"
+              >
+                Cambiar a exploración
+              </button>
+            )}
             <button
               type="button"
               className="flex text-sm bg-gray-800 rounded-full focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600"

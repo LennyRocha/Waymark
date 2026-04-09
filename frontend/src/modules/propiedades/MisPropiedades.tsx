@@ -37,6 +37,10 @@ export default function MisPropiedades() {
 
   const links = [
     {
+      label: "Inicio",
+      href: "/",
+    },
+    {
       label: "Anfitrión",
       href: "/host",
     },
@@ -71,7 +75,9 @@ export default function MisPropiedades() {
         propiedades.refetch();
         closeModal();
         toast.success("¡Estado de propiedad actualizado!");
-        queryClient.invalidateQueries({queryKey: ["propiedad", id]});
+        queryClient.invalidateQueries({
+          queryKey: ["propiedad", id],
+        });
       },
       onerror: (error) => {
         const message = getAxiosErrorMessage(error);

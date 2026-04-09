@@ -246,7 +246,7 @@ export default function AdministrarPropiedad() {
     }
 
     let smallScreen = useWatchResize({ pixeles: 640, metrica: "lessThan" });
-    let mediumScreen = useWatchResize({ pixeles: 768, metrica: "lessThan" });
+    let mediumScreen = useWatchResize({ pixeles: 768, metrica: "max" });
 
     const oldTipo = useMemo(() => {
         return propiedadQuery.data?.tipo.tipo ?? "casa";
@@ -261,31 +261,31 @@ export default function AdministrarPropiedad() {
     const components = [
         {
             label: 'general',
-            Icon: <Cog size={24} className='mx-auto' />,
+            Icon: <Cog size={24} className='mx-auto shrink-0' />,
             Component: Tab1,
             props: { ...generalProps, tipo: oldTipo }
         },
         {
             label: 'fotos',
-            Icon: <Picture size={24} className='mx-auto' />,
+            Icon: <Picture size={24} className='mx-auto shrink-0' />,
             Component: Tab2,
             props: { ...generalProps, backup: backupOrders }
         },
         {
             label: 'amenidades',
-            Icon: <ScrollText size={24} className='mx-auto' />,
+            Icon: <ScrollText size={24} className='mx-auto shrink-0' />,
             Component: Tab3,
             props: { ...generalProps, amenidadesList: amenidadesList.data }
         },
         {
             label: 'reglas',
-            Icon: <Book size={24} className='mx-auto' />,
+            Icon: <Book size={24} className='mx-auto shrink-0' />,
             Component: Tab4,
             props: generalProps
         },
         {
             label: 'servicio',
-            Icon: <Banknote size={24} className='mx-auto' />,
+            Icon: <Banknote size={24} className='mx-auto shrink-0' />,
             Component: Tab5,
             props: { ...generalProps, divisasList: divisasList.data }
         },
@@ -296,6 +296,10 @@ export default function AdministrarPropiedad() {
     const [selectedTab, setSelectedTab] = useState(componentes[0])
 
     const links = [
+        {
+            label: "Inicio",
+            href: "/",
+        },
         {
             label: "Anfitrión",
             href: "/host",
@@ -426,9 +430,9 @@ export default function AdministrarPropiedad() {
             <Breadcrumb items={links} />
             <h5 className='md:text-left font-[montserrat] mt-4'>{propiedadQuery.data?.titulo}</h5>
             <nav className='mt-4 border-sm border-bl-0 border-br-0 border-t-0 h-[44px]' >
-                <ul className='p-0 m-0 font-medium flex w-full flex-wrap'>
+                <ul className='p-0 m-0 font-medium flex w-full'>
                     {componentes.map((item) => (
-                        <li key={item.label} className='list-none flex-1 min-w-0'>
+                        <li key={item.label} className='list-none md:flex-1 min-w-0'>
                             <motion.div
                                 initial={false}
                                 animate={{
@@ -436,7 +440,7 @@ export default function AdministrarPropiedad() {
                                         item.label === selectedTab.label ? "var(--color-border)" : "transparent",
                                     color: item.label === selectedTab.label ? "var(--color-primary-500)" : "black",
                                 }}
-                                className={`text-wrap rounded-[5px] rounded-bl-none rounded-br-none px-[15px] py-[18px] relative bg-white cursor-pointer h-6 flex justify-between items-center select-none text-[#0f1115] ${item.label === selectedTab.label ? "max-md:w-150" : "max-md:w-40"}`}
+                                className={`text-wrap rounded-[5px] rounded-bl-none rounded-br-none px-[15px] py-[18px] relative bg-white cursor-pointer h-6 flex justify-between items-center select-none text-[#0f1115]`}
                                 onClick={() => setSelectedTab(item)}
                             >
                                 {
