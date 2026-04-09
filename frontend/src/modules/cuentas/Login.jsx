@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../../utils/api";
+import { useAuth } from "../../context/AuthContext";
 
 function routeByRole(roleName = "") {
   const role = roleName.trim().toLowerCase();
@@ -11,6 +12,38 @@ function routeByRole(roleName = "") {
 }
 
 export default function Login() {
+  const navigate = useNavigate();
+  const auth = useAuth();
+  const [form, setForm] = useState({ correo: "", password: "" });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+    try {
+      const { data } = await api.post("/login/", {
+        correo: form.correo,
+        password: form.password,
+      });
+      auth?.setAuthToken(data.access);
+      navigate(routeByRole(data?.usuario?.rol_nombre));
+    } catch (err) {
+      const msg =
+        err?.response?.data?.detail ||
+        "No se pudo iniciar sesion. Verifica correo y contrasena.";
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <main className="min-h-[100dvh] bg-gradient-to-br from-[#fff7f2] via-white to-[#f5f7fb] px-4 py-10 flex items-center justify-center">
       <section className="w-full max-w-[460px] rounded-2xl border border-[var(--color-border)] bg-white/90 p-6 md:p-8 shadow-[0_18px_40px_rgba(43,49,69,0.14)]">

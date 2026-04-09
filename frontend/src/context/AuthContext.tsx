@@ -23,7 +23,7 @@ type AuthProviderProps = {
 };
 
 type DecodedToken = {
-  role: Role;
+  rol_nombre: Role;
   exp: number;
   iat: number;
   sub: string;
@@ -40,7 +40,7 @@ export function AuthProvider({
   const userRole = useMemo<Role>(() => {
     if (!token) return null;
     const decoded = jwtDecode<DecodedToken>(token);
-    return decoded?.role;
+    return decoded?.rol_nombre;
   }, [token]);
 
   const setAuthToken = (newToken: string | null) => {
@@ -60,7 +60,7 @@ export function AuthProvider({
       userRole,
       setAuthToken,
     };
-  }, []);
+  }, [token, isAuthenticated, userRole]);
   return (
     <AuthContext.Provider value={value}>
       {children}
