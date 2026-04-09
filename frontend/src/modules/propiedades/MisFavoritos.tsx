@@ -6,18 +6,21 @@ import useSetPageTitle from "../../utils/setPageTitle";
 import { HeartPlus } from "lucide-react";
 import { motion } from "framer-motion";
 import PropiedadCard from "./components/PropiedadCard";
+import { useAuth } from "../../context/AuthContext";
+import CustomButton from "../../components/CustomButton";
+import { useNavigate } from "react-router-dom";
 
-type Props = {};
-
-export default function MisFavoritos({}: Props) {
+export default function MisFavoritos() {
+  const auth = useAuth();
+  const navigate = useNavigate();
   const links = [
     {
       label: "Inicio",
-      href: "/guest",
+      href: "/",
     },
     {
       label: "Favoritos",
-      href: "/guest/favorites",
+      href: "/wishlist",
       disabled: true,
     },
   ];
@@ -27,8 +30,23 @@ export default function MisFavoritos({}: Props) {
     7,
   );
   useSetPageTitle(
-    "Waymark - Encuentra el lugar perfecto para tu próxima aventura",
+    "Mis Favoritos - Waymark",
   );
+  const isAuthenticated =
+    auth?.isAuthenticated &&
+    (auth.userRole === "anfitrion" ||
+      auth.userRole === "ambos");
+
+  if (!isAuthenticated) {
+    return (
+      <main className="w-[100dvw] h-[100dvh] flex flex-col  items-start justify-start px-6 py-8 mt-12 gap-4">
+        <h2>Favoritos</h2>
+        <h4 className="text-left w-full ">Inicia sesión para ver tus favoritos</h4>
+        <p className="text-text-secondary text-left">Podrás consultar la lista de tus favoritos una vez que inicies sesión.</p>
+        <CustomButton onClick={() => navigate("/login")}>Iniciar sesión</CustomButton>
+      </main>
+    );
+  }
   if (favoritos.isLoading || favoritos.isInitialLoading)
     return (
       <main className="w-[100dvw] h-[100dvh] flex items-center justify-center">

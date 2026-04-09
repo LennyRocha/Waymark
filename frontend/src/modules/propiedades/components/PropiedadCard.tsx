@@ -2,7 +2,6 @@ import React from "react";
 import { Heart, Star } from "lucide-react";
 import { motion } from "framer-motion";
 import Card from "../types/Card";
-import hasToken from "../../../utils/hasToken";
 import {
   useFavoritoDelete,
   useFavoritoPost,
@@ -11,6 +10,7 @@ import { FavoritoRequest } from "../types/Favorito";
 import Modal from "../../../layout/Modal";
 import Login from "../../cuentas/Login";
 import { useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "../../../context/AuthContext";
 
 const MotionHeart = motion.create(Heart);
 
@@ -49,11 +49,12 @@ export default function PropiedadCard({
       });
     },
   });
-  const isAthenticated = hasToken();
+  const auth = useAuth();
+  const isAuthenticated = auth?.isAuthenticated;
   const toggleFavorito = async () => {
     if (favoritoPost.isPending || favoritoDelete.isPending)
       return;
-    if (!isAthenticated) {
+    if (!isAuthenticated || (auth?.userRole !== "turista" && auth?.userRole !== "ambos")) {
       openModal();
       return;
     }
