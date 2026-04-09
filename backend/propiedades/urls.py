@@ -15,5 +15,4 @@ router.register(r'tipos_propiedad', TipoPropiedadViewSet, basename='tipos_propie
 urlpatterns = [
     # Incluimos todas las rutas generadas por el router bajo el prefijo 'api/'
     path('', include(router.urls)), 
-    path('propiedades/<int:propiedad_pk>/imagenes/', ImagenViewSet.as_view({'post': 'create'}))
 ]
