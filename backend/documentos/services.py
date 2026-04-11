@@ -1,6 +1,6 @@
 import re
 import requests
-from django.conf import settings
+import os
 
 
 def limpiar_texto(texto: str) -> str:
@@ -29,6 +29,8 @@ def extraer_fecha_nacimiento(texto: str) -> str:
     return ""
 
 
+import re
+
 def extraer_nombre(texto: str) -> str:
     coincidencia = re.search(
         r'NOMBRE\s+(.+?)(?=\s+DOMICILIO|\s+CURP|\s+SEXO|\s+CLAVE DE ELECTOR|\s+FECHA DE NACIMIENTO|$)',
@@ -43,6 +45,37 @@ def extraer_nombre(texto: str) -> str:
     return ""
 
 
+def procesar_ine_con_ocr_space(imagen) -> dict:
+    url = "https://api.ocr.space/parse/image"
+
+    respuesta = requests.post(
+        url,
+        files={
+            "filename": (imagen.name, imagen, imagen.content_type)
+        },
+        data={
+            "apikey": os.getenv("OCR_SPACE_API_KEY"),
+            "language": "spa",
+            "isOverlayRequired": False,
+            "OCREngine": 2,
+        },
+        timeout=30,
+    )
+
+    respuesta.raise_for_status()
+    data = respuesta.json()
+
+    resultados = data.get("ParsedResults", [])
+    texto = " ".join([resultado.get("ParsedText", "") for resultado in resultados])
+    texto_limpio = limpiar_texto(texto)
+
+    return {
+        "nombre": extraer_nombre(texto_limpio),
+        "domicilio": extraer_domicilio(texto_limpio),
+        "curp": extraer_curp(texto_limpio),
+        "fecha_nacimiento": extraer_fecha_nacimiento(texto_limpio),
+    }
+    
 def extraer_domicilio(texto: str) -> str:
     coincidencia = re.search(
         r'DOMICILIO\s+(.+?)(?=\s+CLAVE DE ELECTOR|\s+CURP|\s+FECHA DE NACIMIENTO|\s+SECCIÓN|\s+AÑO DE REGISTRO|\s+VIGENCIA|$)',
@@ -55,60 +88,3 @@ def extraer_domicilio(texto: str) -> str:
         return domicilio
 
     return ""
-
-
-def separar_nombre_completo(nombre_completo: str) -> dict:
-    partes = nombre_completo.split()
-
-    if len(partes) >= 3:
-        return {
-            "nombre": " ".join(partes[2:]),
-            "apellido_p": partes[0],
-            "apellido_m": partes[1],
-        }
-
-    elif len(partes) == 2:
-        return {
-            "nombre": partes[1],
-            "apellido_p": partes[0],
-            "apellido_m": "",
-        }
-
-    return {
-        "nombre": nombre_completo,
-        "apellido_p": "",
-        "apellido_m": "",
-    }
-
-
-def procesar_ine_con_ocr_space(imagen) -> dict:
-    url = "https://api.ocr.space/parse/image"
-
-    respuesta = requests.post(
-        url,
-        files={
-            "filename": (imagen.name, imagen, imagen.content_type)
-        },
-        data={
-            "apikey": settings.OCR_API_KEY,
-            "language": "spa",
-            "isOverlayRequired": False,
-            "OCREngine": 2,
-        },
-        timeout=30,
-    )
-
-    respuesta.raise_for_status()
-    data = respuesta.json()
-
-    resultados = data.get("ParsedResults", [])
-    texto = " ".join([r.get("ParsedText", "") for r in resultados])
-    texto_limpio = limpiar_texto(texto)
-
-    return {
-        "texto_detectado": texto_limpio,
-        "nombre": extraer_nombre(texto_limpio),
-        "domicilio": extraer_domicilio(texto_limpio),
-        "curp": extraer_curp(texto_limpio),
-        "fecha_nacimiento": extraer_fecha_nacimiento(texto_limpio),
-    }
