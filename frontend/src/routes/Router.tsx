@@ -40,16 +40,18 @@ export default function Router() {
                 </Route>
                 <Route path="admin" element={<AdminHeader />}>
                     <Route index element={<Navigate to="dashboard" />} />
-                    <Route path="dashboard" element={<h1>Dashboard todo feo</h1>} />
-                    <Route path="users" element={<h1>Vista de usuarios</h1>} />
-                    <Route path="documents" element={<h1>Vista de documentos</h1>} />
+                    <Route path="dashboard" element={<h1>Dashboard todo feo, vista de usuarios</h1>} />
                     <Route path="currencys" element={<h1>Vista de mis divisas</h1>} />
-                    <Route path="listings" element={<h1>Vista de alojamientos</h1>} />
                     <Route path="calendar" element={<h1>Vista de calendario</h1>} />
                     <Route path="profile" element={<h1>Vista de mi perfil</h1>} />
                 </Route>
-                <Route path="*" element={<Page404 />} />
+                <Route path="404" element={<Page404 />} />
+                <Route path="*" element={<Redirector />} />
             </Routes>
         </BrowserRouter>
     );
+}
+
+const Redirector = () => {
+    return <Navigate to={"/404" } />
 }

@@ -7,7 +7,13 @@ import React, {
   useMemo,
 } from "react";
 import PropiedadCard from "./components/PropiedadCard";
-import { GalleryHorizontal, Menu } from "lucide-react";
+import {
+  ArrowRight,
+  ChevronLeft,
+  ChevronRight,
+  GalleryHorizontal,
+  Menu,
+} from "lucide-react";
 import {
   useScroll,
   useMotionValueEvent,
@@ -28,6 +34,7 @@ import EmptyListComponent from "../../layout/EmptyListComponent";
 import { Ubicacion } from "./types/Propiedad";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { CardsResponse } from "./types/Card";
 
 export default function Landing() {
   const ubicaciones = useUbicaciones();
@@ -40,6 +47,24 @@ export default function Landing() {
   useSetPageTitle(
     "Waymark - Encuentra el lugar perfecto para tu próxima aventura",
   );
+
+  const scrollLeft = (
+    ref: React.RefObject<HTMLSectionElement>,
+  ) => {
+    ref.current?.scrollTo({
+      left: 0,
+      behavior: "smooth",
+    });
+  };
+
+  const scrollRight = (
+    ref: React.RefObject<HTMLSectionElement>,
+  ) => {
+    ref.current?.scrollTo({
+      left: ref.current.scrollWidth,
+      behavior: "smooth",
+    });
+  };
   if (isLoading)
     return (
       <main className="w-[100dvw] h-[100dvh] flex items-center justify-center">
@@ -76,44 +101,23 @@ export default function Landing() {
       ) : (
         <main className="content">
           {landing.data?.favoritos.length !== 0 && (
-            <>
-              <h4 className="w-full text-left mt-[1rem] mb-2">
-                Alojamientos populares
-              </h4>
-              <section className="inline-flex w-full overflow-x-auto overflow-y-hidden overflow-y-hidden gap-[.75rem] md:gap-3 scroll-smooth scroll-no mb-5">
-                {landing.data?.favoritos.map((item) => {
-                  return (
-                    <PropiedadCard
-                      key={item.propiedad_id}
-                      propiedad={item}
-                    />
-                  );
-                })}
-                <VerMasCard direccion={"/s/homes"} />
-              </section>
-            </>
+            <LandingRow
+              item={{} as CardsResponse}
+              scrollLeft={scrollLeft}
+              scrollRight={scrollRight}
+              showPopular={true}
+              list={landing.data.favoritos}
+            />
           )}
           {landing.data?.ciudades.map((item) => {
             return (
-              <div key={item.ciudad}>
-                <h4 className="w-full text-left mt-[1rem] mb-2">
-                  Alojamientos en {item.ciudad}
-                </h4>
-                <section className="inline-flex w-full overflow-x-auto overflow-y-hidden gap-[.75rem] md:gap-3 scroll-smooth scroll-no mb-5">
-                  {item.cards.length !== 0 &&
-                    item.cards.map((card) => {
-                      return (
-                        <PropiedadCard
-                          key={card.propiedad_id}
-                          propiedad={card}
-                        />
-                      );
-                    })}
-                  <VerMasCard
-                    direccion={`/s/${item.ciudad}/homes`}
-                  />
-                </section>
-              </div>
+              <LandingRow
+                key={item.ciudad}
+                item={item}
+                scrollLeft={scrollLeft}
+                scrollRight={scrollRight}
+                showPopular={false}
+              />
             );
           })}
         </main>
@@ -122,6 +126,152 @@ export default function Landing() {
     </div>
   );
 }
+
+type RowProps = {
+  item: CardsResponse;
+  scrollLeft: (
+    ref: React.RefObject<HTMLSectionElement>,
+  ) => void;
+  scrollRight: (
+    ref: React.RefObject<HTMLSectionElement>,
+  ) => void;
+  showPopular?: boolean;
+  list?: Card[];
+};
+
+const LandingRow = ({
+  item,
+  scrollLeft,
+  scrollRight,
+  showPopular = false,
+  list = [],
+}: RowProps) => {
+  const navigate = useNavigate();
+  const scrollRef = useRef<HTMLSectionElement>(null);
+  const hasOverflow =
+    scrollRef.current?.scrollWidth >
+    scrollRef.current?.clientWidth;
+  const [isAtStart, setIsAtStart] = useState(true);
+  const [isAtEnd, setIsAtEnd] = useState(false);
+
+  const checkScrollPosition = () => {
+    const el = scrollRef.current;
+    if (!el) return;
+
+    const atStart = el.scrollLeft <= 0;
+
+    const atEnd =
+      el.scrollLeft + el.clientWidth >= el.scrollWidth - 1;
+
+    setIsAtStart(atStart);
+    setIsAtEnd(atEnd);
+  };
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+
+    checkScrollPosition();
+
+    el.addEventListener("scroll", checkScrollPosition);
+
+    return () =>
+      el.removeEventListener("scroll", checkScrollPosition);
+  }, []);
+  return (
+    <div>
+      <div
+        className={`flex gap-2 w-auto items-center ${hasOverflow ? "justify-between" : "justify-start"}  mb-2 mt-[1rem] `}
+      >
+        <div className="flex gap-2 w-auto items-center justify-center">
+          <h4 className="w-full text-left">
+            {showPopular
+              ? "Alojamientos populares"
+              : `Alojamientos en ${item.ciudad}`}
+          </h4>
+          <ArrowRight
+            strokeWidth={2.5}
+            onClick={() =>
+              navigate(
+                showPopular
+                  ? `/s/homes`
+                  : `/s/${item.ciudad}/homes`,
+              )
+            }
+            size={32}
+            className="rounded-full bg-border shrink-0 px-2 py-1 cursor-pointer  hover:bg-primary-500 hover:text-white transition-colors"
+          />
+        </div>
+        {hasOverflow && (
+          <div className="flex gap-2 w-auto items-center justify-center">
+            <button
+              disabled={isAtStart}
+              className="cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 disabled:cursor-not-allowed"
+              aria-label="start"
+            >
+              <ChevronLeft
+                onClick={() => scrollLeft(scrollRef)}
+                strokeWidth={2.5}
+                size={28}
+                className="rounded-full bg-border shrink-0 p-2"
+              />
+            </button>
+            <button
+              disabled={isAtEnd}
+              className="cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 disabled:cursor-not-allowed"
+              aria-label="end"
+            >
+              <ChevronRight
+                onClick={() => scrollRight(scrollRef)}
+                strokeWidth={2.5}
+                size={28}
+                className="rounded-full bg-border shrink-0 p-2"
+              />
+            </button>
+          </div>
+        )}
+      </div>
+      <section
+        ref={scrollRef}
+        className="inline-flex w-full overflow-x-auto overflow-y-hidden gap-[.75rem] md:gap-3 scroll-smooth scroll-no mb-5"
+      >
+        {showPopular ? (
+          <>
+            {list?.map((item) => {
+              return (
+                <PropiedadCard
+                  key={item.propiedad_id}
+                  propiedad={item}
+                />
+              );
+            })}
+            <VerMasCard direccion={"/s/homes"} />
+          </>
+        ) : (
+          item.cards.length !== 0 && (
+            <>
+              {item.cards.map((card) => {
+                return (
+                  <PropiedadCard
+                    key={card.propiedad_id}
+                    propiedad={card}
+                  />
+                );
+              })}
+              <VerMasCard
+                direccion={
+                  showPopular
+                    ? `/s/homes`
+                    : `/s/${item.ciudad}/homes`
+                }
+              />
+            </>
+          )
+        )}
+      </section>
+    </div>
+  );
+};
 
 type VerMasCardProps = {
   direccion: string;
@@ -160,9 +310,42 @@ const Header = ({
   const isAuthenticated = auth?.isAuthenticated;
   const role = auth?.userRole;
   const Links: React.FC = useMemo(() => {
-    //TODO: Agregr links para administrador
     if (isAuthenticated) {
       switch (role) {
+        case "administrador":
+          return (
+            <ul>
+              <li className="py-4 px-2 text-left text-nowrap">
+                <CustomLink to="/admin/dashboard">
+                  Dashboard
+                </CustomLink>
+              </li>
+              <li>
+                <div className="w-full bg-border h-[1px]"></div>
+              </li>
+              <li className="py-4 px-2 text-left text-nowrap">
+                <CustomLink to="/admin/currencys">
+                  Divisas
+                </CustomLink>
+              </li>
+              <li>
+                <div className="w-full bg-border h-[1px]"></div>
+              </li>
+              <li className="py-4 px-2 text-left text-nowrap">
+                <CustomLink to="/admin/calendar">
+                  Calendario
+                </CustomLink>
+              </li>
+              <li>
+                <div className="w-full bg-border h-[1px]"></div>
+              </li>
+              <li className="py-4 px-2 text-left text-nowrap">
+                <CustomLink to="/profile">
+                  Mi perfil
+                </CustomLink>
+              </li>
+            </ul>
+          );
         case "anfitrion":
           return (
             <ul>

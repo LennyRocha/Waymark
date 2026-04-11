@@ -10,9 +10,7 @@ type AdminLink = {
 };
 
 const links: AdminLink[] = [
-    { name: 'inicio', text: 'Inicio', to: '/admin/dashboard' },
-    { name: 'users', text: 'Usuarios', to: '/admin/users' },
-    { name: 'documents', text: 'Documentos', to: '/admin/documents' },
+    { name: 'users', text: 'Inicio', to: '/admin/dashboard' },
     { name: 'currencys', text: 'Divisas', to: '/admin/currencys' },
     { name: 'calendar', text: 'Calendario', to: '/admin/calendar' },
 ];
