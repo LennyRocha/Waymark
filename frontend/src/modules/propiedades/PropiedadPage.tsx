@@ -15,6 +15,7 @@ import {
   MapPinHouse,
   Menu,
   ChevronDown,
+  LayoutGrid,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import Calendar from "react-calendar";
@@ -29,6 +30,10 @@ import useUbicaciones from "./hooks/useUbicaciones";
 import { useAuth } from "../../context/AuthContext";
 import useWatchResize from "../../utils/useWatchResize";
 import Footer from "../../layout/Footer";
+import useGetHost from "./hooks/useGetHost";
+import Avatar from "../../components/Avatar";
+import Amenidad from "./types/Amenidad";
+import useCard from "./hooks/useCard";
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 const MAX_LENGTH = 500;
@@ -45,14 +50,16 @@ export default function PropiedadPage() {
   console.log(id, " ", slug);
   const [show, setShow] = useState(false);
   const propiedad = usePropiedad(id);
+
   useSetPageTitle(
     propiedad.data
       ? `${propiedad.data?.titulo} - Waymark`
       : "Waymark - Encuentra el lugar perfecto para tu próxima aventura",
   );
-  const [expanded, setExpanded] = useState(false);
 
   const [open, setOpen] = useState(false);
+  const [openAmenidades, setOpenAmenidades] =
+    useState(false);
 
   function toggle(val) {
     console.log(val);
@@ -71,32 +78,69 @@ export default function PropiedadPage() {
     new Date(),
     nextThreeDays,
   ]);
-  const today = new Date();
-  const maxDate = new Date();
-  maxDate.setFullYear(today.getFullYear() + 2);
 
   const [huespedes, setHuespedes] = useState(1);
 
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString("es-MX", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
-  };
+  const [noches, setNoches] = useState(1);
 
-  if (propiedad.isInitialLoading || propiedad.isLoading)
+  useEffect(() => {
+    if (Array.isArray(range)) {
+      const [start, end] = range;
+
+      if (start && end) {
+        const diffTime = end.getTime() - start.getTime();
+
+        const diffDays = Math.ceil(
+          diffTime / (1000 * 60 * 60 * 24),
+        );
+
+        setNoches(diffDays);
+      }
+    }
+  }, [range]);
+
+  const hostQuery = useGetHost(
+    propiedad.data?.anfitrion_id,
+  );
+
+  const cardQuery = useCard(id);
+
+  const fechaUnion = parsearFecha(
+    hostQuery.data?.created_at || new Date(),
+  );
+
+  useEffect(() => {
+    console.log(hostQuery.data);
+  }, [hostQuery.data]);
+
+  function refetchAll() {
+    propiedad.refetch();
+    amenidades.refetch();
+    hostQuery.refetch();
+    cardQuery.refetch();
+  }
+
+  if (
+    propiedad.isInitialLoading ||
+    propiedad.isLoading ||
+    amenidades.isInitialLoading ||
+    amenidades.isLoading ||
+    hostQuery.isInitialLoading ||
+    hostQuery.isLoading ||
+    cardQuery.isInitialLoading ||
+    cardQuery.isLoading
+  )
     return (
       <main className="w-[100dvw] h-[100dvh] flex items-center justify-center">
         <CustomLoader />
       </main>
     );
-  if (propiedad.isError)
+  if (propiedad.isError || hostQuery.isError)
     return (
       <main className="w-[100dvw] h-[100dvh]">
         <ErrorViewComponent
-          error={propiedad.error}
-          retryFunction={() => propiedad.refetch()}
+          error={propiedad.error || hostQuery.error}
+          retryFunction={() => refetchAll()}
         />
       </main>
     );
@@ -104,13 +148,6 @@ export default function PropiedadPage() {
     navigate("/404", { replace: true });
   }
   const prop = propiedad.data;
-  const testDesc =
-    "DEPARTAMENTO TOTALMENTE REMODELADO A TODO LUJO JUNTO AL MAR, para poder tener el mar a tus pies con toda la comodidad. Y contamos con acceso privado a la playa y a las albercas. El restaurante se encuentra a lado de la alberca por lo que sin salir podrás disfrutar de la magia del puerto,  muy bien ubicado cerca del Baby' O. Se cuenta a una cuadra con un estacionamiento publico, aunque es muy seguro dejar tu coche fuera del condominio. También hay  restaurant. \n La recepción está afectada por otis...";
-  console.log(testDesc.length);
-
-  const text = expanded
-    ? prop.descripcion
-    : prop.descripcion.substring(0, MAX_LENGTH);
 
   const shouldShowButton =
     prop.descripcion.length > MAX_LENGTH;
@@ -124,6 +161,15 @@ export default function PropiedadPage() {
           : `${i + 1} huéspedes `,
       value: i + 1,
     }),
+  );
+
+  const ids = new Set(
+    prop.amenidades.map((a) => a.amenidad_id),
+  );
+
+  const orderedEntries = groupAmenidades(
+    amenidades.data ?? [],
+    ids,
   );
 
   return (
@@ -146,74 +192,85 @@ export default function PropiedadPage() {
         <h3 className="md:text-left font-[montserrat]">
           {prop?.titulo}
         </h3>
-        <div className="grid grid-cols-4 gap-2 md:h-[450px]">
-          <div className="overflow-hidden col-span-2 row-span-2 rounded-l-xl hover:brightness-95 cursor-pointer">
-            <img
-              className="w-full h-full object-cover"
-              src={prop?.imagenes[0]?.url}
-              alt={`Imagen #${prop?.imagenes[0]?.orden}`}
-            />
-          </div>
-          <div className=" text-white hover:brightness-95 cursor-pointer overflow-hidden ">
-            <img
-              className="w-full h-full object-cover"
-              src={prop?.imagenes[1]?.url}
-              alt={`Imagen #${prop?.imagenes[1]?.orden}`}
-            />
-          </div>
-          <div className=" text-white hover:brightness-95 cursor-pointer overflow-hidden rounded-tr-xl">
-            <img
-              className="w-full h-full object-cover"
-              src={prop?.imagenes[2]?.url}
-              alt={`Imagen #${prop?.imagenes[2]?.orden}`}
-            />
-          </div>
-          <div className=" hover:brightness-95 cursor-pointer overflow-hidden">
-            <img
-              className="w-full h-full object-cover"
-              src={prop?.imagenes[3]?.url}
-              alt={`Imagen #${prop?.imagenes[3]?.orden}`}
-            />
-          </div>
-          <div className="hover:brightness-95 cursor-pointer overflow-hidden rounded-br-xl relative">
-            <img
-              className="w-full h-full object-cover"
-              src={prop?.imagenes[4]?.url}
-              alt={`Imagen #${prop?.imagenes[4]?.orden}`}
-            />
-            <button className="absolute bottom-2  bg-white rounded-xl p-2 w-full ">
-              Ver todas las fotos
-            </button>
-          </div>
-        </div>
+        <ImagenesGrid imagenes={prop.imagenes} />
         <section className="w-full flex max-md:flex-col items-start justify-start gap-0  md:gap-4  lg:gap-8">
           <article className="flex-1 max-md:w-full flex flex-col items-start justify-start gap-4 overflow-hidden">
-            <h4>
+            <h4 className="max-md:mx-auto">
               {" "}
               {prop?.tipo.tipo.charAt(0).toUpperCase() +
                 prop?.tipo.tipo.slice(1)}{" "}
               en {prop?.ciudad}, {prop?.region}
             </h4>
-            <p className="text-text-secondary flex gap-1 items-center">
+            <p className="text-text-secondary flex gap-1 items-center max-md:mx-auto flex flex-wrap  max-md:justify-center items-center">
+              {prop.max_huespedes}{" "}
+              {prop.max_huespedes === 1
+                ? "huésped"
+                : "huéspedes"}{" "}
+              <Dot size={14} />
               {prop.camas}{" "}
               {prop.camas === 1 ? "cama" : "camas"}{" "}
               <Dot size={14} /> {prop.banos}{" "}
               {prop.banos === 1 ? "baño" : "baños"}
+              <Dot size={14} /> {prop.habitaciones}{" "}
+              {prop.habitaciones === 1
+                ? "habitación"
+                : "habitaciones"}
             </p>
-            <div className="max-h-[150px] h-auto">
+
+            <Divider />
+
+            <div className="flex gap-2 mt-2">
+              <Avatar
+                src={hostQuery.data?.foto_perfil}
+                size={48}
+                name={hostQuery.data?.nombre || ""}
+              />
+              <div>
+                <h6 className="font-[cabin] text-left ">
+                  Anfitrión: {hostQuery.data?.nombre}{" "}
+                  {hostQuery.data?.apellido_p}
+                </h6>
+                <p className="text-left">{fechaUnion}</p>
+              </div>
+            </div>
+
+            <Divider />
+
+            <p>
+              {prop?.regla_autochecar
+                ? "Llegada autónoma"
+                : "No"}
+            </p>
+            <p>
+              {prop?.regla_apagar ? "Apagar luces" : "No"}
+            </p>
+            <p>
+              {prop?.regla_fiestas
+                ? "Permite fiestas"
+                : "No"}
+            </p>
+            <p>
+              {prop?.regla_fumar ? "Permite fumar" : "No"}
+            </p>
+            <p>
+              {prop?.regla_mascotas
+                ? "Permite mascotas"
+                : "No"}
+            </p>
+            <p>
+              {prop?.regla_ninos ? "Permite niños" : "No"}
+            </p>
+
+            <Divider />
+
+            <div className="max-h-[140px] h-auto overflow-hidden">
               <ReactMarkdown
                 components={{
-                  p: ({ children }) => (
-                    <p className="flex-0 font-[montserrat]  text-[14px]/[20px] text-text-primary text-left tracking-normal truncate w-full overflow-hidden whitespace-pre-line">
-                      {children}
-                    </p>
-                  ),
+                  p: MarkdownP,
                 }}
               >
-                {text +
-                  (!expanded && shouldShowButton
-                    ? "..."
-                    : "")}
+                {prop.descripcion +
+                  (shouldShowButton ? "..." : "")}
               </ReactMarkdown>
             </div>
 
@@ -221,19 +278,18 @@ export default function PropiedadPage() {
               <CustomButton
                 variant="secondary"
                 onClick={() => setShow(!show)}
+                customWidth="max-md:w-full"
               >
-                {expanded ? "Mostrar menos" : "Mostrar más"}
+                Mostrar más
               </CustomButton>
             )}
 
             <Divider />
 
-            <Divider />
-
             <h3>Lo que ofrece este lugar</h3>
 
-            <div className="flex w-full gap 2 items-start justify-center max-md:flex-col">
-              <div className="flex flex-col flex-1 gap-6">
+            <div className="flex w-full gap 2 items-start justify-center max-md:flex-col max-md:gap-4">
+              <div className="flex flex-col flex-1 gap-4">
                 {prop.amenidades.slice(0, 3).map((a) => {
                   return (
                     <div
@@ -244,6 +300,7 @@ export default function PropiedadPage() {
                         name={a.icono_nombre}
                         size={36}
                         className="shrink-0"
+                        strokeWidth={1}
                       />
                       <h6 className="text-left">
                         {a.nombre}
@@ -252,7 +309,7 @@ export default function PropiedadPage() {
                   );
                 })}
               </div>
-              <div className="flex flex-col flex-1 gap-6">
+              <div className="flex flex-col flex-1 gap-4">
                 {prop.amenidades.slice(3, 6).map((a) => {
                   return (
                     <div
@@ -262,6 +319,7 @@ export default function PropiedadPage() {
                       <Icono
                         name={a.icono_nombre}
                         size={36}
+                        strokeWidth={1}
                       />
                       <h6 className="text-left">
                         {a.nombre}
@@ -272,38 +330,33 @@ export default function PropiedadPage() {
               </div>
             </div>
 
-            <CustomButton variant="tertiary">
-              Ver todas las amenidades
+            <CustomButton
+              variant="secondary"
+              customWidth="max-md:w-full"
+              onClick={() => setOpenAmenidades(true)}
+            >
+              Mostrar las {prop.amenidades.length}{" "}
+              amenidades
             </CustomButton>
 
             <Divider />
 
-            <h1>Texto largo</h1>
-            <h1>Texto largo</h1>
-            <h1>Texto largo</h1>
-            <h1>Texto largo</h1>
-            <h1>Texto largo</h1>
-            <h1>Texto largo</h1>
-            <h1>Texto largo</h1>
-            <h1>Texto largo</h1>
-            <h1>Texto largo</h1>
-            <h1>Texto largo</h1>
-            <h1>Texto largo</h1>
-
-            {/*Aquí irá el calendario */}
-            <Calendar
-              selectRange
-              value={range}
-              onChange={(value) => setRange(value)}
-              minDate={today}
-              maxDate={maxDate}
-              showDoubleView
-              next2Label={null}
-              prev2Label={null}
-              locale="es-MX"
-              minDetail="month"
-              maxDetail="month"
+            {/* Desde 1960px mostrar 2 calendarios*/}
+            <CalendarContainer
+              range={range}
+              setRange={setRange}
             />
+            <div className="m-2 w-full flex items-center justify-end">
+              <CustomButton
+                size="small"
+                variant="tertiary"
+                onClick={() =>
+                  setRange([new Date(), nextThreeDays])
+                }
+              >
+                Borrar fechas
+              </CustomButton>
+            </div>
           </article>
           <article className="max-md:hidden p-6 top-4 sticky  max-md:hidden  md:w-[275px] lg:w-[400px] shadow-md/30 bg-white rounded-xl gap-4 flex flex-col items-start justify-start">
             <h5 className="text-left">
@@ -354,11 +407,14 @@ export default function PropiedadPage() {
               />
             </div>
             <div className="flex items-center justify-between w-full">
-              <h6>Total por x noches</h6>
-              <p>
+              <h6 className="text-left">
+                Total por {noches} noche(s)
+              </h6>
+              <p className="text-right">
                 $
-                {Math.round(prop?.precio_noche * 5 * 100) /
-                  100}{" "}
+                {Math.round(
+                  prop?.precio_noche * noches * 100,
+                ) / 100}{" "}
                 MXN
               </p>
             </div>
@@ -370,9 +426,13 @@ export default function PropiedadPage() {
             </p>
           </article>
         </section>
+        <h1 className="mx-auto">
+          Aquí van las reseñas Paco
+        </h1>
         <h4>Dónde vas a estar</h4>
-        <p>
-          {prop.ciudad} - {prop.region} - {prop.pais}
+        <p className="flex items-center">
+          {prop.ciudad} <Dot size={14} /> {prop.region}{" "}
+          <Dot size={14} /> {prop.pais}
         </p>
         <Map
           longitude={prop.coordenadas.lng}
@@ -405,6 +465,12 @@ export default function PropiedadPage() {
             />
           </Marker>
         </Map>
+        {prop.reglas_extra && (
+          <>
+            <h4>Reglas adicionales de la casa</h4>
+            <ReglasUl reglas={prop.reglas_extra} />
+          </>
+        )}
         <Modal
           open={show}
           close={() => setShow(false)}
@@ -412,19 +478,97 @@ export default function PropiedadPage() {
         >
           <Modal.Body>
             <h3>Acerca del espacio</h3>
-            <p className="text-justify mt-4">
+            <ReactMarkdown
+              components={{
+                p: MarkdownP,
+              }}
+            >
               {prop.descripcion}
-            </p>
+            </ReactMarkdown>
           </Modal.Body>
         </Modal>
-        <div className="w-full md:hidden fixed bottom-0 left-0 bg-white p-4">
-          <h3 className="text-left">
-            ${prop?.precio_noche} MXN por noche
-          </h3>
-          <p className="text-text-secondary text-center text-left">
-            El pago se realiza en efectivo
-          </p>
-          <CustomButton fullWidth>Reservar</CustomButton>
+        <Modal
+          open={openAmenidades}
+          close={() => setOpenAmenidades(false)}
+          width={"min(768px, 100%)"}
+        >
+          <Modal.Body>
+            <h4 className="mb-4">
+              Lo que ofrece este lugar
+            </h4>
+            {orderedEntries.map(([categoria, items]) => (
+              <div key={categoria}>
+                <p className="font-bold mb-4">
+                  {categoria.charAt(0).toUpperCase() +
+                    categoria.slice(1)}
+                </p>
+
+                <div className="flex flex-col items-start  gap-2 justify-center">
+                  {items.map((a: Amenidad) => {
+                    const selected = ids.has(a.amenidad_id);
+
+                    return selected ? (
+                      <div
+                        key={a.amenidad_id}
+                        className="flex items-center justify-start gap-2 mb-4 border-b last:border-0 border-border  w-full pb-4"
+                      >
+                        <Icono
+                          name={a.icono_nombre}
+                          size={32}
+                          strokeWidth={1}
+                          className="shrink-0"
+                        />
+                        <div>
+                          <p
+                            className={`${!selected && "line-through"} text-left`}
+                          >
+                            {a.nombre}
+                          </p>
+                          <p
+                            className={`text-left text-text-secondary text-sm`}
+                          >
+                            {a.descripcion}
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div
+                        key={a.amenidad_id}
+                        className="flex items-center justify-start gap-2 mb-4 border-b last:border-0 border-border  w-full pb-4"
+                      >
+                        <Icono
+                          name={a.icono_nombre}
+                          size={32}
+                          strokeWidth={1}
+                          className="shrink-0"
+                        />
+                        <p
+                          className={`${!selected && "line-through"} text-left`}
+                        >
+                          {a.nombre}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </Modal.Body>
+        </Modal>
+        <div className="w-full md:hidden fixed bottom-0 left-0 bg-white p-6 flex max-[490px]:flex-col items-center max-[490px]:items-start justify-between gap-2 border-t border-border z-[9999]">
+          <div>
+            <h6 className="text-left">
+              ${prop?.precio_noche} MXN
+            </h6>
+            <p className="text-text-secondary text-center text-left">
+              por {noches} noche(s){" "}
+              {formatShortMonthDate(range[0])} -{" "}
+              {formatShortMonthDate(range[1])}
+            </p>
+          </div>
+          <CustomButton customWidth=" max-[490px]:w-full  min-[490px]:w-auto">
+            Reservar
+          </CustomButton>
         </div>
       </main>
       <Footer />
@@ -732,6 +876,172 @@ const Select: React.FC<SelectProps> = ({
           </motion.ul>
         )}
       </AnimatePresence>
+    </div>
+  );
+};
+
+function parsearFecha(fecha: string | Date): string {
+  const date = new Date(fecha);
+
+  const formattedDate = new Intl.DateTimeFormat("es-MX", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(date);
+
+  const texto = `Se unió el ${formattedDate}`;
+  return texto;
+}
+
+const MarkdownP = ({ children }) => {
+  return (
+    <p className="flex-0 font-[montserrat]  text-[14px]/[20px] text-text-primary text-left tracking-normal truncate w-full overflow-hidden whitespace-pre-line">
+      {children}
+    </p>
+  );
+};
+
+const formatShortMonthDate = (date?: Date | null) => {
+  if (!date) return "";
+
+  return date
+    .toLocaleDateString("es-MX", {
+      month: "short",
+      day: "numeric",
+    })
+    .replace(".", "");
+};
+
+const formatDate = (date: Date) => {
+  return date.toLocaleDateString("es-MX", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+};
+
+function groupAmenidades(
+  data: Amenidad[],
+  ids: Set<number>,
+) {
+  const grouped = data.reduce<Record<string, Amenidad[]>>(
+    (acc, a) => {
+      const selected = ids.has(a.amenidad_id);
+
+      const categoria = selected
+        ? a.categoria
+        : "No incluidos";
+
+      acc[categoria] ??= [];
+      acc[categoria].push(a);
+
+      return acc;
+    },
+    {},
+  );
+
+  const orderedEntries = Object.entries(grouped).sort(
+    ([a], [b]) => {
+      if (a === "No incluidos") return 1;
+      if (b === "No incluidos") return -1;
+      return a.localeCompare(b);
+    },
+  );
+
+  return orderedEntries;
+}
+
+const CalendarContainer = ({ range, setRange }) => {
+  const isLarge = useWatchResize({
+    pixeles: 768,
+    metrica: "min",
+  });
+  const today = new Date();
+  const maxDate = new Date();
+  maxDate.setFullYear(today.getFullYear() + 2);
+  return (
+    <div className="w-full mx-auto" id="calendar_container">
+      <Calendar
+        selectRange
+        value={range}
+        onChange={(value) => setRange(value)}
+        minDate={today}
+        maxDate={maxDate}
+        showDoubleView={isLarge}
+        next2Label={null}
+        prev2Label={null}
+        locale="es-MX"
+        minDetail="month"
+        maxDetail="month"
+      />
+    </div>
+  );
+};
+
+const ReglasUl = ({
+  reglas,
+}: {
+  reglas: Record<string, string>;
+}) => {
+  return (
+    <ul className="list-disc list-inside flex flex-col gap-2">
+      {Object.entries(reglas).map(([key, value]) => (
+        <li key={key} className="text-left">
+          {value}
+        </li>
+      ))}
+    </ul>
+  );
+};
+
+const ImagenesGrid = ({
+  imagenes,
+}: {
+  imagenes: Imagen[];
+}) => {
+  return (
+    <div className="grid grid-cols-4 gap-2 md:h-[450px] max-md:hidden">
+      <div className="overflow-hidden col-span-2 row-span-2 rounded-l-xl hover:brightness-95 cursor-pointer">
+        <img
+          className="w-full h-full object-cover"
+          src={imagenes[0]?.url}
+          alt={`Imagen #${imagenes[0]?.orden}`}
+        />
+      </div>
+      <div className=" text-white hover:brightness-95 cursor-pointer overflow-hidden ">
+        <img
+          className="w-full h-full object-cover"
+          src={imagenes[1]?.url}
+          alt={`Imagen #${imagenes[1]?.orden}`}
+        />
+      </div>
+      <div className=" text-white hover:brightness-95 cursor-pointer overflow-hidden rounded-tr-xl">
+        <img
+          className="w-full h-full object-cover"
+          src={imagenes[2]?.url}
+          alt={`Imagen #${imagenes[2]?.orden}`}
+        />
+      </div>
+      <div className=" hover:brightness-95 cursor-pointer overflow-hidden">
+        <img
+          className="w-full h-full object-cover"
+          src={imagenes[3]?.url}
+          alt={`Imagen #${imagenes[3]?.orden}`}
+        />
+      </div>
+      <div
+        className={`hover:brightness-95 cursor-pointer overflow-hidden rounded-br-xl relative bg-cover flex items-end justify-center p-4 `}
+      >
+        <img
+          className="w-full h-full object-cover absolute top-0 left-0 z-0"
+          src={imagenes[4]?.url}
+          alt={`Imagen #${imagenes[4]?.orden}`}
+        />
+        <button className="bg-white rounded-xl py-2 px-4 w-auto  z-10 font-semibold cursor-pointer">
+          <LayoutGrid size={20} className="inline mb-1" />{" "}
+          Mostrar todas las fotos
+        </button>
+      </div>
     </div>
   );
 };

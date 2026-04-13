@@ -330,14 +330,14 @@ class Cards(models.Model):
     pais = models.CharField(max_length=25, db_collation="utf8mb4_0900_ai_ci")
     precio_noche = models.DecimalField(max_digits=10, decimal_places=2)
     slug = models.CharField(max_length=60, db_collation="utf8mb4_0900_ai_ci")
-    portada = models.ImageField(
-        upload_to="propiedades/",  blank=True, null=True)
+    portada = models.ImageField(upload_to="propiedades/", blank=True, null=True)
     promedio = models.DecimalField(
         max_digits=7, decimal_places=6, blank=True, null=True
     )
     divisa = models.CharField(max_length=50, db_collation="utf8mb4_0900_ai_ci")
     tipo = models.CharField(max_length=25, db_collation="utf8mb4_0900_ai_ci")
     es_favorito = models.BooleanField()
+    num_resenas = models.IntegerField(blank=True, null=True)
 
     class Meta:
         managed = False

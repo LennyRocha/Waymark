@@ -100,6 +100,22 @@ class PropiedadViewSet(viewsets.ModelViewSet):
             {"ciudad": ciudad if w_city else None, "cards": serializer.data}
         )
 
+    @action(detail=False, methods=["GET"], url_path="cards/(?P<pk>[^/.]+)")
+    def get_card(self, request, pk=None):
+        logger.info(
+            f"Consulta de card {pk} realizada por usuario "
+            f"{request.user.pk if request.user.is_authenticated else 'anonimo'}"
+        )
+        try:
+            card = Cards.objects.get(pk=pk)
+        except Cards.DoesNotExist:
+            return Response(
+                {"error": "Card not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+
+        serializer = CardSerializer(card, context={"request": request})
+        return Response(serializer.data)
+
     @action(detail=False, methods=["GET"])
     def landing(self, request):
         logger.info(
