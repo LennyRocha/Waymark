@@ -117,15 +117,12 @@ export default function AdministrarPropiedad() {
             const previousData = queryClient.getQueryData(["propiedades"]);
             return { previousData };
         },
-        onError: (error: any, variables: unknown, context: unknown) => {
-            console.warn(variables, context)
+        onError: (error: any) => {
             const errorMessage = getAxiosErrorMessage(error);
             const backendErrors = error.response?.data;
-            console.log("Errores backend:", backendErrors);
             if (backendErrors && typeof backendErrors === "object") {
                 const firstError = Object.entries(backendErrors)
                     .map(([field, messages]) => {
-                        console.log({ field, messages })
                         const msg = Array.isArray(messages) ? messages[0] : messages;
                         return `${getPropiedadNameByField(field)}: ¡${msg}!`;
                     })[0];
@@ -410,7 +407,6 @@ export default function AdministrarPropiedad() {
     async function updateImages(list: ImagenSlot[]) {
         if (!list.length) return;
         await Promise.all(list.map(img => {
-            console.log("Actualizando imagen:", img);
             const formData = new FormData();
             formData.append("orden", img.orden);
             formData.append("url", img.url);

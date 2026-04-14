@@ -21,7 +21,12 @@ import ReactMarkdown from "react-markdown";
 import Calendar from "react-calendar";
 import Map, { Marker } from "react-map-gl/mapbox";
 import "react-calendar/dist/Calendar.css";
-import { AnimatePresence, motion } from "framer-motion";
+import {
+  AnimatePresence,
+  motion,
+  useTransform,
+  useScroll,
+} from "framer-motion";
 import CustomLink from "../../components/CustomLink";
 import Buscador from "./components/Buscador";
 import CustomDropdown from "../../components/CustomDropdown";
@@ -40,16 +45,19 @@ const MAX_LENGTH = 500;
 
 export default function PropiedadPage() {
   const navigate = useNavigate();
-  const amenidades = useAmenidades();
   const { idSlug } = useParams();
   const params = idSlug.split("-");
   const id = params[0];
   const slug = params
     .filter((p, idx) => idx !== 0)
     .join("-");
-  console.log(id, " ", slug);
-  const [show, setShow] = useState(false);
+
+  const amenidades = useAmenidades();
   const propiedad = usePropiedad(id);
+  const hostQuery = useGetHost(
+    propiedad.data?.anfitrion_id,
+  );
+  const cardQuery = useCard(id);
 
   useSetPageTitle(
     propiedad.data
@@ -58,11 +66,11 @@ export default function PropiedadPage() {
   );
 
   const [open, setOpen] = useState(false);
+  const [openMore, setopenMore] = useState(false);
   const [openAmenidades, setOpenAmenidades] =
     useState(false);
 
   function toggle(val) {
-    console.log(val);
     setOpen(val);
   }
 
@@ -84,34 +92,27 @@ export default function PropiedadPage() {
   const [noches, setNoches] = useState(1);
 
   useEffect(() => {
-    if (Array.isArray(range)) {
-      const [start, end] = range;
+    if (!Array.isArray(range)) return;
 
-      if (start && end) {
-        const diffTime = end.getTime() - start.getTime();
+    const [start, end] = range;
 
-        const diffDays = Math.ceil(
-          diffTime / (1000 * 60 * 60 * 24),
-        );
-
-        setNoches(diffDays);
-      }
+    if (!start || !end) {
+      setNoches(1);
+      return;
     }
+
+    const diffTime = end.getTime() - start.getTime();
+
+    const diffDays = Math.ceil(
+      diffTime / (1000 * 60 * 60 * 24),
+    );
+
+    setNoches(diffDays);
   }, [range]);
-
-  const hostQuery = useGetHost(
-    propiedad.data?.anfitrion_id,
-  );
-
-  const cardQuery = useCard(id);
 
   const fechaUnion = parsearFecha(
     hostQuery.data?.created_at || new Date(),
   );
-
-  useEffect(() => {
-    console.log(hostQuery.data);
-  }, [hostQuery.data]);
 
   function refetchAll() {
     propiedad.refetch();
@@ -119,6 +120,20 @@ export default function PropiedadPage() {
     hostQuery.refetch();
     cardQuery.refetch();
   }
+
+  const sectionRef = useRef(null);
+
+  const fotosRef = useRef(null);
+  const amenidadesRef = useRef(null);
+  const resenasRef = useRef(null);
+  const ubicacionRef = useRef(null);
+
+  const listRef = [
+    fotosRef,
+    amenidadesRef,
+    ubicacionRef,
+    resenasRef,
+  ];
 
   if (
     propiedad.isInitialLoading ||
@@ -188,12 +203,19 @@ export default function PropiedadPage() {
         )}
         <Header toggle={toggle} value={open} />
       </AnimatePresence>
+      <HeaderScroll ref={sectionRef} listRefs={listRef} />
       <main className="w-full p-[1rem] mx-auto max-w-[1200px] flex flex-col items-start justify-start gap-4">
         <h3 className="md:text-left font-[montserrat]">
           {prop?.titulo}
         </h3>
-        <ImagenesGrid imagenes={prop.imagenes} />
-        <section className="w-full flex max-md:flex-col items-start justify-start gap-0  md:gap-4  lg:gap-8">
+        <ImagenesGrid
+          imagenes={prop.imagenes}
+          ref={fotosRef}
+        />
+        <section
+          className="w-full flex max-md:flex-col items-start justify-start gap-0  md:gap-4  lg:gap-8"
+          ref={sectionRef}
+        >
           <article className="flex-1 max-md:w-full flex flex-col items-start justify-start gap-4 overflow-hidden">
             <h4 className="max-md:mx-auto">
               {" "}
@@ -277,7 +299,7 @@ export default function PropiedadPage() {
             {shouldShowButton && (
               <CustomButton
                 variant="secondary"
-                onClick={() => setShow(!show)}
+                onClick={() => setopenMore(!openMore)}
                 customWidth="max-md:w-full"
               >
                 Mostrar más
@@ -286,7 +308,9 @@ export default function PropiedadPage() {
 
             <Divider />
 
-            <h3>Lo que ofrece este lugar</h3>
+            <h4 ref={amenidadesRef}>
+              Lo que ofrece este lugar
+            </h4>
 
             <div className="flex w-full gap 2 items-start justify-center max-md:flex-col max-md:gap-4">
               <div className="flex flex-col flex-1 gap-4">
@@ -358,7 +382,7 @@ export default function PropiedadPage() {
               </CustomButton>
             </div>
           </article>
-          <article className="max-md:hidden p-6 top-4 sticky  max-md:hidden  md:w-[275px] lg:w-[400px] shadow-md/30 bg-white rounded-xl gap-4 flex flex-col items-start justify-start">
+          <article className="max-md:hidden p-6 top-24 sticky  max-md:hidden  md:w-[275px] lg:w-[400px] shadow-md/30 bg-white rounded-xl gap-4 flex flex-col items-start justify-start">
             <h5 className="text-left">
               ${prop?.precio_noche} MXN por noche
             </h5>
@@ -426,10 +450,14 @@ export default function PropiedadPage() {
             </p>
           </article>
         </section>
-        <h1 className="mx-auto">
-          Aquí van las reseñas Paco
-        </h1>
-        <h4>Dónde vas a estar</h4>
+        <div ref={resenasRef} className="w-full">
+          {" "}
+          <h1 className="mx-auto">
+            Aquí van las reseñas Paco
+          </h1>
+        </div>
+
+        <h4 ref={ubicacionRef}>Dónde vas a estar</h4>
         <p className="flex items-center">
           {prop.ciudad} <Dot size={14} /> {prop.region}{" "}
           <Dot size={14} /> {prop.pais}
@@ -472,8 +500,8 @@ export default function PropiedadPage() {
           </>
         )}
         <Modal
-          open={show}
-          close={() => setShow(false)}
+          open={openMore}
+          close={() => setopenMore(false)}
           width={"min(768px, 100%)"}
         >
           <Modal.Body>
@@ -996,11 +1024,16 @@ const ReglasUl = ({
 
 const ImagenesGrid = ({
   imagenes,
+  ref,
 }: {
   imagenes: Imagen[];
+  ref: React.Ref<HTMLDivElement>;
 }) => {
   return (
-    <div className="grid grid-cols-4 gap-2 md:h-[450px] max-md:hidden">
+    <div
+      ref={ref}
+      className="grid grid-cols-4 gap-2 md:h-[450px] max-md:hidden"
+    >
       <div className="overflow-hidden col-span-2 row-span-2 rounded-l-xl hover:brightness-95 cursor-pointer">
         <img
           className="w-full h-full object-cover"
@@ -1044,4 +1077,78 @@ const ImagenesGrid = ({
       </div>
     </div>
   );
+};
+
+const HeaderScroll = ({ ref, listRefs }) => {
+  const { scrollY } = useScroll();
+  const [elementTop, setElementTop] = useState(0);
+
+  useEffect(() => {
+    if (ref.current) {
+      setElementTop(ref.current.offsetTop);
+    }
+  }, []);
+
+  const opacity = useTransform(
+    scrollY,
+    [elementTop, elementTop + 1],
+    [0, 1],
+  );
+
+  return (
+    <motion.div
+      style={{
+        opacity,
+      }}
+      className="sticky top-0 w-full z-[9997] max-md:hidden bg-white border-b border-border"
+    >
+      <div className="max-w-[1200px] mx-auto flex gap-2 items-center justify-between py-6 px-4">
+        <div className="w-auto flex gap-2 items-center justify-start">
+          <button
+            className="p-1 font-bold hover:border-text-primary text-text-primart border-b-4 border-transparent transition"
+            onClick={() => scrollToElement(listRefs[0])}
+          >
+            Fotos
+          </button>
+          <button
+            className="p-1 font-bold hover:border-text-primary text-text-primart border-b-4 border-transparent transition"
+            onClick={() => scrollToElement(listRefs[1])}
+          >
+            Amenidades
+          </button>
+          <button
+            className="p-1 font-bold hover:border-text-primary text-text-primart border-b-4 border-transparent transition"
+            onClick={() => scrollToElement(listRefs[2])}
+          >
+            Evaluaciones
+          </button>
+          <button
+            className="p-1 font-bold hover:border-text-primary text-text-primart border-b-4 border-transparent transition"
+            onClick={() => scrollToElement(listRefs[3])}
+          >
+            Ubicación
+          </button>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+const scrollToElement = (
+  ref: React.RefObject<HTMLDivElement>,
+) => {
+  if (ref.current) {
+    const headerOffset = 80;
+
+    const elementPosition =
+      ref.current.getBoundingClientRect().top;
+
+    const offsetPosition =
+      window.pageYOffset + elementPosition - headerOffset;
+
+    window.scrollTo({
+      top: offsetPosition,
+      behavior: "smooth",
+    });
+  }
 };

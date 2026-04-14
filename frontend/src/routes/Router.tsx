@@ -11,6 +11,7 @@ import MisFavoritos from '../modules/propiedades/MisFavoritos';
 import TabsScreen from '../layout/GuestTabs';
 import Login from '../modules/cuentas/Login';
 import Registro from '../modules/cuentas/Registro';
+import Page403 from '../modules/paginas_error/403';
 
 export default function Router() {
     return (
@@ -46,6 +47,7 @@ export default function Router() {
                     <Route path="profile" element={<h1>Vista de mi perfil</h1>} />
                 </Route>
                 <Route path="404" element={<Page404 />} />
+                <Route path="403" element={<Page403 />} />
                 <Route path="*" element={<Redirector />} />
             </Routes>
         </BrowserRouter>

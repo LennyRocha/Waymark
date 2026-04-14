@@ -56,13 +56,11 @@ export default function MisPropiedades() {
   const [id, setId] = useState(null);
 
   function openModal(id) {
-    console.log(id);
     setShow(true);
     setId(id);
   }
 
   function closeModal() {
-    console.log(id);
     setShow(false);
     setId(null);
   }

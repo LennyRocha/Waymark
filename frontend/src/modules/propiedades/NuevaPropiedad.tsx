@@ -61,19 +61,7 @@ export default function NuevaPropiedad() {
 
   const toastRef = useRef<string | undefined>(undefined);
 
-  const imgMutation = useImagenMutation({
-    onSuccess: (data: any) => {
-      console.log("Imágenes guardadas", data);
-    },
-    onError: (err: any) => {
-      const errorMessage = getAxiosErrorMessage(err);
-      console.log(
-        "Error al guardar imágenes",
-        err,
-        errorMessage,
-      );
-    },
-  }) as any;
+  const imgMutation = useImagenMutation() as any;
 
   const mutation = usePropiedadMutation({
     onMutate: async () => {
@@ -86,13 +74,9 @@ export default function NuevaPropiedad() {
     },
     onError: (
       error: any,
-      variables: unknown,
-      context: unknown,
     ) => {
-      console.warn(variables, context);
       const errorMessage = getAxiosErrorMessage(error);
       const backendErrors = error.response?.data;
-      console.log("Errores backend:", backendErrors);
       if (
         backendErrors &&
         typeof backendErrors === "object"
@@ -100,7 +84,6 @@ export default function NuevaPropiedad() {
         const firstError = Object.entries(
           backendErrors,
         ).map(([field, messages]) => {
-          console.log({ field, messages });
           const msg = Array.isArray(messages)
             ? messages[0]
             : messages;
@@ -184,7 +167,6 @@ export default function NuevaPropiedad() {
     const load = async () => {
       try {
         const coords = await getUserLocation();
-        console.log("Coordenadas obtenidas", coords);
         setUserCoords(coords);
       } catch (error) {
         console.error(error);
