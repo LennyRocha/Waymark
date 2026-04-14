@@ -1,0 +1,65 @@
+[
+  {
+    "model": "propiedades.tipopropiedad",
+    "pk": 1,
+    "fields": {
+      "tipo": "casa"
+    }
+  },
+  {
+    "model": "propiedades.tipopropiedad",
+    "pk": 2,
+    "fields": {
+      "tipo": "departamento"
+    }
+  },
+  {
+    "model": "propiedades.tipopropiedad",
+    "pk": 3,
+    "fields": {
+      "tipo": "habitación privada"
+    }
+  },
+  {
+    "model": "propiedades.tipopropiedad",
+    "pk": 4,
+    "fields": {
+      "tipo": "habitación compartida"
+    }
+  },
+  {
+    "model": "propiedades.tipopropiedad",
+    "pk": 5,
+    "fields": {
+      "tipo": "cabaña"
+    }
+  },
+  {
+    "model": "propiedades.tipopropiedad",
+    "pk": 6,
+    "fields": {
+      "tipo": "villa"
+    }
+  },
+  {
+    "model": "propiedades.tipopropiedad",
+    "pk": 7,
+    "fields": {
+      "tipo": "loft"
+    }
+  },
+  {
+    "model": "propiedades.tipopropiedad",
+    "pk": 8,
+    "fields": {
+      "tipo": "hotel"
+    }
+  },
+  {
+    "model": "propiedades.tipopropiedad",
+    "pk": 9,
+    "fields": {
+      "tipo": "estudio"
+    }
+  }
+]

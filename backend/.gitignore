@@ -1,5 +1,5 @@
 .env
-initialdata/*
+initialdata/entrypoint.sh
 
 static/*
 backend/settings.py

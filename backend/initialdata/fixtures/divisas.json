@@ -1,0 +1,42 @@
+[
+  {
+    "model": "propiedades.divisa",
+    "pk": 1,
+    "fields": {
+      "nombre": "Peso mexicano",
+      "acronimo" : "MXN"
+    }
+  },
+  {
+    "model": "propiedades.divisa",
+    "pk": 2,
+    "fields": {
+      "nombre": "Dólar estadounidense",
+      "acronimo" : "USD"
+    }
+  },
+  {
+    "model": "propiedades.divisa",
+    "pk": 3,
+    "fields": {
+      "nombre": "Euro",
+      "acronimo" : "EUR"
+    }
+  },
+  {
+    "model": "propiedades.divisa",
+    "pk": 4,
+    "fields": {
+      "nombre": "Yen Japonés",
+      "acronimo" : "JPY"
+    }
+  },
+    {
+    "model": "propiedades.divisa",
+    "pk": 5,
+    "fields": {
+      "nombre": "Dólar canadiense",
+      "acronimo" : "CAD"
+    }
+  }
+]

@@ -1,0 +1,30 @@
+[
+  {
+    "model": "reserva.reservaestado",
+    "pk": 1,
+    "fields": {
+      "estado": "pendiente"
+    }
+  },
+  {
+    "model": "reserva.reservaestado",
+    "pk": 2,
+    "fields": {
+      "estado": "confirmada"
+    }
+  },
+  {
+    "model": "reserva.reservaestado",
+    "pk": 3,
+    "fields": {
+      "estado": "cancelada"
+    }
+  },
+  {
+    "model": "reserva.reservaestado",
+    "pk": 4,
+    "fields": {
+      "estado": "finalizada"
+    }
+  }
+]
