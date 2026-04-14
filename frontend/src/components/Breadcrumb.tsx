@@ -17,7 +17,7 @@ export default function Breadcrumb({
 }: Readonly<Props>) {
   const lastIndex = items.length - 1;
   return (
-    <div className="flex  items-center justify-start gap-2">
+    <div className="flex max-md:flex-wrap items-center justify-start gap-2">
       {items.map((item, index) => (
         <div key={item.label} className="flex items-center gap-2">
           <CustomLink

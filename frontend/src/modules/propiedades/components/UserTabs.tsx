@@ -36,8 +36,8 @@ export default function UserTabs({
       variants={variants}
       animate={direction === "down" ? "hidden" : "visible"}
       className="fixed bottom-0 left-0 md:hidden
-        flex items-center justify-center gap-[.5rem]
-        py-2 bg-white w-[100dvw]
+        flex items-center justify-center gap-[.45rem]
+        p-2 bg-white w-[100dvw]
         shadow-lg"
     >
       {links.map((link) => {

@@ -5,8 +5,10 @@ import {
   Search,
   Heart,
   CircleUser,
-  Plane,
   Menu,
+  NotebookText,
+  Calendar,
+  LayoutPanelLeft,
 } from "lucide-react";
 import {
   Link,
@@ -15,7 +17,7 @@ import {
   useLocation,
   useNavigate,
 } from "react-router-dom";
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 import { motion } from "framer-motion";
 import CustomLink from "../components/CustomLink";
 import CustomDropdown from "../components/CustomDropdown";
@@ -24,34 +26,108 @@ import DropdownParent from "../components/DropdownParent";
 export default function TabsScreen() {
   const location = useLocation();
   const auth = useAuth();
-  const isAuthenticated =
-    auth?.isAuthenticated &&
-    (auth?.userRole === "turista" ||
-      auth?.userRole === "ambos");
-  const links: UserLinkProps[] = isAuthenticated
-    ? [
-        {
-          label: "Explorar",
-          to: "/",
-          icon: <Search size={24} strokeWidth={1.5} />,
-        },
-        {
-          label: "Favoritos",
-          to: "/wishlist",
-          icon: <Heart size={24} strokeWidth={1.5} />,
-        },
-        {
-          label: "Viajes",
-          to: "/my-trips",
-          icon: <Plane size={24} strokeWidth={1.5} />,
-        },
-        {
-          label: "Perfil",
-          to: "/profile",
-          icon: <CircleUser size={24} strokeWidth={1.5} />,
-        },
-      ]
-    : [
+  const isAuthenticated = auth?.isAuthenticated;
+  const role = auth?.userRole;
+  const links: UserLinkProps[] = useMemo(() => {
+    if (isAuthenticated) {
+      switch (role) {
+        case "anfitrion":
+          return [
+            {
+              label: "Solicitudes",
+              to: "/host/today",
+              icon: (
+                <NotebookText size={24} strokeWidth={1.5} />
+              ),
+            },
+            {
+              label: "Calendaro",
+              to: "/host/calendar",
+              icon: (
+                <Calendar size={24} strokeWidth={1.5} />
+              ),
+            },
+            {
+              label: "Alojamientos",
+              to: "/host/listings",
+              icon: (
+                <LayoutPanelLeft
+                  size={24}
+                  strokeWidth={1.5}
+                />
+              ),
+            },
+            {
+              label: "Perfil",
+              to: "/profile",
+              icon: (
+                <CircleUser size={24} strokeWidth={1.5} />
+              ),
+            },
+          ];
+        case "ambos":
+          return [
+            {
+              label: "Solicitudes",
+              to: "/host/today",
+              icon: (
+                <NotebookText size={24} strokeWidth={1.5} />
+              ),
+            },
+            {
+              label: "Favoritos",
+              to: "/wishlist",
+              icon: <Heart size={24} strokeWidth={1.5} />,
+            },
+            {
+              label: "Calendaro",
+              to: "/host/calendar",
+              icon: (
+                <Calendar size={24} strokeWidth={1.5} />
+              ),
+            },
+            {
+              label: "Alojamientos",
+              to: "/host/listings",
+              icon: (
+                <LayoutPanelLeft
+                  size={24}
+                  strokeWidth={1.5}
+                />
+              ),
+            },
+            {
+              label: "Perfil",
+              to: "/profile",
+              icon: (
+                <CircleUser size={24} strokeWidth={1.5} />
+              ),
+            },
+          ];
+        case "turista":
+        default:
+          return [
+            {
+              label: "Explorar",
+              to: "/",
+              icon: <Search size={24} strokeWidth={1.5} />,
+            },
+            {
+              label: "Favoritos",
+              to: "/wishlist",
+              icon: <Heart size={24} strokeWidth={1.5} />,
+            },
+            {
+              label: "Iniciar sesión",
+              to: "/login",
+              icon: (
+                <CircleUser size={24} strokeWidth={1.5} />
+              ),
+            },
+          ];
+      }
+    } else {
+      return [
         {
           label: "Explorar",
           to: "/",
@@ -68,6 +144,8 @@ export default function TabsScreen() {
           icon: <CircleUser size={24} strokeWidth={1.5} />,
         },
       ];
+    }
+  }, [isAuthenticated, role]);
   return (
     <>
       {location.pathname !== "/" &&
@@ -94,6 +172,7 @@ function Header({
   links,
 }: Readonly<{ links: UserLinkProps[] }>) {
   const navigate = useNavigate();
+  const auth = useAuth();
   return (
     <header className="max-md:hidden bg-white border-border border-1">
       <nav
@@ -130,14 +209,16 @@ function Header({
           )}
         </div>
         <div className="flex flex-1 justify-end gap-2">
-          <button
-            className="font-bold hidden lg:block"
-            onClick={() => navigate("/become-a-host")}
-            title="Convertirte en anfitrión"
-            aria-label="Convertirte en anfitrión"
-          >
-            Conviertete en anfitrión
-          </button>
+          {auth?.userRole === "turista" && (
+            <button
+              className="font-bold hidden lg:block"
+              onClick={() => navigate("/become-a-host")}
+              title="Convertirte en anfitrión"
+              aria-label="Convertirte en anfitrión"
+            >
+              Conviertete en anfitrión
+            </button>
+          )}
           <button
             type="button"
             className="flex text-sm bg-gray-800 rounded-full focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600"

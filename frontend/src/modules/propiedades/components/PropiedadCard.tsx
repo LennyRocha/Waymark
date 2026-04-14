@@ -36,7 +36,7 @@ export default function PropiedadCard({
       setActive(true);
       setFavoritoId(data.id);
       queryClient.invalidateQueries({
-        queryKey: ["favoritos"],
+        queryKey: ["favoritos", "cards"],
       });
     },
   });
@@ -45,7 +45,7 @@ export default function PropiedadCard({
       setActive(false);
       setFavoritoId(null);
       queryClient.invalidateQueries({
-        queryKey: ["favoritos"],
+        queryKey: ["favoritos", "cards"],
       });
     },
   });

@@ -44,3 +44,17 @@ class LoginTokenSerializer(TokenObtainPairSerializer):
             "rol_nombre": (self.user.rol.nombre or "").strip().lower(),
         }
         return data
+    
+# Serializer para obtener el dueño de una propiedad
+class GetUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Usuario
+        fields = [
+            "nombre",
+            "apellido_p",
+            "apellido_m",
+            "telefono",
+            "correo",
+            "foto_perfil",
+            "created_at"
+        ]

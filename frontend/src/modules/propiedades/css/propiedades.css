@@ -14,6 +14,10 @@
     margin: 1px 0 !important;
     transition: all cubic-bezier(0.075, 0.82, 0.165, 1) 0.3s !important;
     border: 2px solid transparent !important;
+
+    @media (max-width: 768px) {
+        border-radius: 12px !important;
+    }
 }
 
 .react-calendar {
@@ -62,6 +66,10 @@
     border-radius: 16px !important;
     cursor: pointer !important;
     font-size: larger !important;
+
+    @media (max-width: 768px) {
+        border-radius: 8px !important;
+    }
 }
 
 .react-calendar__navigation button:first-child:hover,
@@ -95,6 +103,30 @@
     .react-calendar__navigation button:first-child,
     .react-calendar__navigation button:last-child {
         font-size: medium !important;
-        padding: 4px  !important;
+        padding: 4px !important;
+    }
+}
+
+#calendar_container .react-calendar {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+#calendar_container .react-calendar__viewContainer {
+    width: 100% !important;
+}
+
+#calendar_container .react-calendar__month-view {
+    width: 100% !important;
+}
+
+#calendar_container .react-calendar__month-view__days {
+    display: grid !important;
+    grid-template-columns: repeat(7, 1fr);
+}
+
+@media (max-width: 768px) {
+    #calendar_container .react-calendar__tile {
+        padding: 10px 5px !important;
     }
 }

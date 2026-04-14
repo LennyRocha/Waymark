@@ -6,11 +6,50 @@ function routeByRole(roleName = "") {
   const role = roleName.trim().toLowerCase();
 
   if (role.includes("admin")) return "/admin/dashboard";
-  if (role.includes("anfit")) return "/host/today";
-  return "/guest/explore";
+  if (role.includes("anfit") || role.includes("ambos")) return "/host/today";
+  return "/";
 }
 
 export default function Login() {
+  const navigate = useNavigate();
+  const [form, setForm] = useState({
+    correo: "",
+    password: "",
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    try {
+      const { data } = await api.post("/login/", {
+        correo: form.correo,
+        password: form.password,
+      });
+
+      localStorage.setItem("access_token", data.access);
+      localStorage.setItem("refresh_token", data.refresh);
+      localStorage.setItem("user_role", data?.usuario?.rol_nombre || "");
+
+      navigate(routeByRole(data?.usuario?.rol_nombre));
+    } catch (err) {
+      const msg =
+        err?.response?.data?.detail ||
+        "No se pudo iniciar sesion. Verifica correo y contrasena.";
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <main className="min-h-[100dvh] bg-gradient-to-br from-[#fff7f2] via-white to-[#f5f7fb] px-4 py-10 flex items-center justify-center">
       <section className="w-full max-w-[460px] rounded-2xl border border-[var(--color-border)] bg-white/90 p-6 md:p-8 shadow-[0_18px_40px_rgba(43,49,69,0.14)]">
@@ -44,7 +83,7 @@ export default function Login() {
 
           <div className="grid gap-1.5">
             <label className="font-semibold text-[var(--t_primario)]" htmlFor="password">
-              Contrasena
+              Contraseña
             </label>
             <input
               id="password"
@@ -52,7 +91,7 @@ export default function Login() {
               type="password"
               value={form.password}
               onChange={handleChange}
-              placeholder="Tu contrasena"
+              placeholder="Tu contraseña"
               autoComplete="current-password"
               required
               className="w-full rounded-xl border border-[#d8dbe5] px-3.5 py-3 text-[var(--t_primario)] outline-none transition focus:border-[var(--primario)] focus:shadow-[0_0_0_3px_rgba(191,6,3,0.15)]"

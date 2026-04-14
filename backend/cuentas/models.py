@@ -41,7 +41,7 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     usuario_id = models.AutoField(primary_key=True)
     nombre = models.CharField(max_length=50)
     apellido_p = models.CharField(max_length=50)
-    apellido_m = models.CharField(max_length=50, blank=True, null=True)
+    apellido_m = models.CharField(max_length=50, blank=True)
     telefono = models.CharField(max_length=20)
     correo = models.EmailField(unique=True, max_length=50)
 

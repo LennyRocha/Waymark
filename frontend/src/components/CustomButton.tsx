@@ -44,7 +44,6 @@ const CustomButton: React.FC<ButtonProps> = ({
       case "tertiary":
         return [
           "text-text-primary",
-          "border-2 border-text-primary",
           "hover:bg-gray-100",
           "active:bg-border",
           "bg-transparent",

@@ -37,6 +37,10 @@ export default function MisPropiedades() {
 
   const links = [
     {
+      label: "Inicio",
+      href: "/",
+    },
+    {
       label: "Anfitrión",
       href: "/host",
     },
@@ -52,13 +56,11 @@ export default function MisPropiedades() {
   const [id, setId] = useState(null);
 
   function openModal(id) {
-    console.log(id);
     setShow(true);
     setId(id);
   }
 
   function closeModal() {
-    console.log(id);
     setShow(false);
     setId(null);
   }
@@ -71,7 +73,9 @@ export default function MisPropiedades() {
         propiedades.refetch();
         closeModal();
         toast.success("¡Estado de propiedad actualizado!");
-        queryClient.invalidateQueries({queryKey: ["propiedad", id]});
+        queryClient.invalidateQueries({
+          queryKey: ["propiedad", id],
+        });
       },
       onerror: (error) => {
         const message = getAxiosErrorMessage(error);
@@ -202,7 +206,7 @@ function retrieveColumns(openModal) {
       cell: (row) => (
         <div className="flex items-center justify-center  gap-2 px-2 w-full">
           <span
-            className={`${row.activa ? "bg-green-500" : "bg-red-500"} aspect-square w-2 rounded-full`}
+            className={`${row.activa ? "bg-green-500" : "bg-red-500"} aspect-square w-2 rounded-full shrink-0`}
           ></span>
           <p className="text-left text-text-secondary font-bold">
             {row.activa ? "Activa" : "Inactiva"}

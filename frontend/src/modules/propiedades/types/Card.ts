@@ -12,6 +12,7 @@ export default interface Card {
   favorito_id: number | null;
   es_favorito: boolean;
   es_mi_favorito: boolean;
+  num_resenas?: number | null;
 }
 
 export interface CardsResponse {
