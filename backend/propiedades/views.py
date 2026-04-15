@@ -1,4 +1,5 @@
 from rest_framework import viewsets, status, mixins
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.db import transaction
@@ -57,6 +58,12 @@ not_authenticated_log = "Intento de consulta de propiedades por host sin autenti
 
 
 class PropiedadViewSet(viewsets.ModelViewSet):
+    def get_permissions(self):
+        # endpoint cifrado
+        if self.action in ("create", "partial_update", "destroy", "by_host"):
+            return [IsAuthenticated()]
+        return [AllowAny()]
+
     def get_queryset(self):
         queryset = Propiedad.objects.select_related(
             "divisa", "tipo_propiedad"
@@ -211,14 +218,11 @@ class PropiedadViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
+    # endpoint cifrado
     def create(self, request, *args, **kwargs):
         anfitrion = request.user
 
         ip = get_client_ip(request)
-
-        if not request.user.is_authenticated:
-            logger.warning(not_authenticated_log)
-            return not_authenticated_response
 
         if (
             request.user.rol.nombre != "anfitrion"
@@ -275,12 +279,9 @@ class PropiedadViewSet(viewsets.ModelViewSet):
             self.get_serializer(propiedad).data, status=status.HTTP_201_CREATED
         )
 
+    # endpoint cifrado
     def partial_update(self, request, *args, **kwargs):
         ip = get_client_ip(request)
-        if not request.user.is_authenticated:
-            logger.warning(not_authenticated_log)
-            return not_authenticated_response
-
         if (
             request.user.rol.nombre != "anfitrion"
             and request.user.rol.nombre != "ambos"
