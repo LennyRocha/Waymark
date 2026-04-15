@@ -5,8 +5,8 @@ import api from "../../utils/api";
 function routeByRole(roleName = "") {
   const role = roleName.trim().toLowerCase();
 
-  if (role.includes("admin")) return "/admin/dashboard";
-  if (role.includes("anfit") || role.includes("ambos")) return "/host/today";
+  if (role.includes("admin")) return "/admin";
+  if (role.includes("anfit") || role.includes("ambos")) return "/host";
   return "/";
 }
 
