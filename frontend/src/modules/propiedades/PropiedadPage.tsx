@@ -34,6 +34,7 @@ import {
   useScroll,
 } from "framer-motion";
 import CustomLink from "../../components/CustomLink";
+import toast from "react-hot-toast";
 import Buscador from "./components/Buscador";
 import CustomDropdown from "../../components/CustomDropdown";
 import DropdownParent from "../../components/DropdownParent";
@@ -103,6 +104,38 @@ export default function PropiedadPage() {
   const [huespedes, setHuespedes] = useState(1);
 
   const [noches, setNoches] = useState(1);
+  const [reservando, setReservando] = useState(false);
+  const auth = useAuth();
+
+  async function handleReservar() {
+    if (!auth?.isAuthenticated) {
+      navigate("/login");
+      return;
+    }
+    if (!Array.isArray(range) || !range[0] || !range[1]) {
+      toast.error("Selecciona las fechas de entrada y salida.");
+      return;
+    }
+    const toISO = (d: Date) => d.toISOString().split("T")[0];
+    setReservando(true);
+    try {
+      const { default: api } = await import("../../utils/api");
+      await api.post("/reservas/", {
+        propiedad_id: Number(id),
+        fecha_inicio: toISO(range[0] as Date),
+        fecha_fin: toISO(range[1] as Date),
+        huespedes,
+      });
+      toast.success("¡Reserva creada! Revisa tus viajes para más detalles.");
+    } catch (err: any) {
+      const msg =
+        err?.response?.data?.detail ||
+        "No se pudo crear la reserva. Intenta de nuevo.";
+      toast.error(msg);
+    } finally {
+      setReservando(false);
+    }
+  }
 
   useEffect(() => {
     if (!Array.isArray(range)) return;
@@ -466,8 +499,13 @@ export default function PropiedadPage() {
                 MXN
               </p>
             </div>
-            <CustomButton size="large" fullWidth>
-              Reservar
+            <CustomButton
+              size="large"
+              fullWidth
+              onClick={handleReservar}
+              disabled={reservando}
+            >
+              {reservando ? "Reservando..." : "Reservar"}
             </CustomButton>
             <p className="text-text-secondary text-center mx-auto">
               El pago se realiza en efectivo
@@ -702,8 +740,12 @@ export default function PropiedadPage() {
               {formatShortMonthDate(range[1])}
             </p>
           </div>
-          <CustomButton customWidth=" max-[490px]:w-full  min-[490px]:w-auto">
-            Reservar
+          <CustomButton
+            customWidth=" max-[490px]:w-full  min-[490px]:w-auto"
+            onClick={handleReservar}
+            disabled={reservando}
+          >
+            {reservando ? "Reservando..." : "Reservar"}
           </CustomButton>
         </div>
       </main>
@@ -774,8 +816,7 @@ const Header = ({ toggle, value }: HeaderProps) => {
           >
             {showLink &&
               (!auth?.isAuthenticated ||
-                (auth.userRole !== "anfitrion" &&
-                  auth.userRole !== "ambos")) && (
+                auth.userRole === "turista") && (
                 <button
                   className="font-bold"
                   onClick={() => navigate("/become-a-host")}
@@ -804,9 +845,42 @@ const Header = ({ toggle, value }: HeaderProps) => {
                 Menú
               </p>
               <div className="w-full bg-border h-[1px]"></div>
-              {!auth?.isAuthenticated ||
-              (auth.userRole !== "anfitrion" &&
-                auth.userRole !== "ambos") ? (
+              {auth?.isAuthenticated ? (
+                <ul>
+                  {(auth.userRole === "turista" || auth.userRole === "ambos") && (
+                    <>
+                      <li className="py-4 px-2 text-left text-nowrap">
+                        <CustomLink to="/wishlist">Favoritos</CustomLink>
+                      </li>
+                      <li><div className="w-full bg-border h-[1px]"></div></li>
+                      <li className="py-4 px-2 text-left text-nowrap">
+                        <CustomLink to="/my-trips">Mis reservaciones</CustomLink>
+                      </li>
+                      <li><div className="w-full bg-border h-[1px]"></div></li>
+                    </>
+                  )}
+                  {(auth.userRole === "anfitrion" || auth.userRole === "ambos") && (
+                    <>
+                      <li className="py-4 px-2 text-left text-nowrap">
+                        <CustomLink to="/host/today">Panel anfitrión</CustomLink>
+                      </li>
+                      <li><div className="w-full bg-border h-[1px]"></div></li>
+                    </>
+                  )}
+                  <li className="py-4 px-2 text-left text-nowrap">
+                    <CustomLink to="/profile">Mi perfil</CustomLink>
+                  </li>
+                  <li><div className="w-full bg-border h-[1px]"></div></li>
+                  <li className="py-4 px-2 text-left text-nowrap">
+                    <button
+                      onClick={() => auth.handleLogout?.()}
+                      className="text-red-600 font-semibold hover:underline text-sm"
+                    >
+                      Cerrar sesión
+                    </button>
+                  </li>
+                </ul>
+              ) : (
                 <ul>
                   <li className="py-4 px-2 text-left text-nowrap">
                     <CustomLink to="/become-a-host">
@@ -827,38 +901,6 @@ const Header = ({ toggle, value }: HeaderProps) => {
                   <li className="py-4 px-2 text-left text-nowrap">
                     <CustomLink to="/login">
                       Iniciar sesión
-                    </CustomLink>
-                  </li>
-                </ul>
-              ) : (
-                <ul>
-                  <li className="py-4 px-2 text-left text-nowrap">
-                    <CustomLink to="/wishlists">
-                      Favoritos
-                    </CustomLink>
-                  </li>
-                  <li>
-                    <div className="w-full bg-border h-[1px]"></div>
-                  </li>
-                  <li className="py-4 px-2 text-left text-nowrap">
-                    <CustomLink to="/my-trips">
-                      Mis reservaciones
-                    </CustomLink>
-                  </li>
-                  <li>
-                    <div className="w-full bg-border h-[1px]"></div>
-                  </li>
-                  <li className="py-4 px-2 text-left text-nowrap">
-                    <CustomLink to="/search-hosts">
-                      Buscar a un anfitrión
-                    </CustomLink>
-                  </li>
-                  <li>
-                    <div className="w-full bg-border h-[1px]"></div>
-                  </li>
-                  <li className="py-4 px-2 text-left text-nowrap">
-                    <CustomLink to="/profile">
-                      Mi perfil
                     </CustomLink>
                   </li>
                 </ul>

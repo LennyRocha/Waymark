@@ -2,6 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Menu } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import CustomDropdown from '../components/CustomDropdown';
+import DropdownParent from '../components/DropdownParent';
 
 type AdminLink = {
     name: string;
@@ -18,7 +21,10 @@ const links: AdminLink[] = [
 export default function AdminHeader() {
     const navigate = useNavigate();
     const location = useLocation();
+    const auth = useAuth();
     const [open, setOpen] = useState(true);
+    const [showMenu, setShowMenu] = useState(false);
+    const avatarRef = useRef(null);
     const firstRender = useRef(true);
 
     const updateWidth = () => {
@@ -54,20 +60,52 @@ export default function AdminHeader() {
                                 WAYMARK
                             </span>
                         </Link>
-                        <div className="flex items-center lg:order-2">
-                            <button
-                                type="button"
-                                className="hidden md:flex text-sm bg-gray-800 rounded-full focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600"
-                                onClick={() => navigate('/admin/profile')}
-                                title="Ir a perfil"
-                                aria-label="Ir a perfil"
-                            >
-                                <img
-                                    className="w-8 h-8 rounded-full"
-                                    src="https://flowbite.com/docs/images/people/profile-picture-5.jpg"
-                                    alt="Perfil de usuario"
-                                />
-                            </button>
+                        <div className="flex items-center gap-2 lg:order-2">
+                            <DropdownParent classes="hidden md:flex items-center" hideFunction={setShowMenu}>
+                                <button
+                                    ref={avatarRef}
+                                    type="button"
+                                    className="flex text-sm bg-gray-800 rounded-full focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600"
+                                    onClick={() => setShowMenu((v) => !v)}
+                                    title="Opciones de cuenta"
+                                    aria-label="Opciones de cuenta"
+                                >
+                                    <img
+                                        className="w-8 h-8 rounded-full"
+                                        src="https://flowbite.com/docs/images/people/profile-picture-5.jpg"
+                                        alt="Perfil de usuario"
+                                    />
+                                </button>
+                                <CustomDropdown
+                                    anchorRef={avatarRef}
+                                    visible={showMenu}
+                                    align="right"
+                                    width="200px"
+                                    layoutId="admin_user_menu"
+                                >
+                                    <p className="text-xs font-bold text-left px-2 font-[cabin] mb-2">Mi cuenta</p>
+                                    <div className="w-full bg-border h-[1px]" />
+                                    <ul>
+                                        <li className="py-3 px-2 text-left">
+                                            <button
+                                                onClick={() => { setShowMenu(false); navigate('/admin/profile'); }}
+                                                className="text-sm font-semibold hover:underline"
+                                            >
+                                                Mi perfil
+                                            </button>
+                                        </li>
+                                        <li><div className="w-full bg-border h-[1px]" /></li>
+                                        <li className="py-3 px-2 text-left">
+                                            <button
+                                                onClick={() => auth?.handleLogout?.()}
+                                                className="text-red-600 font-semibold hover:underline text-sm"
+                                            >
+                                                Cerrar sesión
+                                            </button>
+                                        </li>
+                                    </ul>
+                                </CustomDropdown>
+                            </DropdownParent>
                             <button
                                 onClick={() => setOpen(!open)}
                                 type="button"
@@ -110,6 +148,20 @@ export default function AdminHeader() {
                                                 </NavLink>
                                             </motion.li>
                                         ))}
+                                        <motion.li
+                                            className="lg:hidden"
+                                            initial={{ opacity: 0, x: -20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            exit={{ opacity: 0, x: -20 }}
+                                            transition={{ duration: 0.2, delay: 0.15 }}
+                                        >
+                                            <button
+                                                onClick={() => auth?.handleLogout?.()}
+                                                className="-mx-3 block rounded-lg px-3 py-2 text-base/5 font-semibold text-red-600 hover:bg-black/5 font-[montserrat]"
+                                            >
+                                                Cerrar sesión
+                                            </button>
+                                        </motion.li>
                                     </ul>
                                 </motion.div>
                             )}

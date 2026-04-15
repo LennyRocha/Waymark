@@ -66,7 +66,7 @@ export function AuthProvider({
     localStorage.removeItem("user_role");
     setToken(null);
     setRefreshToken(null);
-    globalThis.location.reload();
+    globalThis.location.replace("/");
   };
 
   const setAuthRefreshToken = (newToken: string | null) => {

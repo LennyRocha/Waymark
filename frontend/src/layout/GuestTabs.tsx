@@ -118,8 +118,8 @@ export default function TabsScreen() {
               icon: <Heart size={24} strokeWidth={1.5} />,
             },
             {
-              label: "Iniciar sesión",
-              to: "/login",
+              label: "Perfil",
+              to: "/profile",
               icon: (
                 <CircleUser size={24} strokeWidth={1.5} />
               ),
@@ -173,6 +173,9 @@ function Header({
 }: Readonly<{ links: UserLinkProps[] }>) {
   const navigate = useNavigate();
   const auth = useAuth();
+  const [showMenu, setShowMenu] = useState(false);
+  const avatarRef = useRef(null);
+
   return (
     <header className="max-md:hidden bg-white border-border border-1">
       <nav
@@ -219,19 +222,55 @@ function Header({
               Conviertete en anfitrión
             </button>
           )}
-          <button
-            type="button"
-            className="flex text-sm bg-gray-800 rounded-full focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600"
-            onClick={() => navigate("/profile")}
-            title="Ir a perfil"
-            aria-label="Ir a perfil"
+          <DropdownParent
+            classes="flex items-center"
+            hideFunction={setShowMenu}
           >
-            <img
-              className="w-8 h-8 rounded-full"
-              src="https://flowbite.com/docs/images/people/profile-picture-5.jpg"
-              alt="Perfil de usuario"
-            />
-          </button>
+            <button
+              ref={avatarRef}
+              type="button"
+              className="flex text-sm bg-gray-800 rounded-full focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600"
+              onClick={() => setShowMenu((v) => !v)}
+              title="Opciones de cuenta"
+              aria-label="Opciones de cuenta"
+            >
+              <img
+                className="w-8 h-8 rounded-full"
+                src="https://flowbite.com/docs/images/people/profile-picture-5.jpg"
+                alt="Perfil de usuario"
+              />
+            </button>
+            <CustomDropdown
+              anchorRef={avatarRef}
+              visible={showMenu}
+              align="right"
+              width="200px"
+              layoutId="header_user_menu"
+            >
+              <p className="text-xs font-bold text-left px-2 font-[cabin] mb-2">
+                Mi cuenta
+              </p>
+              <div className="w-full bg-border h-[1px]" />
+              <ul>
+                <li className="py-3 px-2 text-left">
+                  <CustomLink to="/profile" disabled={false}>
+                    Mi perfil
+                  </CustomLink>
+                </li>
+                <li>
+                  <div className="w-full bg-border h-[1px]" />
+                </li>
+                <li className="py-3 px-2 text-left">
+                  <button
+                    onClick={() => auth?.handleLogout?.()}
+                    className="text-red-600 font-semibold hover:underline text-sm"
+                  >
+                    Cerrar sesión
+                  </button>
+                </li>
+              </ul>
+            </CustomDropdown>
+          </DropdownParent>
         </div>
       </nav>
     </header>

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../../utils/api";
+import { useAuth } from "../../context/AuthContext";
 
 function routeByRole(roleName = "") {
   const role = roleName.trim().toLowerCase();
@@ -12,6 +13,7 @@ function routeByRole(roleName = "") {
 
 export default function Login() {
   const navigate = useNavigate();
+  const auth = useAuth();
   const [form, setForm] = useState({
     correo: "",
     password: "",
@@ -35,9 +37,9 @@ export default function Login() {
         password: form.password,
       });
 
-      localStorage.setItem("access_token", data.access);
-      localStorage.setItem("refresh_token", data.refresh);
       localStorage.setItem("user_role", data?.usuario?.rol_nombre || "");
+      auth.setAuthToken(data.access);
+      auth.setAuthRefreshToken(data.refresh);
 
       navigate(routeByRole(data?.usuario?.rol_nombre));
     } catch (err) {
