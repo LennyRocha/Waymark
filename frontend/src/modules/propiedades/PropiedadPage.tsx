@@ -1213,11 +1213,16 @@ const HeaderScroll = ({ ref, listRefs }) => {
     ["none", "block"],
   );
 
+  const isSmall = useWatchResize({
+    pixeles: 768,
+    metrica: "max",
+  });
+
   return (
     <motion.div
       style={{
         opacity,
-        display,
+        display: isSmall ? "none" : display,
       }}
       className="sticky top-0 w-full z-[9997] max-md:hidden bg-white border-b border-border"
     >
