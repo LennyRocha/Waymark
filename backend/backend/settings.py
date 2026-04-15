@@ -50,6 +50,8 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "propiedades",
     "cuentas",
+    "calificaciones",
+    "reservas",
 ]
 
 AUTH_USER_MODEL = "cuentas.Usuario"
