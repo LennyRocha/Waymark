@@ -11,6 +11,7 @@ export default function Registro() {
   const [ineError, setIneError] = useState("");
   const [ineFile, setIneFile] = useState(null);
   const [inePreview, setInePreview] = useState(null);
+  const [ineData, setIneData] = useState(null);
 
   const [form, setForm] = useState({
     nombre: "",
@@ -25,6 +26,17 @@ export default function Registro() {
   });
 
   const [foto, setFoto] = useState(null);
+  const isHost = form.rol === "2";
+
+  const normalizeText = (value) => {
+    if (!value) return "";
+    return value
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .trim()
+      .replace(/\s+/g, " ")
+      .toLowerCase();
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -41,6 +53,7 @@ export default function Registro() {
     if (!file) return;
 
     setIneFile(file);
+    setIneData(null);
     setIneError("");
 
     const reader = new FileReader();
@@ -97,6 +110,11 @@ export default function Registro() {
           apellido_p,
           apellido_m,
         }));
+        setIneData({
+          nombre,
+          apellido_p,
+          apellido_m,
+        });
         setOk("Datos del INE extraídos correctamente");
         setTimeout(() => setOk(""), 3000);
       }
@@ -110,9 +128,39 @@ export default function Registro() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError("");
     setOk("");
+
+    if (isHost) {
+      if (!ineFile) {
+        setError("Para registrarte como anfitrion debes subir tu INE.");
+        return;
+      }
+
+      if (!ineData) {
+        setError("Debes escanear tu INE antes de crear la cuenta.");
+        return;
+      }
+
+      const fieldsToValidate = [
+        { key: "nombre", label: "nombre" },
+        { key: "apellido_p", label: "apellido paterno" },
+        { key: "apellido_m", label: "apellido materno" },
+      ];
+
+      const mismatchedFields = fieldsToValidate
+        .filter(({ key }) => normalizeText(form[key]) !== normalizeText(ineData[key]))
+        .map(({ label }) => label);
+
+      if (mismatchedFields.length > 0) {
+        setError(
+          `Los datos del formulario no coinciden con tu INE (${mismatchedFields.join(", ")}).`
+        );
+        return;
+      }
+    }
+
+    setLoading(true);
 
     try {
       const data = new FormData();
@@ -153,67 +201,98 @@ export default function Registro() {
         </p>
 
         <form className="grid gap-4" onSubmit={handleSubmit}>
-          <div className="grid gap-3">
-            <label className="font-semibold text-[var(--t_primario)]">Escanear INE</label>
-            <input
-              type="file"
-              id="ine_input"
-              accept="image/*"
-              onChange={handleSelectINE}
-              disabled={loadingINE}
-              className="hidden"
-            />
-            <button
-              type="button"
-              onClick={() => document.getElementById("ine_input").click()}
-              disabled={loadingINE}
-              className="relative overflow-hidden rounded-xl border-2 border-dashed border-[#bf0603] bg-gradient-to-br from-[#fff7f2] to-[#f5f7fb] px-2 py-2 transition hover:border-[#8d0801] hover:from-[#ffebeb] disabled:opacity-65 disabled:cursor-not-allowed"
-            >
-              {inePreview ? (
-                <div className="flex items-center justify-center">
-                  <img
-                    src={inePreview}
-                    alt="Preview INE"
-                    className="max-h-32 w-auto rounded-lg object-contain"
-                  />
-                </div>
-              ) : (
-                <div className="flex flex-col items-center py-2">
-                  <svg
-                    className="w-6 h-6 text-[#bf0603]"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                    />
-                  </svg>
-                  <p className="text-xs font-semibold text-[var(--t_primario)]">Sube tu INE</p>
-                </div>
-              )}
-            </button>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-1.5">
+              <label className="font-semibold text-[var(--t_primario)]" htmlFor="rol">Rol</label>
+              <select
+                id="rol"
+                name="rol"
+                value={form.rol}
+                onChange={handleChange}
+                required
+                className="w-full rounded-xl border border-[#d8dbe5] px-3.5 py-3 text-[var(--t_primario)] outline-none transition focus:border-[var(--primario)] focus:shadow-[0_0_0_3px_rgba(191,6,3,0.15)]"
+              >
+                <option value="1">Cliente</option>
+                <option value="2">Anfitrion</option>
+                <option value="3">Admin</option>
+              </select>
+            </div>
 
-            {ineFile && (
+            <div className="grid gap-1.5">
+              <label className="font-semibold text-[var(--t_primario)]" htmlFor="foto_perfil">Foto de perfil</label>
+              <input
+                id="foto_perfil"
+                type="file"
+                accept="image/*"
+                onChange={handleFile}
+                className="w-full rounded-xl border border-dashed border-[#d8dbe5] bg-white px-3.5 py-2.5 text-[var(--t_secundario)] file:mr-4 file:rounded-lg file:border-0 file:bg-[var(--secundario)] file:px-3 file:py-2 file:text-white file:font-semibold hover:border-[var(--primario)]"
+              />
+            </div>
+          </div>
+
+          {isHost && (
+            <div className="grid gap-3">
+              <label className="font-semibold text-[var(--t_primario)]">Escanear INE</label>
+              <input
+                type="file"
+                id="ine_input"
+                accept="image/*"
+                onChange={handleSelectINE}
+                disabled={loadingINE}
+                className="hidden"
+              />
               <button
                 type="button"
-                onClick={handleScanINE}
+                onClick={() => document.getElementById("ine_input").click()}
                 disabled={loadingINE}
-                className="rounded-xl bg-[linear-gradient(90deg,#bf0603,#8d0801)] px-4 py-3 font-bold text-white transition hover:brightness-105 disabled:opacity-65 disabled:cursor-not-allowed"
+                className="relative overflow-hidden rounded-xl border-2 border-dashed border-[#bf0603] bg-gradient-to-br from-[#fff7f2] to-[#f5f7fb] px-2 py-2 transition hover:border-[#8d0801] hover:from-[#ffebeb] disabled:opacity-65 disabled:cursor-not-allowed"
               >
-                {loadingINE ? "Escaneando INE..." : "Escanear datos"}
+                {inePreview ? (
+                  <div className="flex items-center justify-center">
+                    <img
+                      src={inePreview}
+                      alt="Preview INE"
+                      className="max-h-32 w-auto rounded-lg object-contain"
+                    />
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center py-2">
+                    <svg
+                      className="w-6 h-6 text-[#bf0603]"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                    <p className="text-xs font-semibold text-[var(--t_primario)]">Sube tu INE</p>
+                  </div>
+                )}
               </button>
-            )}
 
-            {ineError && (
-              <p className="m-0 rounded-lg bg-[#ffe6e5] px-3 py-2 text-sm text-[#9f0200]">
-                {ineError}
-              </p>
-            )}
-          </div>
+              {ineFile && (
+                <button
+                  type="button"
+                  onClick={handleScanINE}
+                  disabled={loadingINE}
+                  className="rounded-xl bg-[linear-gradient(90deg,#bf0603,#8d0801)] px-4 py-3 font-bold text-white transition hover:brightness-105 disabled:opacity-65 disabled:cursor-not-allowed"
+                >
+                  {loadingINE ? "Escaneando INE..." : "Escanear datos"}
+                </button>
+              )}
+
+              {ineError && (
+                <p className="m-0 rounded-lg bg-[#ffe6e5] px-3 py-2 text-sm text-[#9f0200]">
+                  {ineError}
+                </p>
+              )}
+            </div>
+          )}
 
           <div className="grid gap-4 md:grid-cols-2">
             <div className="grid gap-1.5">
@@ -300,34 +379,7 @@ export default function Registro() {
             </div>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="grid gap-1.5">
-              <label className="font-semibold text-[var(--t_primario)]" htmlFor="rol">Rol</label>
-              <select
-                id="rol"
-                name="rol"
-                value={form.rol}
-                onChange={handleChange}
-                required
-                className="w-full rounded-xl border border-[#d8dbe5] px-3.5 py-3 text-[var(--t_primario)] outline-none transition focus:border-[var(--primario)] focus:shadow-[0_0_0_3px_rgba(191,6,3,0.15)]"
-              >
-                <option value="1">Cliente</option>
-                <option value="2">Anfitrion</option>
-                <option value="3">Admin</option>
-              </select>
-            </div>
 
-            <div className="grid gap-1.5">
-              <label className="font-semibold text-[var(--t_primario)]" htmlFor="foto_perfil">Foto de perfil</label>
-              <input
-                id="foto_perfil"
-                type="file"
-                accept="image/*"
-                onChange={handleFile}
-                className="w-full rounded-xl border border-dashed border-[#d8dbe5] bg-white px-3.5 py-2.5 text-[var(--t_secundario)] file:mr-4 file:rounded-lg file:border-0 file:bg-[var(--secundario)] file:px-3 file:py-2 file:text-white file:font-semibold hover:border-[var(--primario)]"
-              />
-            </div>
-          </div>
 
           <div className="grid gap-4 md:grid-cols-2">
             <div className="grid gap-1.5">
