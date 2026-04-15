@@ -5,12 +5,16 @@ type CustomLinkProps = LinkProps & {
   children?: ReactNode;
   classN?: string;
   disabled: boolean;
+  onClick?: (
+    event: React.MouseEvent<HTMLAnchorElement, MouseEvent>,
+  ) => void;
 };
 
 export default function CustomLink({
   children,
   disabled = false,
   classN = "",
+  onClick,
   ...props
 }: CustomLinkProps) {
   return (
@@ -22,6 +26,7 @@ export default function CustomLink({
         if (disabled) {
           e.preventDefault();
         }
+        onClick?.(e);
       }}
     >
       {children}

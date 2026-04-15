@@ -1,0 +1,23 @@
+[
+  {
+    "model": "documentos.docestado",
+    "pk": 1,
+    "fields": {
+      "estado": "pendiente"
+    }
+  },
+  {
+    "model": "documentos.docestado",
+    "pk": 2,
+    "fields": {
+      "estado": "aprobado"
+    }
+  },
+  {
+    "model": "documentos.docestado",
+    "pk": 3,
+    "fields": {
+      "estado": "rechazado"
+    }
+  }
+]

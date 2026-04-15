@@ -16,6 +16,12 @@ import {
   Menu,
   ChevronDown,
   LayoutGrid,
+  DoorOpen,
+  Cable,
+  PartyPopper,
+  Cigarette,
+  Dog,
+  Baby,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import Calendar from "react-calendar";
@@ -40,6 +46,10 @@ import Avatar from "../../components/Avatar";
 import Amenidad from "./types/Amenidad";
 import useCard from "./hooks/useCard";
 
+import cup from "../../assets/trofeo.png";
+import leftwing from "../../assets/alarde_izq.png";
+import rightwing from "../../assets/alarde_der.png";
+
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 const MAX_LENGTH = 500;
 
@@ -59,6 +69,8 @@ export default function PropiedadPage() {
   );
   const cardQuery = useCard(id);
 
+  const isBestRated = true;
+
   useSetPageTitle(
     propiedad.data
       ? `${propiedad.data?.titulo} - Waymark`
@@ -66,7 +78,8 @@ export default function PropiedadPage() {
   );
 
   const [open, setOpen] = useState(false);
-  const [openMore, setopenMore] = useState(false);
+  const [openMore, setOpenMore] = useState(false);
+  const [openReglas, setOpenReglas] = useState(false);
   const [openAmenidades, setOpenAmenidades] =
     useState(false);
 
@@ -134,6 +147,10 @@ export default function PropiedadPage() {
     ubicacionRef,
     resenasRef,
   ];
+
+  useEffect(() => {
+    console.log(cardQuery.data);
+  }, [cardQuery.data]);
 
   if (
     propiedad.isInitialLoading ||
@@ -258,31 +275,39 @@ export default function PropiedadPage() {
 
             <Divider />
 
-            <p>
-              {prop?.regla_autochecar
-                ? "Llegada autónoma"
-                : "No"}
-            </p>
-            <p>
-              {prop?.regla_apagar ? "Apagar luces" : "No"}
-            </p>
-            <p>
-              {prop?.regla_fiestas
-                ? "Permite fiestas"
-                : "No"}
-            </p>
-            <p>
-              {prop?.regla_fumar ? "Permite fumar" : "No"}
-            </p>
-            <p>
-              {prop?.regla_mascotas
-                ? "Permite mascotas"
-                : "No"}
-            </p>
-            <p>
-              {prop?.regla_ninos ? "Permite niños" : "No"}
-            </p>
+            {isBestRated && (
+              <div className="inline-flex gap-8 items-center justify-center">
+                <img
+                  src={cup}
+                  alt="entre_favoritos"
+                  className="w-8 h-8 aspect-square"
+                />
+                <div className="flex flex-col items-start justify-center">
+                  <p className="text-left font-[cabin] font-bold">
+                    Entre los mejores calificados
+                  </p>
+                  <small className="text-left">
+                    Este alojamiento está entre los mejores
+                    en Waymark, según las calificaciones.
+                  </small>
+                </div>
+              </div>
+            )}
 
+            {prop?.regla_autochecar && (
+              <div className="inline-flex gap-8 items-center justify-center">
+                <DoorOpen size={32} className="shrink-0" />
+                <div className="flex flex-col items-start justify-center">
+                  <p className="text-left font-[cabin] font-bold">
+                    Llegada autónoma
+                  </p>
+                  <small className="text-left">
+                    Para entrar al alojamiento, usa la caja
+                    de seguridad para llaves.
+                  </small>
+                </div>
+              </div>
+            )}
             <Divider />
 
             <div className="max-h-[140px] h-auto overflow-hidden">
@@ -299,7 +324,7 @@ export default function PropiedadPage() {
             {shouldShowButton && (
               <CustomButton
                 variant="secondary"
-                onClick={() => setopenMore(!openMore)}
+                onClick={() => setOpenMore(!openMore)}
                 customWidth="max-md:w-full"
               >
                 Mostrar más
@@ -365,7 +390,6 @@ export default function PropiedadPage() {
 
             <Divider />
 
-            {/* Desde 1960px mostrar 2 calendarios*/}
             <CalendarContainer
               range={range}
               setRange={setRange}
@@ -493,15 +517,76 @@ export default function PropiedadPage() {
             />
           </Marker>
         </Map>
-        {prop.reglas_extra && (
-          <>
-            <h4>Reglas adicionales de la casa</h4>
-            <ReglasUl reglas={prop.reglas_extra} />
-          </>
-        )}
+        <div className="flex gap-2 md:gap-8 flex-col md:flex-row w-full items-start justify-start md:justify-center">
+          <div className="flex-1 flex flex-col gap-2 items-start justify-start">
+            <h4>Conoce a tu anfitrión</h4>
+            <div className="inline-flex gap-2 items-center justify-center px-4 py-2 rounded-xl bg-green-100 text-green-800 w-max">
+              <Avatar
+                src={hostQuery.data?.foto_perfil}
+                size={72}
+                name={hostQuery.data?.nombre || ""}
+              />
+              <h4>
+                {hostQuery.data?.nombre.split(" ")[0] ||
+                  "Anfitrión"}{" "}
+                {hostQuery.data?.apellido_p || "Apellido"}
+              </h4>
+            </div>
+          </div>
+          <div
+            className={`${prop.reglas_extra ? "flex-1" : "flex-2"} flex flex-col gap-2 items-start justify-start`}
+          >
+            <h4>Reglas de la casa</h4>
+            <p
+              className={`${!prop?.regla_apagar && "line-through"} text-left flex items-center gap-2`}
+            >
+              <Cable /> Apagar luces y aparatos electrónicos
+              al salir
+            </p>
+            <p
+              className={`${!prop?.regla_fiestas && "line-through"} text-left flex items-center gap-2`}
+            >
+              <PartyPopper /> Se permiten fiestas y eventos
+            </p>
+            <p
+              className={`${!prop?.regla_fumar && "line-through"} text-left flex items-center gap-2`}
+            >
+              <Cigarette /> Se permite fumar en el
+              alojamiento
+            </p>
+            <p
+              className={`${!prop?.regla_mascotas && "line-through"} text-left flex items-center gap-2`}
+            >
+              <Dog /> Se permiten mascotas en el alojamiento
+            </p>
+            <p
+              className={`${!prop?.regla_ninos && "line-through"} text-left flex items-center gap-2`}
+            >
+              <Baby /> Apto para niños menores de 12 años
+            </p>
+          </div>{" "}
+          {prop.reglas_extra && (
+            <div className="flex-1 flex flex-col gap-2 items-start justify-start">
+              <h4>Reglas adicionales de la casa</h4>
+              <ReglasUl reglas={prop.reglas_extra} />
+              {Object.entries(prop.reglas_extra).length >
+                5 && (
+                <CustomLink
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setOpenReglas(true);
+                  }}
+                >
+                  Más información
+                </CustomLink>
+              )}
+            </div>
+          )}
+        </div>
+
         <Modal
           open={openMore}
-          close={() => setopenMore(false)}
+          close={() => setOpenMore(false)}
           width={"min(768px, 100%)"}
         >
           <Modal.Body>
@@ -515,6 +600,29 @@ export default function PropiedadPage() {
             </ReactMarkdown>
           </Modal.Body>
         </Modal>
+
+        <Modal
+          open={openReglas}
+          close={() => setOpenReglas(false)}
+          width={"min(768px, 100%)"}
+        >
+          <Modal.Body>
+            <h3>Reglas adicionales</h3>
+            <ul className="list-decimal list-inside">
+              {Object.entries(
+                prop.reglas_extra ??
+                  ({} as Record<string, string>),
+              ).map(([key, value]) => (
+                <li key={key} className="text-left">
+                  <small className="text-text-primary pl-2">
+                    {value}
+                  </small>
+                </li>
+              ))}
+            </ul>
+          </Modal.Body>
+        </Modal>
+
         <Modal
           open={openAmenidades}
           close={() => setOpenAmenidades(false)}
@@ -1011,11 +1119,15 @@ const ReglasUl = ({
 }: {
   reglas: Record<string, string>;
 }) => {
+  const slice = Object.values(reglas).slice(0, 5);
   return (
-    <ul className="list-disc list-inside flex flex-col gap-2">
-      {Object.entries(reglas).map(([key, value]) => (
+    <ul className="list-none list-inside flex flex-col">
+      {Object.entries(slice).map(([key, value]) => (
         <li key={key} className="text-left">
-          {value}
+          <small className="text-text-secondary">
+            {" "}
+            {value}
+          </small>
         </li>
       ))}
     </ul>
@@ -1095,10 +1207,17 @@ const HeaderScroll = ({ ref, listRefs }) => {
     [0, 1],
   );
 
+  const display = useTransform(
+    scrollY,
+    [elementTop, elementTop + 1],
+    ["none", "block"],
+  );
+
   return (
     <motion.div
       style={{
         opacity,
+        display,
       }}
       className="sticky top-0 w-full z-[9997] max-md:hidden bg-white border-b border-border"
     >
