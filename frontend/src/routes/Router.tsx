@@ -16,7 +16,7 @@ import Page403 from '../modules/paginas_error/403';
 import { useAuth } from '../context/AuthContext';
 
 /** Requiere sesión iniciada. Sin rol requerido = cualquier usuario autenticado. */
-function PrivateRoute({ children, role }: { children: ReactNode; role?: string | string[] }) {
+function PrivateRoute({ children, role }: Readonly<{ children: ReactNode; role?: string | string[] }>) {
     const auth = useAuth();
     if (!auth?.isAuthenticated) return <Navigate to="/login" replace />;
     if (role) {
