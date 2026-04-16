@@ -58,7 +58,7 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     telefono = models.CharField(max_length=20)
     correo = models.EmailField(unique=True, max_length=50)
 
-    password = models.CharField(max_length=255, db_column="contra")
+    password = models.CharField(max_length=128)
 
     rol = models.ForeignKey(Rol, on_delete=models.PROTECT, db_column="rol")
     foto_perfil = models.ImageField(upload_to="usuarios/", blank=True, null=True)
@@ -71,7 +71,6 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     created_by = models.IntegerField(blank=True, null=True)
     updated_by = models.IntegerField(blank=True, null=True)
 
-    is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
 
     objects = UsuarioManager()

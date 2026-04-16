@@ -1,6 +1,5 @@
 import axios, {
   AxiosError,
-  AxiosRequestConfig,
 } from "axios";
 
 const url = import.meta.env.VITE_API_URL;
