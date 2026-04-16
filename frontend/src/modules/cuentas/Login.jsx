@@ -6,8 +6,8 @@ import { useAuth } from "../../context/AuthContext";
 function routeByRole(roleName = "") {
   const role = roleName.trim().toLowerCase();
 
-  if (role.includes("admin")) return "/admin/dashboard";
-  if (role.includes("anfit") || role.includes("ambos")) return "/host/today";
+  if (role.includes("admin")) return "/admin";
+  if (role.includes("anfit") || role.includes("ambos")) return "/host";
   return "/";
 }
 
@@ -20,6 +20,8 @@ export default function Login() {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const { setAuthToken, setAuthRefreshToken } = useAuth();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -37,11 +39,12 @@ export default function Login() {
         password: form.password,
       });
 
+    setAuthToken(data.access);
+      setAuthRefreshToken(data.refresh);
       localStorage.setItem("user_role", data?.usuario?.rol_nombre || "");
-      auth.setAuthToken(data.access);
-      auth.setAuthRefreshToken(data.refresh);
+      
 
-      navigate(routeByRole(data?.usuario?.rol_nombre));
+      navigate(routeByRole(data?.usuario?.rol_nombre), {replace: true});
     } catch (err) {
       const msg =
         err?.response?.data?.detail ||

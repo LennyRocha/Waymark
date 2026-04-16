@@ -276,6 +276,7 @@ const LandingRow = ({
 type VerMasCardProps = {
   direccion: string;
 };
+
 export const VerMasCard = ({
   direccion = "",
 }: VerMasCardProps) => {
@@ -344,6 +345,19 @@ const Header = ({
                   Mi perfil
                 </CustomLink>
               </li>
+              <li>
+                <div className="w-full bg-border h-[1px]"></div>
+              </li>
+              <li className="py-4 px-2 text-left text-nowrap">
+                <CustomLink
+                  onClick={(e) => {
+                    e.preventDefault();
+                    auth.handleLogout();
+                  }}
+                >
+                  Cerrar sesión
+                </CustomLink>
+              </li>
             </ul>
           );
         case "anfitrion":
@@ -384,6 +398,19 @@ const Header = ({
               <li className="py-4 px-2 text-left text-nowrap">
                 <CustomLink to="/profile">
                   Mi perfil
+                </CustomLink>
+              </li>
+              <li>
+                <div className="w-full bg-border h-[1px]"></div>
+              </li>
+              <li className="py-4 px-2 text-left text-nowrap">
+                <CustomLink
+                  onClick={(e) => {
+                    e.preventDefault();
+                    auth.handleLogout();
+                  }}
+                >
+                  Cerrar sesión
                 </CustomLink>
               </li>
             </ul>
@@ -437,6 +464,19 @@ const Header = ({
                   Mi perfil
                 </CustomLink>
               </li>
+              <li>
+                <div className="w-full bg-border h-[1px]"></div>
+              </li>
+              <li className="py-4 px-2 text-left text-nowrap">
+                <CustomLink
+                  onClick={(e) => {
+                    e.preventDefault();
+                    auth.handleLogout();
+                  }}
+                >
+                  Cerrar sesión
+                </CustomLink>
+              </li>
             </ul>
           );
         case "turista":
@@ -470,6 +510,19 @@ const Header = ({
               <li className="py-4 px-2 text-left text-nowrap">
                 <CustomLink to="/profile">
                   Mi perfil
+                </CustomLink>
+              </li>
+              <li>
+                <div className="w-full bg-border h-[1px]"></div>
+              </li>
+              <li className="py-4 px-2 text-left text-nowrap">
+                <CustomLink
+                  onClick={(e) => {
+                    e.preventDefault();
+                    auth.handleLogout();
+                  }}
+                >
+                  Cerrar sesión
                 </CustomLink>
               </li>
             </ul>

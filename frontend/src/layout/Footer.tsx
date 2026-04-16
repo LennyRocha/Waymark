@@ -11,7 +11,7 @@ export default function Footer() {
                         Synverge Inc. Todos los derechos reservados.
                     </div>
                     <div className="text-text-secondary  w-full text-center sm:w-auto sm:text-left flex items-center justify-center gap-1">
-                        Powered by <CustomLink disabled={false}  to="www.utez.edu.mx">UTEZ</CustomLink>
+                        Powered by <CustomLink disabled={false}  to="https://www.utez.edu.mx">UTEZ</CustomLink>
                     </div>
                 </div>
             </div>
