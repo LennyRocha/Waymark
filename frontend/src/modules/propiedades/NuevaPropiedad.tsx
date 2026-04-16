@@ -41,6 +41,7 @@ import Breadcrumb from "../../components/Breadcrumb";
 import DropZoneItem from "./components/DropZoneItem";
 import getPropiedadNameByField from "./hooks/getPropiedadNameByField";
 import type { PropiedadForm } from "./schemas/PropiedadZod";
+import useReglas from "./hooks/useReglas";
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 
@@ -72,9 +73,7 @@ export default function NuevaPropiedad() {
       ]);
       return { previousData };
     },
-    onError: (
-      error: any,
-    ) => {
+    onError: (error: any) => {
       const errorMessage = getAxiosErrorMessage(error);
       const backendErrors = error.response?.data;
       if (
@@ -1215,26 +1214,10 @@ const Step9 = ({
     Record<string, string>
   >(reglasJson ?? { regla_1: "" });
 
-  // Agregar nueva regla
-  const addRegla = () => {
-    const nextKey = `regla_${Object.keys(extraReglas).length + 1}`;
-    setExtraReglas({ ...extraReglas, [nextKey]: "" });
-  };
-
-  // Eliminar regla
-  const removeRegla = (key: string) => {
-    const copy = { ...extraReglas };
-    delete copy[key];
-    if (Object.keys(copy).length === 0) {
-      copy.regla_1 = "";
-    }
-    setExtraReglas(copy);
-  };
-
-  // Actualizar valor de regla
-  const updateRegla = (key: string, value: string) => {
-    setExtraReglas({ ...extraReglas, [key]: value });
-  };
+  const { addRegla, removeRegla, updateRegla } = useReglas(
+    extraReglas,
+    setExtraReglas,
+  );
 
   // Sincronizar con RHF cada vez que cambie extraReglas o showReglas
   useEffect(() => {

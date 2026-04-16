@@ -54,6 +54,7 @@ import useCard from "./hooks/useCard";
 import cup from "../../assets/trofeo.png";
 import leftwing from "../../assets/alarde_izq.png";
 import rightwing from "../../assets/alarde_der.png";
+import NavigationList from "./components/NavigationList";
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 const MAX_LENGTH = 500;
@@ -522,6 +523,16 @@ export default function PropiedadPage() {
             />
           </Marker>
         </Map>
+        <small className="font-[montserrat] text-sm text-text-secondary block">
+          Para brindar una mejor experiencia, solicitaremos
+          tu ubicación aproximada al momento de registrar tu
+          propiedad. Esto nos ayudará a mostrar tu anuncio a
+          los huéspedes que buscan alojamiento en esa área.
+          Ten la seguridad de que esta información se
+          mantendrá confidencial y solo se utilizará para
+          mejorar la visibilidad de tu propiedad en nuestra
+          plataforma.
+        </small>
         <div className="flex gap-2 md:gap-8 flex-col md:flex-row w-full items-start justify-start md:justify-center">
           <div className="flex-1 flex flex-col gap-2 items-start justify-start">
             <h4>Conoce a tu anfitrión</h4>
@@ -754,256 +765,6 @@ const Header = ({ toggle, value }: HeaderProps) => {
     toggle(!val);
   }
 
-  const isAuthenticated = auth?.isAuthenticated;
-  const role = auth?.userRole;
-
-  const Links: React.FC = useMemo(() => {
-    if (isAuthenticated) {
-      switch (role) {
-        case "administrador":
-          return (
-            <ul>
-              <li className="py-4 px-2 text-left text-nowrap">
-                <CustomLink to="/admin/dashboard">
-                  Dashboard
-                </CustomLink>
-              </li>
-              <li>
-                <div className="w-full bg-border h-[1px]"></div>
-              </li>
-              <li className="py-4 px-2 text-left text-nowrap">
-                <CustomLink to="/admin/currencys">
-                  Divisas
-                </CustomLink>
-              </li>
-              <li>
-                <div className="w-full bg-border h-[1px]"></div>
-              </li>
-              <li className="py-4 px-2 text-left text-nowrap">
-                <CustomLink to="/admin/calendar">
-                  Calendario
-                </CustomLink>
-              </li>
-              <li>
-                <div className="w-full bg-border h-[1px]"></div>
-              </li>
-              <li className="py-4 px-2 text-left text-nowrap">
-                <CustomLink to="/profile">
-                  Mi perfil
-                </CustomLink>
-              </li>
-              <li>
-                <div className="w-full bg-border h-[1px]"></div>
-              </li>
-              <li className="py-4 px-2 text-left text-nowrap">
-                <CustomLink
-                  onClick={(e) => {
-                    e.preventDefault();
-                    auth.handleLogout();
-                  }}
-                >
-                  Cerrar sesión
-                </CustomLink>
-              </li>
-            </ul>
-          );
-        case "anfitrion":
-          return (
-            <ul>
-              <li className="py-4 px-2 text-left text-nowrap">
-                <CustomLink to="/host/today">
-                  Solicitudes
-                </CustomLink>
-              </li>
-              <li>
-                <div className="w-full bg-border h-[1px]"></div>
-              </li>
-              <li className="py-4 px-2 text-left text-nowrap">
-                <CustomLink to="/host/calendar">
-                  Calendario
-                </CustomLink>
-              </li>
-              <li>
-                <div className="w-full bg-border h-[1px]"></div>
-              </li>
-              <li className="py-4 px-2 text-left text-nowrap">
-                <CustomLink to="/host/listings">
-                  Mis alojamientos
-                </CustomLink>
-              </li>
-              <li>
-                <div className="w-full bg-border h-[1px]"></div>
-              </li>
-              <li className="py-4 px-2 text-left text-nowrap">
-                <CustomLink to="/search-hosts">
-                  Buscar a un anfitrión
-                </CustomLink>
-              </li>
-              <li>
-                <div className="w-full bg-border h-[1px]"></div>
-              </li>
-              <li className="py-4 px-2 text-left text-nowrap">
-                <CustomLink to="/profile">
-                  Mi perfil
-                </CustomLink>
-              </li>
-              <li>
-                <div className="w-full bg-border h-[1px]"></div>
-              </li>
-              <li className="py-4 px-2 text-left text-nowrap">
-                <CustomLink
-                  onClick={(e) => {
-                    e.preventDefault();
-                    auth.handleLogout();
-                  }}
-                >
-                  Cerrar sesión
-                </CustomLink>
-              </li>
-            </ul>
-          );
-        case "ambos":
-          return (
-            <ul>
-              {" "}
-              <li className="py-4 px-2 text-left text-nowrap">
-                <CustomLink to="/host/today">
-                  Solicitudes
-                </CustomLink>
-              </li>
-              <li>
-                <div className="w-full bg-border h-[1px]"></div>
-              </li>
-              <li className="py-4 px-2 text-left text-nowrap">
-                <CustomLink to="/wishlist">
-                  Favoritos
-                </CustomLink>
-              </li>
-              <li>
-                <div className="w-full bg-border h-[1px]"></div>
-              </li>
-              <li className="py-4 px-2 text-left text-nowrap">
-                <CustomLink to="/host/calendar">
-                  Calendario
-                </CustomLink>
-              </li>
-              <li>
-                <div className="w-full bg-border h-[1px]"></div>
-              </li>
-              <li className="py-4 px-2 text-left text-nowrap">
-                <CustomLink to="/host/listings">
-                  Mis alojamientos
-                </CustomLink>
-              </li>
-              <li>
-                <div className="w-full bg-border h-[1px]"></div>
-              </li>
-              <li className="py-4 px-2 text-left text-nowrap">
-                <CustomLink to="/search-hosts">
-                  Buscar a un anfitrión
-                </CustomLink>
-              </li>
-              <li>
-                <div className="w-full bg-border h-[1px]"></div>
-              </li>
-              <li className="py-4 px-2 text-left text-nowrap">
-                <CustomLink to="/profile">
-                  Mi perfil
-                </CustomLink>
-              </li>
-              <li>
-                <div className="w-full bg-border h-[1px]"></div>
-              </li>
-              <li className="py-4 px-2 text-left text-nowrap">
-                <CustomLink
-                  onClick={(e) => {
-                    e.preventDefault();
-                    auth.handleLogout();
-                  }}
-                >
-                  Cerrar sesión
-                </CustomLink>
-              </li>
-            </ul>
-          );
-        case "turista":
-        default:
-          return (
-            <ul>
-              <li className="py-4 px-2 text-left text-nowrap">
-                <CustomLink to="/wishlist">
-                  Favoritos
-                </CustomLink>
-              </li>
-              <li>
-                <div className="w-full bg-border h-[1px]"></div>
-              </li>
-              <li className="py-4 px-2 text-left text-nowrap">
-                <CustomLink to="/my-trips">
-                  Mis reservaciones
-                </CustomLink>
-              </li>
-              <li>
-                <div className="w-full bg-border h-[1px]"></div>
-              </li>
-              <li className="py-4 px-2 text-left text-nowrap">
-                <CustomLink to="/search-hosts">
-                  Buscar a un anfitrión
-                </CustomLink>
-              </li>
-              <li>
-                <div className="w-full bg-border h-[1px]"></div>
-              </li>
-              <li className="py-4 px-2 text-left text-nowrap">
-                <CustomLink to="/profile">
-                  Mi perfil
-                </CustomLink>
-              </li>
-              <li>
-                <div className="w-full bg-border h-[1px]"></div>
-              </li>
-              <li className="py-4 px-2 text-left text-nowrap">
-                <CustomLink
-                  onClick={(e) => {
-                    e.preventDefault();
-                    auth.handleLogout();
-                  }}
-                >
-                  Cerrar sesión
-                </CustomLink>
-              </li>
-            </ul>
-          );
-      }
-    } else {
-      return (
-        <ul>
-          <li className="py-4 px-2 text-left text-nowrap">
-            <CustomLink to="/become-a-host">
-              Convierte en anfitrión
-            </CustomLink>
-          </li>
-          <li>
-            <div className="w-full bg-border h-[1px]"></div>
-          </li>
-          <li className="py-4 px-2 text-left text-nowrap">
-            <CustomLink to="/search-hosts">
-              Buscar a un anfitrión
-            </CustomLink>
-          </li>
-          <li>
-            <div className="w-full bg-border h-[1px]"></div>
-          </li>
-          <li className="py-4 px-2 text-left text-nowrap">
-            <CustomLink to="/login">
-              Iniciar sesión
-            </CustomLink>
-          </li>
-        </ul>
-      );
-    }
-  }, [isAuthenticated, role]);
-
   useEffect(() => {
     if (!value) setScrolled(true);
   }, [value]);
@@ -1059,7 +820,7 @@ const Header = ({ toggle, value }: HeaderProps) => {
                 Menú
               </p>
               <div className="w-full bg-border h-[1px]"></div>
-              {Links}
+              <NavigationList />
             </CustomDropdown>
           </DropdownParent>
         </nav>
