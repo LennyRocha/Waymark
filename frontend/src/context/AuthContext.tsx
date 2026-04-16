@@ -7,7 +7,7 @@ import {
 } from "react";
 import Role from "../types/Rol";
 
-type AuthContextValue = {
+export type AuthContextValue = {
   token: string | null;
   isAuthenticated: boolean;
   userRole: Role;

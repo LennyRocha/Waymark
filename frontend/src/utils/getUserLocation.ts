@@ -5,6 +5,12 @@ export const getUserLocation = () => {
         reject(new Error("Geolocation not supported"));
         return;
       }
+      /**
+       * Geolocation is required to obtain the approximate location
+       * of the property being registered.
+       * This is triggered only after explicit user interaction.
+       */
+      // NOSONAR
 
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -17,10 +23,10 @@ export const getUserLocation = () => {
           reject(new Error(error.message));
         },
         {
-          enableHighAccuracy: true,
+          enableHighAccuracy: false,
           timeout: 5000,
-        }
+        },
       );
-    }
+    },
   );
 };

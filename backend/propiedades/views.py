@@ -132,6 +132,7 @@ class PropiedadViewSet(viewsets.ModelViewSet):
         # 6 ciudades aleatorias
         ciudades = list(Cards.objects.values_list("ciudad", flat=True).distinct())
 
+        # Uso intencional: solo para aleatorizar orden visual
         random.shuffle(ciudades)
 
         ciudades = ciudades[:6]

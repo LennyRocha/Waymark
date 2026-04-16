@@ -30,6 +30,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { getAxiosErrorMessage } from '../../utils/getAxiosErrorMessage'
 import getPropiedadNameByField from './hooks/getPropiedadNameByField'
 import useWatchResize from '../../utils/useWatchResize'
+import useReglas from './hooks/useReglas'
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN
 
@@ -811,23 +812,11 @@ const Tab4 = ({ change, watchKey }: TabBaseProps) => {
         reglasJson ?? { regla_1: "" }
     );
 
-    const addRegla = () => {
-        const nextKey = `regla_${Object.keys(extraReglas).length + 1}`;
-        setExtraReglas({ ...extraReglas, [nextKey]: "" });
-    };
-
-    const removeRegla = (key: string) => {
-        const copy = { ...extraReglas };
-        delete copy[key];
-        if (Object.keys(copy).length === 0) {
-            copy.regla_1 = "";
-        }
-        setExtraReglas(copy);
-    };
-
-    const updateRegla = (key: string, value: string) => {
-        setExtraReglas({ ...extraReglas, [key]: value });
-    };
+    const {
+    addRegla,
+    removeRegla,
+    updateRegla,
+  } = useReglas(extraReglas, setExtraReglas);
 
     useEffect(() => {
         if (showReglas) {

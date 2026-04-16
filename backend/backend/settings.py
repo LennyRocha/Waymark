@@ -29,7 +29,7 @@ load_dotenv(BASE_DIR / ".env")
 SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv("DEBUG", "False")
 
 ALLOWED_HOSTS = ["*"]
 
@@ -64,13 +64,6 @@ SIMPLE_JWT = {
     "USER_ID_CLAIM": "user_id",
 }
 
-# CLOUDINARY_STORAGE = {
-#     'CLOUD_NAME': os.getenv("CLOUD_NAME"),
-#     'API_KEY':  os.getenv("CLOUD_KEY"),
-#     'API_SECRET': os.getenv("CLOUD_SECRET"),
-# }
-
-# DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
 
 # Mientras está  en desarrollo
 MEDIA_URL = "/media/"
@@ -177,9 +170,7 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 
 LOGGING_CONFIG = None
 
-formato = (
-    "{time: YYYY-MM-DD HH:mm:ss} | {level: <8} | {extra} | {name}: {function}: {line} - {message}"
-)
+formato = "{time: YYYY-MM-DD HH:mm:ss} | {level: <8} | {extra} | {name}: {function}: {line} - {message}"
 
 LOG_ROTATION_SIZE = "10 MB"
 LOG_RETENTION_TIME = "2 days"
