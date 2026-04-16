@@ -1,0 +1,607 @@
+[
+  {
+    "model": "propiedades.amenidad",
+    "pk": 1,
+    "fields": {
+      "nombre": "WiFi",
+      "icono_nombre": "wifi",
+      "categoria": "internet y oficina",
+      "descripcion": ""
+    }
+  },
+  {
+    "model": "propiedades.amenidad",
+    "pk": 2,
+    "fields": {
+      "nombre": "TV",
+      "icono_nombre": "tv",
+      "categoria": "entretenimiento",
+      "descripcion": ""
+    }
+  },
+  {
+    "model": "propiedades.amenidad",
+    "pk": 3,
+    "fields": {
+      "nombre": "Cocina",
+      "icono_nombre": "soup",
+      "categoria": "cocina y comedor",
+      "descripcion": "Cocina disponible para el uso de los huéspedes"
+    }
+  },
+  {
+    "model": "propiedades.amenidad",
+    "pk": 4,
+    "fields": {
+      "nombre": "Lavadora",
+      "icono_nombre": "washing-machine",
+      "categoria": "habitación y lavandería",
+      "descripcion": ""
+    }
+  },
+  {
+    "model": "propiedades.amenidad",
+    "pk": 5,
+    "fields": {
+      "nombre": "Estacionamiento gratuito en las instalaciones",
+      "icono_nombre": "circle-parking",
+      "categoria": "estacionamiento e instalaciones",
+      "descripcion": ""
+    }
+  },
+  {
+    "model": "propiedades.amenidad",
+    "pk": 6,
+    "fields": {
+      "nombre": "Aire acondicionado",
+      "icono_nombre": "air-vent",
+      "categoria": "climatizacion",
+      "descripcion": ""
+    }
+  },
+  {
+    "model": "propiedades.amenidad",
+    "pk": 7,
+    "fields": {
+      "nombre": "Área de trabajo",
+      "icono_nombre": "laptop",
+      "categoria": "internet y oficina",
+      "descripcion": ""
+    }
+  },
+  {
+    "model": "propiedades.amenidad",
+    "pk": 8,
+    "fields": {
+      "nombre": "Alberca",
+      "icono_nombre": "waves-ladder",
+      "categoria": "exterior",
+      "descripcion": ""
+    }
+  },
+  {
+    "model": "propiedades.amenidad",
+    "pk": 9,
+    "fields": {
+      "nombre": "Jacuzzi",
+      "icono_nombre": "bath",
+      "categoria": "exterior",
+      "descripcion": ""
+    }
+  },
+  {
+    "model": "propiedades.amenidad",
+    "pk": 10,
+    "fields": {
+      "nombre": "Patio",
+      "icono_nombre": "flower-2",
+      "categoria": "exterior",
+      "descripcion": "Un espacio abierto en la propiedad generalmente cubierto de pasto"
+    }
+  },
+
+  {
+    "model": "propiedades.amenidad",
+    "pk": 11,
+    "fields": {
+      "nombre": "Parrilla",
+      "icono_nombre": "flame",
+      "categoria": "exterior",
+      "descripcion": ""
+    }
+  },
+  {
+    "model": "propiedades.amenidad",
+    "pk": 12,
+    "fields": {
+      "nombre": "Calefacción",
+      "icono_nombre": "thermometer",
+      "categoria": "climatizacion",
+      "descripcion": ""
+    }
+  },
+  {
+    "model": "propiedades.amenidad",
+    "pk": 13,
+    "fields": {
+      "nombre": "Detector de humo",
+      "icono_nombre": "bell",
+      "categoria": "seguridad",
+      "descripcion": ""
+    }
+  },
+  {
+    "model": "propiedades.amenidad",
+    "pk": 14,
+    "fields": {
+      "nombre": "Detector de monóxido de carbono",
+      "icono_nombre": "triangle-alert",
+      "categoria": "seguridad",
+      "descripcion": ""
+    }
+  },
+  {
+    "model": "propiedades.amenidad",
+    "pk": 15,
+    "fields": {
+      "nombre": "Botiquín de primeros auxilios",
+      "icono_nombre": "cross",
+      "categoria": "seguridad",
+      "descripcion": ""
+    }
+  },
+  {
+    "model": "propiedades.amenidad",
+    "pk": 16,
+    "fields": {
+      "nombre": "Extintor de incendios",
+      "icono_nombre": "fire-extinguisher",
+      "categoria": "seguridad",
+      "descripcion": ""
+    }
+  },
+  {
+    "model": "propiedades.amenidad",
+    "pk": 17,
+    "fields": {
+      "nombre": "Secadora",
+      "icono_nombre": "wind",
+      "categoria": "habitación y lavandería",
+      "descripcion": ""
+    }
+  },
+  {
+    "model": "propiedades.amenidad",
+    "pk": 18,
+    "fields": {
+      "nombre": "Ganchos  ",
+      "icono_nombre": "shirt",
+      "categoria": "habitación y lavandería",
+      "descripcion": ""
+    }
+  },
+  {
+    "model": "propiedades.amenidad",
+    "pk": 19,
+    "fields": {
+      "nombre": "Plancha",
+      "icono_nombre": "wrench",
+      "categoria": "habitación y lavandería",
+      "descripcion": ""
+    }
+  },
+  {
+    "model": "propiedades.amenidad",
+    "pk": 20,
+    "fields": {
+      "nombre": "Shampoo",
+      "icono_nombre": "soap-dispenser-droplet",
+      "categoria": "baño",
+      "descripcion": ""
+    }
+  },
+
+  {
+    "model": "propiedades.amenidad",
+    "pk": 21,
+    "fields": {
+      "nombre": "Acondicionador",
+      "icono_nombre": "droplets",
+      "categoria": "baño",
+      "descripcion": ""
+    }
+  },
+  {
+    "model": "propiedades.amenidad",
+    "pk": 22,
+    "fields": {
+      "nombre": "Gel de ducha",
+      "icono_nombre": "droplet",
+      "categoria": "baño",
+      "descripcion": ""
+    }
+  },
+  {
+    "model": "propiedades.amenidad",
+    "pk": 23,
+    "fields": {
+      "nombre": "Agua caliente",
+      "icono_nombre": "flame-kindling",
+      "categoria": "baño",
+      "descripcion": ""
+    }
+  },
+  {
+    "model": "propiedades.amenidad",
+    "pk": 24,
+    "fields": {
+      "nombre": "Secador de pelo",
+      "icono_nombre": "wind",
+      "categoria": "baño",
+      "descripcion": ""
+    }
+  },
+  {
+    "model": "propiedades.amenidad",
+    "pk": 25,
+    "fields": {
+      "nombre": "Sábanas",
+      "icono_nombre": "bed",
+      "categoria": "habitación y lavandería",
+      "descripcion": ""
+    }
+  },
+  {
+    "model": "propiedades.amenidad",
+    "pk": 26,
+    "fields": {
+      "nombre": "Almohadas y mantas extra",
+      "icono_nombre": "pilcrow",
+      "categoria": "habitación y lavandería",
+      "descripcion": ""
+    }
+  },
+  {
+    "model": "propiedades.amenidad",
+    "pk": 27,
+    "fields": {
+      "nombre": "Persianas opacas",
+      "icono_nombre": "blinds",
+      "categoria": "habitación y lavandería",
+      "descripcion": ""
+    }
+  },
+  {
+    "model": "propiedades.amenidad",
+    "pk": 28,
+    "fields": {
+      "nombre": "Ropa de cama",
+      "icono_nombre": "towel-rack",
+      "categoria": "habitación y lavandería",
+      "descripcion": ""
+    }
+  },
+  {
+    "model": "propiedades.amenidad",
+    "pk": 29,
+    "fields": {
+      "nombre": "Refrigerador",
+      "icono_nombre": "refrigerator",
+      "categoria": "cocina y comedor",
+      "descripcion": ""
+    }
+  },
+  {
+    "model": "propiedades.amenidad",
+    "pk": 30,
+    "fields": {
+      "nombre": "Microondas",
+      "icono_nombre": "microwave",
+      "categoria": "cocina y comedor",
+      "descripcion": ""
+    }
+  },
+
+  {
+    "model": "propiedades.amenidad",
+    "pk": 31,
+    "fields": {
+      "nombre": "Articulos de cocina básicos",
+      "icono_nombre": "utensils",
+      "categoria": "cocina y comedor",
+      "descripcion": "Ollas y sartenes, aceite, sal y pimienta"
+    }
+  },
+  {
+    "model": "propiedades.amenidad",
+    "pk": 32,
+    "fields": {
+      "nombre": "Platos y cubiertos",
+      "icono_nombre": "utensils-crossed",
+      "categoria": "cocina y comedor",
+      "descripcion": "Platos hondos, palillos chinos, platos, tazas, etc."
+    }
+  },
+  {
+    "model": "propiedades.amenidad",
+    "pk": 33,
+    "fields": {
+      "nombre": "Lavavajillas",
+      "icono_nombre": "washing-machine",
+      "categoria": "cocina y comedor",
+      "descripcion": ""
+    }
+  },
+  {
+    "model": "propiedades.amenidad",
+    "pk": 34,
+    "fields": {
+      "nombre": "Cafetera",
+      "icono_nombre": "coffee",
+      "categoria": "cocina y comedor",
+      "descripcion": ""
+    }
+  },
+  {
+    "model": "propiedades.amenidad",
+    "pk": 35,
+    "fields": {
+      "nombre": "Hervidor de agua",
+      "icono_nombre": "bubbles",
+      "categoria": "cocina y comedor",
+      "descripcion": ""
+    }
+  },
+  {
+    "model": "propiedades.amenidad",
+    "pk": 36,
+    "fields": {
+      "nombre": "Tostadora",
+      "icono_nombre": "sandwich",
+      "categoria": "cocina y comedor",
+      "descripcion": ""
+    }
+  },
+  {
+    "model": "propiedades.amenidad",
+    "pk": 37,
+    "fields": {
+      "nombre": "Horno",
+      "icono_nombre": "microwave",
+      "categoria": "cocina y comedor",
+      "descripcion": ""
+    }
+  },
+  {
+    "model": "propiedades.amenidad",
+    "pk": 38,
+    "fields": {
+      "nombre": "Estufa",
+      "icono_nombre": "cooking-pot",
+      "categoria": "cocina y comedor",
+      "descripcion": ""
+    }
+  },
+  {
+    "model": "propiedades.amenidad",
+    "pk": 39,
+    "fields": {
+      "nombre": "Mesa de comedor",
+      "icono_nombre": "lamp-desk",
+      "categoria": "cocina y comedor",
+      "descripcion": ""
+    }
+  },
+  {
+    "model": "propiedades.amenidad",
+    "pk": 40,
+    "fields": {
+      "nombre": "Entrada privada",
+      "icono_nombre": "door-closed",
+      "categoria": "características de la ubicación",
+      "descripcion": "Entrada por otra calle o edificio"
+    }
+  },
+
+  {
+    "model": "propiedades.amenidad",
+    "pk": 41,
+    "fields": {
+      "nombre": "Alberca compartida",
+      "icono_nombre": "waves-ladder",
+      "categoria": "estacionamiento e instalaciones",
+      "descripcion": ""
+    }
+  },
+  {
+    "model": "propiedades.amenidad",
+    "pk": 42,
+    "fields": {
+      "nombre": "Llegada autónoma",
+      "icono_nombre": "key-round",
+      "categoria": "servicios",
+      "descripcion": ""
+    }
+  },
+  {
+    "model": "propiedades.amenidad",
+    "pk": 43,
+    "fields": {
+      "nombre": "Servicio de limpieza",
+      "icono_nombre": "spray-can",
+      "categoria": "servicios",
+      "descripcion": "Disponible por un costo adicional"
+    }
+  },
+  {
+    "model": "propiedades.amenidad",
+    "pk": 44,
+    "fields": {
+      "nombre": "Se permite dejar el equipaje",
+      "icono_nombre": "baggage-claim",
+      "categoria": "servicios",
+      "descripcion": "Opción de llegar pronto o salir tarde para la comodidad de los huéspedes"
+    }
+  },
+  {
+    "model": "propiedades.amenidad",
+    "pk": 45,
+    "fields": {
+      "nombre": "Se admiten mascotas",
+      "icono_nombre": "paw-print",
+      "categoria": "servicios",
+      "descripcion": "Los animales de asistencia siempre están permitidos"
+    }
+  },
+  {
+    "model": "propiedades.amenidad",
+    "pk": 46,
+    "fields": {
+      "nombre": "Apto para niños",
+      "icono_nombre": "baby",
+      "categoria": "servicios",
+      "descripcion": "Se admiten menores de 12 años"
+    }
+  },
+  {
+    "model": "propiedades.amenidad",
+    "pk": 47,
+    "fields": {
+      "nombre": "Estacionamiento gratuito en la calle",
+      "icono_nombre": "parking-meter",
+      "categoria": "estacionamiento e instalaciones",
+      "descripcion": ""
+    }
+  },
+  {
+    "model": "propiedades.amenidad",
+    "pk": 48,
+    "fields": {
+      "nombre": "Kayak",
+      "icono_nombre": "kayak",
+      "categoria": "exterior",
+      "descripcion": ""
+    }
+  },
+  {
+    "model": "propiedades.amenidad",
+    "pk": 49,
+    "fields": {
+      "nombre": "Gimnasio",
+      "icono_nombre": "dumbbell",
+      "categoria": "estacionamiento e instalaciones",
+      "descripcion": ""
+    }
+  },
+  {
+    "model": "propiedades.amenidad",
+    "pk": 50,
+    "fields": {
+      "nombre": "Disponible para estancias largas",
+      "icono_nombre": "calendar-check-2",
+      "categoria": "servicios",
+      "descripcion": "Permite estancias de 28 días o más"
+    }
+  },
+
+  {
+    "model": "propiedades.amenidad",
+    "pk": 51,
+    "fields": {
+      "nombre": "Acceso a la playa",
+      "icono_nombre": "umbrella",
+      "categoria": "características de la ubicación",
+      "descripcion": "Los huéspedes pueden disfrutar una playa cercana"
+    }
+  },
+  {
+    "model": "propiedades.amenidad",
+    "pk": 52,
+    "fields": {
+      "nombre": "Frente al agua",
+      "icono_nombre": "waves",
+      "categoria": "características de la ubicación",
+      "descripcion": "Justo al lado del agua"
+    }
+  },
+  {
+    "model": "propiedades.amenidad",
+    "pk": 53,
+    "fields": {
+      "nombre": "Sala privada",
+      "icono_nombre": "sofa",
+      "categoria": "estacionamiento e instalaciones",
+      "descripcion": ""
+    }
+  },
+  {
+    "model": "propiedades.amenidad",
+    "pk": 54,
+    "fields": {
+      "nombre": "Elevador",
+      "icono_nombre": "arrow-up-down",
+      "categoria": "estacionamiento e instalaciones",
+      "descripcion": "El alojamiento o edificio cuenta con un elevador de al menos 132 centímetros de profundidad y una entrada de al menos 81 centímetros de ancho."
+    }
+  },
+  {
+    "model": "propiedades.amenidad",
+    "pk": 55,
+    "fields": {
+      "nombre": "Cámaras de seguridad exteriores en la propiedad",
+      "icono_nombre": "cctv",
+      "categoria": "seguridad",
+      "descripcion": "Dentro del condominio hay cámaras de seguridad en recepción y vigilancia"
+    }
+  },
+  {
+    "model": "propiedades.amenidad",
+    "pk": 56,
+    "fields": {
+      "nombre": "Vista a la montaña",
+      "icono_nombre": "image",
+      "categoria": "vistas panorámicas",
+      "descripcion": ""
+    }
+  },
+  {
+    "model": "propiedades.amenidad",
+    "pk": 57,
+    "fields": {
+      "nombre": "Vista a la alberca",
+      "icono_nombre": "waves-ladder",
+      "categoria": "vistas panorámicas",
+      "descripcion": ""
+    }
+  },
+  {
+    "model": "propiedades.amenidad",
+    "pk": 58,
+    "fields": {
+      "nombre": "Vista al jardín",
+      "icono_nombre": "flower-2",
+      "categoria": "vistas panorámicas",
+      "descripcion": ""
+    }
+  },
+  {
+    "model": "propiedades.amenidad",
+    "pk": 59,
+    "fields": {
+      "nombre": "Vista al lago",
+      "icono_nombre": "waves",
+      "categoria": "vistas panorámicas",
+      "descripcion": ""
+    }
+  },
+  {
+    "model": "propiedades.amenidad",
+    "pk": 60,
+    "fields": {
+      "nombre": "Vista al complejo turístico",
+      "icono_nombre": "binoculars",
+      "categoria": "vistas panorámicas",
+      "descripcion": ""
+    }
+  }
+]

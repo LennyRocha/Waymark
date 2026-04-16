@@ -1,0 +1,23 @@
+.env
+initialdata/entrypoint.sh
+
+static/*
+backend/settings.py
+models.txt
+
+venv
+
+sonar-project.properties
+
+__pycache__/
+*.pyc
+*.pyo
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+logs/*
+
+media/*

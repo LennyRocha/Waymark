@@ -11,107 +11,272 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+import os
+from datetime import timedelta
+from dotenv import load_dotenv
+from loguru import logger
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Load environment variables from .env file
+load_dotenv(BASE_DIR / ".env")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-#)_+6ic0@gg!wf+vk#i)!-hfq^(byihfo=789jp1&km6g+p)sp'
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv("DEBUG", "False") == "True"
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
-
+ALLOWED_HOSTS = ["*"]
 
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
+    "initialdata.apps.InitialdataConfig",
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "django_filters",
+    "cloudinary_storage",
+    "cloudinary",
+    "corsheaders",
+    "rest_framework",
+    "rest_framework_simplejwt",
+    "propiedades",
+    "cuentas",
+    "calificaciones",
+    "reservas",
 ]
+
+AUTH_USER_MODEL = "cuentas.Usuario"
+
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    "USER_ID_FIELD": "usuario_id",
+    "USER_ID_CLAIM": "user_id",
+}
+
+
+# Mientras está  en desarrollo
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = 'backend.urls'
+ROOT_URLCONF = "backend.urls"
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [BASE_DIR / "templates"],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = 'backend.wsgi.application'
-
+WSGI_APPLICATION = "backend.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+    "default": {
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": os.getenv("DB_NAME"),
+        "USER": os.getenv("DB_USER"),
+        "PASSWORD": os.getenv("DB_PASSWORD"),
+        "HOST": os.getenv("DB_HOST"),
+        "PORT": os.getenv("DB_PORT"),
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 
 
+REST_FRAMEWORK = {
+    "DEFAULT_FILTER_BACKENDS": [
+        "django_filters.rest_framework.DjangoFilterBackend",
+    ],
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ],
+}
+
+frontend_url = os.getenv("FRONTEND_URL")
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://192.168.0.0:5173",
+]
+
+<<<<<<< HEAD
+# URL del frontend en producción (Vercel) — se agrega desde variable de entorno
+_frontend_url = os.getenv("FRONTEND_URL")
+if _frontend_url:
+    CORS_ALLOWED_ORIGINS.append(_frontend_url)
+=======
+if frontend_url:
+    CORS_ALLOWED_ORIGINS.append(frontend_url)
+>>>>>>> b67219c68f3b0d26930679ea833b87dbae099a85
+
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
 
-LANGUAGE_CODE = 'es-MX'
+LANGUAGE_CODE = "es-MX"
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = "America/Mexico_City"
 
 USE_I18N = True
 
+# Con esto, no se debe usar datetime, sino timezone
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = "static/"
+STATICFILES_DIRS = [BASE_DIR / "static"]
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
+# Media: Cloudinary en producción, disco local en desarrollo
+if os.getenv("CLOUD_NAME") and os.getenv("CLOUD_KEY"):
+    CLOUDINARY_STORAGE = {
+        "CLOUD_NAME": os.getenv("CLOUD_NAME"),
+        "API_KEY": os.getenv("CLOUD_KEY"),
+        "API_SECRET": os.getenv("CLOUD_SECRET"),
+    }
+    DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
+else:
+    MEDIA_URL = "/media/"
+    MEDIA_ROOT = BASE_DIR / "media"
+
+LOGGING_CONFIG = None
+
+# Crear directorio de logs si no existe (en producción puede no existir)
+_logs_dir = BASE_DIR / "logs"
+_logs_dir.mkdir(exist_ok=True)
+
+formato = "{time: YYYY-MM-DD HH:mm:ss} | {level: <8} | {extra} | {name}: {function}: {line} - {message}"
+
+LOG_ROTATION_SIZE = "10 MB"
+LOG_RETENTION_TIME = "2 days"
+LOG_COMPRESSION_FORMAT = "zip"
+
+logger.level("AUDIT", no=25, color="<blue>")
+
+LOGURU_LOGGINS = {
+    "handlers": [
+        {
+            "sink": BASE_DIR / "logs/auditory.log",
+            "level": "AUDIT",
+            "format": (
+                "{time:YYYY-MM-DD HH:mm:ss} | "
+                "{level:<8} | "
+                "user={extra[user_id]} "
+                "ip={extra[ip]} "
+                "action={extra[action]} | "
+                "{name}:{function}:{line} - {message}"
+            ),
+            "rotation": LOG_ROTATION_SIZE,
+            "retention": LOG_RETENTION_TIME,
+            "compression": LOG_COMPRESSION_FORMAT,
+        },
+        {
+            "sink": BASE_DIR / "logs/debug.log",
+            "level": "DEBUG",
+            "format": formato,
+            "rotation": LOG_ROTATION_SIZE,
+            "retention": LOG_RETENTION_TIME,
+            "compression": LOG_COMPRESSION_FORMAT,
+        },
+        {
+            "sink": BASE_DIR / "logs/error.log",
+            "level": "ERROR",
+            "format": formato,
+            "rotation": LOG_ROTATION_SIZE,
+            "retention": LOG_RETENTION_TIME,
+            "compression": LOG_COMPRESSION_FORMAT,
+            "backtrace": True,
+            "diagnose": True,
+        },
+        {
+            "sink": BASE_DIR / "logs/warning.log",
+            "level": "WARNING",
+            "format": formato,
+            "rotation": LOG_ROTATION_SIZE,
+            "retention": LOG_RETENTION_TIME,
+            "compression": LOG_COMPRESSION_FORMAT,
+            "backtrace": True,
+            "diagnose": True,
+        },
+        {
+            "sink": BASE_DIR / "logs/info.log",
+            "level": "INFO",
+            "format": formato,
+            "rotation": LOG_ROTATION_SIZE,
+            "retention": LOG_RETENTION_TIME,
+            "compression": LOG_COMPRESSION_FORMAT,
+            "backtrace": True,
+            "diagnose": True,
+        },
+    ]
+}
+
+logger.configure(**LOGURU_LOGGINS)
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "loguru": {
+            "class": "backend.interceptor.InterceptorHandler",
+        },
+    },
+    "root": {
+        "handlers": ["loguru"],
+        "level": "DEBUG",
+    },
+}

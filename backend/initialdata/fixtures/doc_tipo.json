@@ -1,0 +1,16 @@
+[
+  {
+    "model": "documentos.doctipo",
+    "pk": 1,
+    "fields": {
+      "nombre": "INE"
+    }
+  },
+    {
+    "model": "documentos.doctipo",
+    "pk": 2,
+    "fields": {
+      "nombre": "Pasaporte"
+    }
+  }
+]
