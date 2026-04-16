@@ -141,14 +141,11 @@ REST_FRAMEWORK = {
     ],
 }
 
-
-
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",  # Puerto por defecto de Vite
     "http://127.0.0.1:5173",
-    "http://192.168.106.193:5173",
+    "http://192.168.0.0:5173",
 ]
-
 
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
