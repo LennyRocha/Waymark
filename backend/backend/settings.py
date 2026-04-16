@@ -151,15 +151,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://192.168.0.0:5173",
 ]
 
-<<<<<<< HEAD
-# URL del frontend en producción (Vercel) — se agrega desde variable de entorno
-_frontend_url = os.getenv("FRONTEND_URL")
-if _frontend_url:
-    CORS_ALLOWED_ORIGINS.append(_frontend_url)
-=======
 if frontend_url:
     CORS_ALLOWED_ORIGINS.append(frontend_url)
->>>>>>> b67219c68f3b0d26930679ea833b87dbae099a85
 
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
