@@ -57,7 +57,7 @@ apiToken.interceptors.response.use(
 
   async (error: AxiosError) => {
     const originalRequest =
-      error.config as AxiosRequestConfig & {
+      error.config & {
         _retry?: boolean;
       };
 

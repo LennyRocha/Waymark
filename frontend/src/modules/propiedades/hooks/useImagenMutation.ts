@@ -32,5 +32,5 @@ export default function useImagenMutation(
   return useMutation({
     mutationFn: mutationFn as any,
     ...props,
-  } as any);
+  });
 }
