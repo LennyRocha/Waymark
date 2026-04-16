@@ -605,7 +605,16 @@ export default function PropiedadPage() {
           </div>
           <CustomButton
             customWidth=" max-[490px]:w-full  min-[490px]:w-auto"
-            onClick={handleReservar}
+            onClick={async () => {
+              handleReservar(
+                auth,
+                setReservando,
+                range,
+                id,
+                huespedes,
+                navigate,
+              );
+            }}
             disabled={reservando}
           >
             {reservando ? "Reservando..." : "Reservar"}
