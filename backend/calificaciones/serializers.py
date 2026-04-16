@@ -18,7 +18,8 @@ class CalificacionSerializer(serializers.ModelSerializer):
         read_only_fields = ('calificacion_id', 'usuario', 'created_at')
 
     def create(self, validated_data):
-        usuario = self.context.get('usuario')
+        # usuario llega via save(usuario=...) o via context — aceptamos ambas rutas
+        usuario = validated_data.pop('usuario', None) or self.context.get('usuario')
         if not usuario:
             raise serializers.ValidationError('Se requiere usuario autenticado')
         validated_data['usuario'] = usuario

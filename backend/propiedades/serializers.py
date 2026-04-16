@@ -165,11 +165,9 @@ class CardSerializer(serializers.ModelSerializer):
         if not user.is_authenticated:
             return False
 
-        fav = Favorito.objects.get(usuario=user, propiedad_id=obj.propiedad_id)
+        fav = Favorito.objects.filter(usuario=user, propiedad_id=obj.propiedad_id).first()
 
-        if fav:
-            return fav.favorito_id
-        return None
+        return fav.favorito_id if fav else None
 
 
 class FavoritoSerializer(serializers.ModelSerializer):

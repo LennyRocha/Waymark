@@ -27,7 +27,10 @@ import {
   Cigarette,
   Dog,
   Baby,
+  Star,
 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import api from "../../utils/api";
 import ReactMarkdown from "react-markdown";
 import Calendar from "react-calendar";
 import Map, { Marker } from "react-map-gl/mapbox";
@@ -75,7 +78,20 @@ export default function PropiedadPage() {
   );
   const cardQuery = useCard(id);
 
-  const isBestRated = true;
+  const { data: promedioData } = useQuery({
+    queryKey: ["promedio", id],
+    queryFn: () =>
+      api.get(`/calificaciones/promedio/?propiedad=${id}`).then((r) => r.data),
+  });
+
+  const { data: calificaciones = [], isLoading: loadingCals } = useQuery({
+    queryKey: ["calificaciones", id],
+    queryFn: () =>
+      api.get(`/calificaciones/?propiedad=${id}`).then((r) => r.data),
+  });
+
+  const isBestRated =
+    (promedioData?.promedio ?? 0) >= 4.5 && (promedioData?.total ?? 0) >= 3;
 
   useSetPageTitle(
     propiedad.data
@@ -127,8 +143,6 @@ export default function PropiedadPage() {
       d.toISOString().split("T")[0];
     setReservando(true);
     try {
-      const { default: api } =
-        await import("../../utils/api");
       await api.post("/reservas/", {
         propiedad_id: Number(id),
         fecha_inicio: toISO(range[0] as Date),
@@ -523,11 +537,60 @@ export default function PropiedadPage() {
             </p>
           </article>
         </section>
-        <div ref={resenasRef} className="w-full">
-          {" "}
-          <h1 className="mx-auto">
-            Aquí van las reseñas Paco
-          </h1>
+        <div ref={resenasRef} className="w-full flex flex-col gap-4">
+          <h4>
+            {(promedioData?.total ?? 0) > 0
+              ? `${Number(promedioData.promedio).toFixed(1)} · ${promedioData.total} ${promedioData.total === 1 ? "reseña" : "reseñas"}`
+              : "Reseñas"}
+          </h4>
+          {loadingCals ? (
+            <div className="flex justify-center py-4">
+              <CustomLoader />
+            </div>
+          ) : calificaciones.length === 0 ? (
+            <p className="text-text-secondary">
+              Aún no hay reseñas para este alojamiento.
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {calificaciones.map((c) => (
+                <div
+                  key={c.calificacion_id}
+                  className="flex flex-col gap-2 p-4 border border-border rounded-xl"
+                >
+                  <div className="flex items-center gap-2">
+                    <Avatar
+                      src={c.usuario?.foto_perfil}
+                      size={40}
+                      name={c.usuario?.nombre || ""}
+                    />
+                    <div>
+                      <p className="font-semibold">
+                        {c.usuario?.nombre} {c.usuario?.apellido_p}
+                      </p>
+                      <p className="text-text-secondary text-xs">
+                        {new Date(c.created_at).toLocaleDateString("es-MX", {
+                          year: "numeric",
+                          month: "long",
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex gap-0.5">
+                    {[1, 2, 3, 4, 5].map((n) => (
+                      <Star
+                        key={n}
+                        size={14}
+                        fill={n <= c.puntuacion ? "#bf0603" : "none"}
+                        color={n <= c.puntuacion ? "#bf0603" : "#d1d5db"}
+                      />
+                    ))}
+                  </div>
+                  <p className="text-sm text-text-primary">{c.comentario}</p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         <h4 ref={ubicacionRef}>Dónde vas a estar</h4>

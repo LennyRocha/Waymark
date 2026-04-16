@@ -132,8 +132,8 @@ export default function PropiedadCard({
             size={12}
             className="shrink-0"
           />
-          {propiedad.promedio
-            ? propiedad.promedio.toFixed(2)
+          {propiedad.promedio != null
+            ? Number(propiedad.promedio).toFixed(2)
             : "Sin calificación"}{" "}
         </small>
       </div>

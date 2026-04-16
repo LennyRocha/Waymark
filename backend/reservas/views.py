@@ -10,7 +10,7 @@ from rest_framework.viewsets import GenericViewSet
 from propiedades.models import Propiedad
 
 from .models import Reserva, ReservaEstado
-from .serializers import ReservaCreateSerializer, ReservaSerializer
+from .serializers import ReservaCreateSerializer, ReservaSerializer, SolicitudSerializer
 
 
 def _genera_codigo() -> str:
@@ -98,3 +98,24 @@ class ReservaViewSet(GenericViewSet):
             huesped=request.user
         ).select_related("estado").order_by("-created_at")
         return Response(ReservaSerializer(reservas, many=True).data)
+
+    @action(detail=False, methods=["get"], url_path="solicitudes")
+    def solicitudes(self, request):
+        """GET /api/reservas/solicitudes/ — reservas de las propiedades del anfitrión."""
+        propiedad_ids = list(
+            Propiedad.objects.filter(anfitrion=request.user)
+            .values_list("propiedad_id", flat=True)
+        )
+        reservas = (
+            Reserva.objects.filter(propiedad_id__in=propiedad_ids)
+            .select_related("estado", "huesped")
+            .order_by("-created_at")
+        )
+        propiedades_map = {
+            p.propiedad_id: p.titulo
+            for p in Propiedad.objects.filter(propiedad_id__in=propiedad_ids)
+        }
+        serializer = SolicitudSerializer(
+            reservas, many=True, context={"propiedades_map": propiedades_map}
+        )
+        return Response(serializer.data)

@@ -13,6 +13,8 @@ import TabsScreen from '../layout/GuestTabs';
 import Login from '../modules/cuentas/Login';
 import Registro from '../modules/cuentas/Registro';
 import Page403 from '../modules/paginas_error/403';
+import MisViajes from '../modules/reservas/MisViajes';
+import Solicitudes from '../modules/reservas/Solicitudes';
 import { useAuth } from '../context/AuthContext';
 
 /** Requiere sesión iniciada. Sin rol requerido = cualquier usuario autenticado. */
@@ -38,7 +40,7 @@ export default function Router() {
                     <Route path="login" element={<Login />} />
                     {/* Rutas que requieren auth */}
                     <Route path="wishlist" element={<PrivateRoute><MisFavoritos /></PrivateRoute>} />
-                    <Route path="my-trips" element={<PrivateRoute><h1>Vista de mis reservaciones</h1></PrivateRoute>} />
+                    <Route path="my-trips" element={<PrivateRoute><MisViajes /></PrivateRoute>} />
                     <Route path="profile" element={<PrivateRoute><h1>Vista de mi perfil</h1></PrivateRoute>} />
                 </Route>
                 <Route path="login" element={<Login />} />
@@ -51,7 +53,7 @@ export default function Router() {
                 {/* Rutas de anfitrión */}
                 <Route path="host" element={<PrivateRoute role={['anfitrion', 'ambos']}><TabsScreen /></PrivateRoute>}>
                     <Route index element={<Navigate to="today" />} />
-                    <Route path="today" element={<h1>Vista principal</h1>} />
+                    <Route path="today" element={<Solicitudes />} />
                     <Route path="calendar" element={<h1>Vista de calendario</h1>} />
                     <Route path="listings" element={<MisPropiedades />} />
                     <Route path="profile" element={<h1>Vista de mi perfil</h1>} />
