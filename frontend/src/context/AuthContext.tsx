@@ -61,12 +61,12 @@ export function AuthProvider({
   };
 
   const handleLogout = () => {
+    globalThis.location.replace("/");
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
     localStorage.removeItem("user_role");
     setToken(null);
     setRefreshToken(null);
-    globalThis.location.reload();
   };
 
   const setAuthRefreshToken = (newToken: string | null) => {
