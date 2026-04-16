@@ -1,11 +1,6 @@
 // @ts-nocheck
 /* eslint-disable react-hooks/set-state-in-effect */
-import React, {
-  useState,
-  useRef,
-  useEffect,
-  useMemo,
-} from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Modal from "../../layout/Modal";
 import useAmenidades from "./hooks/useAmenidades";
@@ -29,7 +24,6 @@ import {
   Baby,
   Star,
 } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
 import api from "../../utils/api";
 import ReactMarkdown from "react-markdown";
 import Calendar from "react-calendar";
@@ -47,7 +41,10 @@ import Buscador from "./components/Buscador";
 import CustomDropdown from "../../components/CustomDropdown";
 import DropdownParent from "../../components/DropdownParent";
 import useUbicaciones from "./hooks/useUbicaciones";
-import { useAuth } from "../../context/AuthContext";
+import {
+  AuthContextValue,
+  useAuth,
+} from "../../context/AuthContext";
 import useWatchResize from "../../utils/useWatchResize";
 import Footer from "../../layout/Footer";
 import useGetHost from "./hooks/useGetHost";
@@ -56,12 +53,15 @@ import Amenidad from "./types/Amenidad";
 import useCard from "./hooks/useCard";
 
 import cup from "../../assets/trofeo.png";
-import leftwing from "../../assets/alarde_izq.png";
-import rightwing from "../../assets/alarde_der.png";
 import NavigationList from "./components/NavigationList";
+import usePromedio from "../calificaciones/hooks/usePromedio";
+import useCalificaciones from "../calificaciones/hooks/useCalificaciones";
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 const MAX_LENGTH = 500;
+
+type ValuePiece = Date | null;
+type Value = ValuePiece | [ValuePiece, ValuePiece];
 
 export default function PropiedadPage() {
   const navigate = useNavigate();
@@ -78,26 +78,18 @@ export default function PropiedadPage() {
     propiedad.data?.anfitrion_id,
   );
   const cardQuery = useCard(id);
-
-  const { data: promedioData } = useQuery({
-    queryKey: ["promedio", id],
-    queryFn: () =>
-      api.get(`/calificaciones/promedio/?propiedad=${id}`).then((r) => r.data),
-  });
-
-  const { data: calificaciones = [], isLoading: loadingCals } = useQuery({
-    queryKey: ["calificaciones", id],
-    queryFn: () =>
-      api.get(`/calificaciones/?propiedad=${id}`).then((r) => r.data),
-  });
+  const promedioQuery = usePromedio(id);
+  const calificacionesQuery = useCalificaciones(id);
 
   const isBestRated =
-    (promedioData?.promedio ?? 0) >= 4.5 && (promedioData?.total ?? 0) >= 3;
+    (promedioQuery.data?.promedio ?? 0) >= 4.5 &&
+    (promedioQuery.data?.total ?? 0) >= 3;
 
-  useSetPageTitle(
-    propiedad.data
-      ? `${propiedad.data?.titulo} - Waymark`
-      : "Waymark - Encuentra el lugar perfecto para tu próxima aventura",
+  useSetPageTitle(getPropiedadPageTitle(propiedad.data));
+  useRedirectOnSlugMismatch(
+    propiedad.data?.slug,
+    slug,
+    navigate,
   );
 
   const [open, setOpen] = useState(false);
@@ -110,13 +102,8 @@ export default function PropiedadPage() {
     setOpen(val);
   }
 
-  type ValuePiece = Date | null;
-  type Value = ValuePiece | [ValuePiece, ValuePiece];
-
   const nextThreeDays = new Date();
-  nextThreeDays.setHours(0);
-  nextThreeDays.setMinutes(0);
-  nextThreeDays.setHours(nextThreeDays.getHours() + 72);
+  transformarFecha(nextThreeDays);
 
   const [range, setRange] = useState<Value>([
     new Date(),
@@ -129,57 +116,8 @@ export default function PropiedadPage() {
   const [reservando, setReservando] = useState(false);
   const auth = useAuth();
 
-  async function handleReservar() {
-    if (!auth?.isAuthenticated) {
-      navigate("/login");
-      return;
-    }
-    if (!Array.isArray(range) || !range[0] || !range[1]) {
-      toast.error(
-        "Selecciona las fechas de entrada y salida.",
-      );
-      return;
-    }
-    const toISO = (d: Date) =>
-      d.toISOString().split("T")[0];
-    setReservando(true);
-    try {
-      await api.post("/reservas/", {
-        propiedad_id: Number(id),
-        fecha_inicio: toISO(range[0] as Date),
-        fecha_fin: toISO(range[1] as Date),
-        huespedes,
-      });
-      toast.success(
-        "¡Reserva creada! Revisa tus viajes para más detalles.",
-      );
-    } catch (err: any) {
-      const msg =
-        err?.response?.data?.detail ||
-        "No se pudo crear la reserva. Intenta de nuevo.";
-      toast.error(msg);
-    } finally {
-      setReservando(false);
-    }
-  }
-
   useEffect(() => {
-    if (!Array.isArray(range)) return;
-
-    const [start, end] = range;
-
-    if (!start || !end) {
-      setNoches(1);
-      return;
-    }
-
-    const diffTime = end.getTime() - start.getTime();
-
-    const diffDays = Math.ceil(
-      diffTime / (1000 * 60 * 60 * 24),
-    );
-
-    setNoches(diffDays);
+    setNoches(calculateNoches(range));
   }, [range]);
 
   const fechaUnion = parsearFecha(
@@ -191,6 +129,7 @@ export default function PropiedadPage() {
     amenidades.refetch();
     hostQuery.refetch();
     cardQuery.refetch();
+    promedioQuery.refetch();
   }
 
   const sectionRef = useRef(null);
@@ -211,22 +150,26 @@ export default function PropiedadPage() {
     console.log(cardQuery.data);
   }, [cardQuery.data]);
 
-  if (
-    propiedad.isInitialLoading ||
-    propiedad.isLoading ||
-    amenidades.isInitialLoading ||
-    amenidades.isLoading ||
-    hostQuery.isInitialLoading ||
-    hostQuery.isLoading ||
-    cardQuery.isInitialLoading ||
-    cardQuery.isLoading
-  )
+  const isPageLoading = isAnyQueryLoading([
+    propiedad,
+    amenidades,
+    hostQuery,
+    cardQuery,
+    promedioQuery,
+    calificacionesQuery,
+  ]);
+  const hasPageError = hasAnyQueryError([
+    propiedad,
+    hostQuery,
+  ]);
+
+  if (isPageLoading)
     return (
       <main className="w-[100dvw] h-[100dvh] flex items-center justify-center">
         <CustomLoader />
       </main>
     );
-  if (propiedad.isError || hostQuery.isError)
+  if (hasPageError)
     return (
       <main className="w-[100dvw] h-[100dvh]">
         <ErrorViewComponent
@@ -235,23 +178,13 @@ export default function PropiedadPage() {
         />
       </main>
     );
-  if (propiedad.data?.slug !== slug) {
-    navigate("/404", { replace: true });
-  }
   const prop = propiedad.data;
 
   const shouldShowButton =
     prop.descripcion.length > MAX_LENGTH;
 
-  const huespedeses: Option[] = Array.from(
-    { length: prop.max_huespedes },
-    (_, i) => ({
-      label:
-        i === 0
-          ? `${i + 1} huésped`
-          : `${i + 1} huéspedes `,
-      value: i + 1,
-    }),
+  const huespedeses: Option[] = buildHuespedOptions(
+    prop.max_huespedes,
   );
 
   const ids = new Set(
@@ -334,61 +267,17 @@ export default function PropiedadPage() {
 
             <Divider />
 
-            {isBestRated && (
-              <div className="inline-flex gap-8 items-center justify-center">
-                <img
-                  src={cup}
-                  alt="entre_favoritos"
-                  className="w-8 h-8 aspect-square"
-                />
-                <div className="flex flex-col items-start justify-center">
-                  <p className="text-left font-[cabin] font-bold">
-                    Entre los mejores calificados
-                  </p>
-                  <small className="text-left">
-                    Este alojamiento está entre los mejores
-                    en Waymark, según las calificaciones.
-                  </small>
-                </div>
-              </div>
-            )}
-
-            {prop?.regla_autochecar && (
-              <div className="inline-flex gap-8 items-center justify-center">
-                <DoorOpen size={32} className="shrink-0" />
-                <div className="flex flex-col items-start justify-center">
-                  <p className="text-left font-[cabin] font-bold">
-                    Llegada autónoma
-                  </p>
-                  <small className="text-left">
-                    Para entrar al alojamiento, usa la caja
-                    de seguridad para llaves.
-                  </small>
-                </div>
-              </div>
-            )}
+            <PropertyHighlights
+              isBestRated={isBestRated}
+              reglaAutochecar={prop?.regla_autochecar}
+            />
             <Divider />
 
-            <div className="max-h-[140px] h-auto overflow-hidden">
-              <ReactMarkdown
-                components={{
-                  p: MarkdownP,
-                }}
-              >
-                {prop.descripcion +
-                  (shouldShowButton ? "..." : "")}
-              </ReactMarkdown>
-            </div>
-
-            {shouldShowButton && (
-              <CustomButton
-                variant="secondary"
-                onClick={() => setOpenMore(!openMore)}
-                customWidth="max-md:w-full"
-              >
-                Mostrar más
-              </CustomButton>
-            )}
+            <DescriptionPreview
+              descripcion={prop.descripcion}
+              shouldShowButton={shouldShowButton}
+              onOpenMore={() => setOpenMore(!openMore)}
+            />
 
             <Divider />
 
@@ -528,7 +417,16 @@ export default function PropiedadPage() {
             <CustomButton
               size="large"
               fullWidth
-              onClick={handleReservar}
+              onClick={() =>
+                handleReservar(
+                  auth,
+                  setReservando,
+                  range,
+                  id,
+                  huespedes,
+                  navigate,
+                )
+              }
               disabled={reservando}
             >
               {reservando ? "Reservando..." : "Reservar"}
@@ -538,60 +436,15 @@ export default function PropiedadPage() {
             </p>
           </article>
         </section>
-        <div ref={resenasRef} className="w-full flex flex-col gap-4">
-          <h4>
-            {(promedioData?.total ?? 0) > 0
-              ? `${Number(promedioData.promedio).toFixed(1)} · ${promedioData.total} ${promedioData.total === 1 ? "reseña" : "reseñas"}`
-              : "Reseñas"}
-          </h4>
-          {loadingCals ? (
-            <div className="flex justify-center py-4">
-              <CustomLoader />
-            </div>
-          ) : calificaciones.length === 0 ? (
-            <p className="text-text-secondary">
-              Aún no hay reseñas para este alojamiento.
-            </p>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {calificaciones.map((c) => (
-                <div
-                  key={c.calificacion_id}
-                  className="flex flex-col gap-2 p-4 border border-border rounded-xl"
-                >
-                  <div className="flex items-center gap-2">
-                    <Avatar
-                      src={c.usuario?.foto_perfil}
-                      size={40}
-                      name={c.usuario?.nombre || ""}
-                    />
-                    <div>
-                      <p className="font-semibold">
-                        {c.usuario?.nombre} {c.usuario?.apellido_p}
-                      </p>
-                      <p className="text-text-secondary text-xs">
-                        {new Date(c.created_at).toLocaleDateString("es-MX", {
-                          year: "numeric",
-                          month: "long",
-                        })}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex gap-0.5">
-                    {[1, 2, 3, 4, 5].map((n) => (
-                      <Star
-                        key={n}
-                        size={14}
-                        fill={n <= c.puntuacion ? "#bf0603" : "none"}
-                        color={n <= c.puntuacion ? "#bf0603" : "#d1d5db"}
-                      />
-                    ))}
-                  </div>
-                  <p className="text-sm text-text-primary">{c.comentario}</p>
-                </div>
-              ))}
-            </div>
-          )}
+        <div
+          ref={resenasRef}
+          className="w-full flex flex-col gap-4"
+        >
+          <ResenasView
+            promedioData={promedioQuery.data}
+            loadingCals={calificacionesQuery.isLoading}
+            calificaciones={calificacionesQuery.data}
+          />
         </div>
 
         <h4 ref={ubicacionRef}>Dónde vas a estar</h4>
@@ -630,16 +483,6 @@ export default function PropiedadPage() {
             />
           </Marker>
         </Map>
-        <small className="font-[montserrat] text-sm text-text-secondary block">
-          Para brindar una mejor experiencia, solicitaremos
-          tu ubicación aproximada al momento de registrar tu
-          propiedad. Esto nos ayudará a mostrar tu anuncio a
-          los huéspedes que buscan alojamiento en esa área.
-          Ten la seguridad de que esta información se
-          mantendrá confidencial y solo se utilizará para
-          mejorar la visibilidad de tu propiedad en nuestra
-          plataforma.
-        </small>
         <div className="flex gap-2 md:gap-8 flex-col md:flex-row w-full items-start justify-start md:justify-center">
           <div className="flex-1 flex flex-col gap-2 items-start justify-start">
             <h4>Conoce a tu anfitrión</h4>
@@ -688,23 +531,10 @@ export default function PropiedadPage() {
               <Baby /> Apto para niños menores de 12 años
             </p>
           </div>{" "}
-          {prop.reglas_extra && (
-            <div className="flex-1 flex flex-col gap-2 items-start justify-start">
-              <h4>Reglas adicionales de la casa</h4>
-              <ReglasUl reglas={prop.reglas_extra} />
-              {Object.entries(prop.reglas_extra).length >
-                5 && (
-                <CustomLink
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setOpenReglas(true);
-                  }}
-                >
-                  Más información
-                </CustomLink>
-              )}
-            </div>
-          )}
+          <AdditionalRulesSection
+            reglasExtra={prop.reglas_extra}
+            onOpenReglas={() => setOpenReglas(true)}
+          />
         </div>
 
         <Modal
@@ -755,63 +585,10 @@ export default function PropiedadPage() {
             <h4 className="mb-4">
               Lo que ofrece este lugar
             </h4>
-            {orderedEntries.map(([categoria, items]) => (
-              <div key={categoria}>
-                <p className="font-bold mb-4">
-                  {categoria.charAt(0).toUpperCase() +
-                    categoria.slice(1)}
-                </p>
-
-                <div className="flex flex-col items-start  gap-2 justify-center">
-                  {items.map((a: Amenidad) => {
-                    const selected = ids.has(a.amenidad_id);
-
-                    return selected ? (
-                      <div
-                        key={a.amenidad_id}
-                        className="flex items-center justify-start gap-2 mb-4 border-b last:border-0 border-border  w-full pb-4"
-                      >
-                        <Icono
-                          name={a.icono_nombre}
-                          size={32}
-                          strokeWidth={1}
-                          className="shrink-0"
-                        />
-                        <div>
-                          <p
-                            className={`${!selected && "line-through"} text-left`}
-                          >
-                            {a.nombre}
-                          </p>
-                          <p
-                            className={`text-left text-text-secondary text-sm`}
-                          >
-                            {a.descripcion}
-                          </p>
-                        </div>
-                      </div>
-                    ) : (
-                      <div
-                        key={a.amenidad_id}
-                        className="flex items-center justify-start gap-2 mb-4 border-b last:border-0 border-border  w-full pb-4"
-                      >
-                        <Icono
-                          name={a.icono_nombre}
-                          size={32}
-                          strokeWidth={1}
-                          className="shrink-0"
-                        />
-                        <p
-                          className={`${!selected && "line-through"} text-left`}
-                        >
-                          {a.nombre}
-                        </p>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
+            <AmenidadesModalContent
+              orderedEntries={orderedEntries}
+              ids={ids}
+            />
           </Modal.Body>
         </Modal>
         <div className="w-full md:hidden fixed bottom-0 left-0 bg-white p-6 flex max-[490px]:flex-col items-center max-[490px]:items-start justify-between gap-2 border-t border-border z-[9999]">
@@ -837,6 +614,12 @@ export default function PropiedadPage() {
       <Footer />
     </>
   );
+}
+
+function transformarFecha(fecha: Date): void {
+  fecha.setHours(0);
+  fecha.setMinutes(0);
+  fecha.setHours(fecha.getHours() + 72);
 }
 
 const Divider = () => (
@@ -1097,11 +880,238 @@ function parsearFecha(fecha: string | Date): string {
   return texto;
 }
 
+type LoadingQueryState = {
+  isInitialLoading?: boolean;
+  isLoading?: boolean;
+};
+
+type ErrorQueryState = {
+  isError?: boolean;
+};
+
+function isAnyQueryLoading(
+  queries: LoadingQueryState[],
+): boolean {
+  return queries.some(
+    (query) => query.isInitialLoading || query.isLoading,
+  );
+}
+
+function hasAnyQueryError(
+  queries: ErrorQueryState[],
+): boolean {
+  return queries.some((query) => query.isError);
+}
+
+function getPropiedadPageTitle(
+  propiedadData: { titulo?: string } | undefined,
+): string {
+  if (!propiedadData) {
+    return "Waymark - Encuentra el lugar perfecto para tu próxima aventura";
+  }
+
+  return `${propiedadData.titulo} - Waymark`;
+}
+
+function getHuespedLabel(count: number): string {
+  return count === 1
+    ? `${count} huésped`
+    : `${count} huéspedes `;
+}
+
+function calculateNoches(range: Value): number {
+  if (!Array.isArray(range)) return 1;
+
+  const [start, end] = range;
+  if (!start || !end) return 1;
+
+  const diffTime = end.getTime() - start.getTime();
+  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+}
+
+function buildHuespedOptions(maxHuespedes: number): Option[] {
+  return Array.from({ length: maxHuespedes }, (_, i) => {
+    const count = i + 1;
+
+    return {
+      label: getHuespedLabel(count),
+      value: count,
+    };
+  });
+}
+
+function useRedirectOnSlugMismatch(
+  currentSlug: string | undefined,
+  expectedSlug: string,
+  navigate: ReturnType<typeof useNavigate>,
+) {
+  useEffect(() => {
+    if (!currentSlug) return;
+    if (currentSlug !== expectedSlug) {
+      navigate("/404", { replace: true });
+    }
+  }, [currentSlug, expectedSlug, navigate]);
+}
+
 const MarkdownP = ({ children }) => {
   return (
     <p className="flex-0 font-[montserrat]  text-[14px]/[20px] text-text-primary text-left tracking-normal truncate w-full overflow-hidden whitespace-pre-line">
       {children}
     </p>
+  );
+};
+
+const DescriptionPreview = ({
+  descripcion,
+  shouldShowButton,
+  onOpenMore,
+}: {
+  descripcion: string;
+  shouldShowButton: boolean;
+  onOpenMore: () => void;
+}) => {
+  return (
+    <>
+      <div className="max-h-[140px] h-auto overflow-hidden">
+        <ReactMarkdown
+          components={{
+            p: MarkdownP,
+          }}
+        >
+          {descripcion + (shouldShowButton ? "..." : "")}
+        </ReactMarkdown>
+      </div>
+
+      {shouldShowButton && (
+        <CustomButton
+          variant="secondary"
+          onClick={onOpenMore}
+          customWidth="max-md:w-full"
+        >
+          Mostrar más
+        </CustomButton>
+      )}
+    </>
+  );
+};
+
+const PropertyHighlights = ({
+  isBestRated,
+  reglaAutochecar,
+}: {
+  isBestRated: boolean;
+  reglaAutochecar?: boolean;
+}) => {
+  return (
+    <>
+      {isBestRated && (
+        <div className="inline-flex gap-8 items-center justify-center">
+          <img
+            src={cup}
+            alt="entre_favoritos"
+            className="w-8 h-8 aspect-square"
+          />
+          <div className="flex flex-col items-start justify-center">
+            <p className="text-left font-[cabin] font-bold">
+              Entre los mejores calificados
+            </p>
+            <small className="text-left">
+              Este alojamiento está entre los mejores en
+              Waymark, según las calificaciones.
+            </small>
+          </div>
+        </div>
+      )}
+
+      {reglaAutochecar && (
+        <div className="inline-flex gap-8 items-center justify-center">
+          <DoorOpen size={32} className="shrink-0" />
+          <div className="flex flex-col items-start justify-center">
+            <p className="text-left font-[cabin] font-bold">
+              Llegada autónoma
+            </p>
+            <small className="text-left">
+              Para entrar al alojamiento, usa la caja de
+              seguridad para llaves.
+            </small>
+          </div>
+        </div>
+      )}
+    </>
+  );
+};
+
+const AmenidadesModalContent = ({
+  orderedEntries,
+  ids,
+}: {
+  orderedEntries: [string, Amenidad[]][];
+  ids: Set<number>;
+}) => {
+  return (
+    <>
+      {orderedEntries.map(([categoria, items]) => (
+        <div key={categoria}>
+          <p className="font-bold mb-4">
+            {categoria.charAt(0).toUpperCase() +
+              categoria.slice(1)}
+          </p>
+
+          <div className="flex flex-col items-start  gap-2 justify-center">
+            {items.map((a: Amenidad) => (
+              <AmenidadRow
+                key={a.amenidad_id}
+                amenidad={a}
+                selected={ids.has(a.amenidad_id)}
+              />
+            ))}
+          </div>
+        </div>
+      ))}
+    </>
+  );
+};
+
+const AmenidadRow = ({
+  amenidad,
+  selected,
+}: {
+  amenidad: Amenidad;
+  selected: boolean;
+}) => {
+  if (selected) {
+    return (
+      <div className="flex items-center justify-start gap-2 mb-4 border-b last:border-0 border-border  w-full pb-4">
+        <Icono
+          name={amenidad.icono_nombre}
+          size={32}
+          strokeWidth={1}
+          className="shrink-0"
+        />
+        <div>
+          <p className="text-left">
+            {amenidad.nombre}
+          </p>
+          <p className="text-left text-text-secondary text-sm">
+            {amenidad.descripcion}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center justify-start gap-2 mb-4 border-b last:border-0 border-border  w-full pb-4">
+      <Icono
+        name={amenidad.icono_nombre}
+        size={32}
+        strokeWidth={1}
+        className="shrink-0"
+      />
+      <p className={`${!selected && "line-through"} text-left`}>
+        {amenidad.nombre}
+      </p>
+    </div>
   );
 };
 
@@ -1199,6 +1209,37 @@ const ReglasUl = ({
         </li>
       ))}
     </ul>
+  );
+};
+
+const AdditionalRulesSection = ({
+  reglasExtra,
+  onOpenReglas,
+}: {
+  reglasExtra?: Record<string, string>;
+  onOpenReglas: () => void;
+}) => {
+  if (!reglasExtra) return null;
+
+  const hasMoreThanFiveRules =
+    Object.entries(reglasExtra).length > 5;
+
+  return (
+    <div className="flex-1 flex flex-col gap-2 items-start justify-start">
+      <h4>Reglas adicionales de la casa</h4>
+      <ReglasUl reglas={reglasExtra} />
+
+      {hasMoreThanFiveRules && (
+        <CustomLink
+          onClick={(e) => {
+            e.preventDefault();
+            onOpenReglas();
+          }}
+        >
+          Más información
+        </CustomLink>
+      )}
+    </div>
   );
 };
 
@@ -1344,3 +1385,118 @@ const scrollToElement = (
     });
   }
 };
+
+const ResenasView = ({
+  promedioData,
+  loadingCals,
+  calificaciones,
+}) => {
+  const resenaText =
+    promedioData.total === 1 ? "reseña" : "reseñas";
+  return (
+    <>
+      <h4>
+        {(promedioData?.total ?? 0) > 0
+          ? `${Number(promedioData.promedio).toFixed(1)} · ${promedioData.total} ${resenaText}`
+          : "Reseñas"}
+      </h4>
+      {calificaciones.length === 0 ? (
+        <p className="text-text-secondary font-[cabin]">
+          Aún no hay reseñas para este alojamiento.
+        </p>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {calificaciones.map((c) => (
+            <div
+              key={c.calificacion_id}
+              className="flex flex-col gap-2 p-4 border border-border rounded-xl"
+            >
+              <div className="flex items-center gap-2">
+                <Avatar
+                  src={c.usuario?.foto_perfil}
+                  size={40}
+                  name={c.usuario?.nombre || ""}
+                />
+                <div>
+                  <p className="font-semibold">
+                    {c.usuario?.nombre}{" "}
+                    {c.usuario?.apellido_p}
+                  </p>
+                  <p className="text-text-secondary text-xs">
+                    {new Date(
+                      c.created_at,
+                    ).toLocaleDateString("es-MX", {
+                      year: "numeric",
+                      month: "long",
+                    })}
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-0.5">
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <Star
+                    key={n}
+                    size={14}
+                    fill={
+                      n <= c.puntuacion ? "#bf0603" : "none"
+                    }
+                    color={
+                      n <= c.puntuacion
+                        ? "#bf0603"
+                        : "#d1d5db"
+                    }
+                  />
+                ))}
+              </div>
+              <p className="text-sm text-text-primary">
+                {c.comentario}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
+    </>
+  );
+};
+
+async function handleReservar(
+  auth: AuthContextValue,
+  setReservando: React.Dispatch<
+    React.SetStateAction<boolean>
+  >,
+  range: Date[],
+  id: number | undefined,
+  huespedes: number,
+  navigate: ReturnType<typeof useNavigate>,
+) {
+  if (!auth?.isAuthenticated) {
+    navigate("/login");
+    return;
+  }
+  if (!Array.isArray(range) || !range[0] || !range[1]) {
+    toast.error(
+      "Selecciona las fechas de entrada y salida.",
+    );
+    return;
+  }
+  const toISO = (d: Date) => d.toISOString().split("T")[0];
+  setReservando(true);
+  try {
+    await api.post("/reservas/", {
+      propiedad_id: Number(id),
+      fecha_inicio: toISO(range[0]),
+      fecha_fin: toISO(range[1]),
+      huespedes,
+    });
+    toast.success(
+      "¡Reserva creada! Revisa tus viajes para más detalles.",
+    );
+  } catch (err: any) {
+    const msg =
+      err?.response?.data?.detail ||
+      "No se pudo crear la reserva. Intenta de nuevo.";
+    toast.error(msg);
+  } finally {
+    setReservando(false);
+  }
+}

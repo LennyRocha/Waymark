@@ -54,7 +54,11 @@ export default function PropiedadCard({
   const toggleFavorito = async () => {
     if (favoritoPost.isPending || favoritoDelete.isPending)
       return;
-    if (!isAuthenticated || (auth?.userRole !== "turista" && auth?.userRole !== "ambos")) {
+    if (
+      !isAuthenticated ||
+      (auth?.userRole !== "turista" &&
+        auth?.userRole !== "ambos")
+    ) {
       openModal();
       return;
     }
@@ -132,7 +136,7 @@ export default function PropiedadCard({
             size={12}
             className="shrink-0"
           />
-          {propiedad.promedio != null
+          {propiedad.promedio
             ? Number(propiedad.promedio).toFixed(2)
             : "Sin calificación"}{" "}
         </small>
