@@ -142,11 +142,16 @@ REST_FRAMEWORK = {
     ],
 }
 
+frontend_url = os.getenv("FRONTEND_URL")
+
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",  # Puerto por defecto de Vite
+    "http://localhost:5173",
     "http://127.0.0.1:5173",
     "http://192.168.0.0:5173",
 ]
+
+if frontend_url:
+    CORS_ALLOWED_ORIGINS.append(frontend_url)
 
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
