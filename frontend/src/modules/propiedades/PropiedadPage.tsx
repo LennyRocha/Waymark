@@ -58,6 +58,8 @@ import NavigationList from "./components/NavigationList";
 import usePromedio from "../calificaciones/hooks/usePromedio";
 import useCalificaciones from "../calificaciones/hooks/useCalificaciones";
 
+import apiToken from "../../utils/apiToken";
+
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 const MAX_LENGTH = 500;
 
