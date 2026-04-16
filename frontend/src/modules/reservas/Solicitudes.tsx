@@ -1,8 +1,8 @@
 // @ts-nocheck
 import { useQuery } from "@tanstack/react-query";
-import api from "../../utils/api";
 import CustomLoader from "../../layout/CustomLoader";
 import Avatar from "../../components/Avatar";
+import apiToken from "../../utils/apiToken";
 
 type Solicitud = {
   reserva_id: number;
@@ -30,7 +30,7 @@ const ESTADO_COLOR: Record<string, string> = {
 export default function Solicitudes() {
   const { data: solicitudes = [], isLoading, isError } = useQuery({
     queryKey: ["solicitudes"],
-    queryFn: () => api.get("/reservas/solicitudes/").then((r) => r.data),
+    queryFn: () => apiToken.get("/reservas/solicitudes/").then((r) => r.data),
   });
 
   if (isLoading)

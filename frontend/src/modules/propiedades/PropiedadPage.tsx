@@ -24,7 +24,6 @@ import {
   Baby,
   Star,
 } from "lucide-react";
-import api from "../../utils/api";
 import ReactMarkdown from "react-markdown";
 import Calendar from "react-calendar";
 import Map, { Marker } from "react-map-gl/mapbox";
@@ -53,6 +52,8 @@ import Amenidad from "./types/Amenidad";
 import useCard from "./hooks/useCard";
 
 import cup from "../../assets/trofeo.png";
+import leftwing from "../../assets/alarde_izq.png";
+import rightwing from "../../assets/alarde_der.png";
 import NavigationList from "./components/NavigationList";
 import usePromedio from "../calificaciones/hooks/usePromedio";
 import useCalificaciones from "../calificaciones/hooks/useCalificaciones";
@@ -929,7 +930,9 @@ function calculateNoches(range: Value): number {
   return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 }
 
-function buildHuespedOptions(maxHuespedes: number): Option[] {
+function buildHuespedOptions(
+  maxHuespedes: number,
+): Option[] {
   return Array.from({ length: maxHuespedes }, (_, i) => {
     const count = i + 1;
 
@@ -1089,9 +1092,7 @@ const AmenidadRow = ({
           className="shrink-0"
         />
         <div>
-          <p className="text-left">
-            {amenidad.nombre}
-          </p>
+          <p className="text-left">{amenidad.nombre}</p>
           <p className="text-left text-text-secondary text-sm">
             {amenidad.descripcion}
           </p>
@@ -1108,7 +1109,9 @@ const AmenidadRow = ({
         strokeWidth={1}
         className="shrink-0"
       />
-      <p className={`${!selected && "line-through"} text-left`}>
+      <p
+        className={`${!selected && "line-through"} text-left`}
+      >
         {amenidad.nombre}
       </p>
     </div>
@@ -1482,7 +1485,7 @@ async function handleReservar(
   const toISO = (d: Date) => d.toISOString().split("T")[0];
   setReservando(true);
   try {
-    await api.post("/reservas/", {
+    await apiToken.post("/reservas/", {
       propiedad_id: Number(id),
       fecha_inicio: toISO(range[0]),
       fecha_fin: toISO(range[1]),
@@ -1500,3 +1503,23 @@ async function handleReservar(
     setReservando(false);
   }
 }
+
+interface FavoritoBannerProps {
+  isFavorito: boolean;
+  evaluacion: number | null;
+  score: number | null;
+}
+
+const FavoritoBanner = ({
+  isFavorito,
+  evaluacion,
+  score,
+}: FavoritoBannerProps) => {
+  return (
+    <div className=" flex w-full">
+      <img src={leftwing} alt="left wing" />
+      <h6>Favorito entre huéspedes</h6>
+      <img src={rightwing} alt="right wing" />
+    </div>
+  );
+};

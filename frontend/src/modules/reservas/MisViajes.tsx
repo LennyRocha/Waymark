@@ -1,11 +1,11 @@
 // @ts-nocheck
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import api from "../../utils/api";
 import CustomLoader from "../../layout/CustomLoader";
 import Modal from "../../layout/Modal";
 import { Star } from "lucide-react";
 import toast from "react-hot-toast";
+import apiToken from "../../utils/apiToken";
 
 type Reserva = {
   reserva_id: number;
@@ -31,7 +31,7 @@ export default function MisViajes() {
 
   const { data: reservas = [], isLoading, isError } = useQuery({
     queryKey: ["mis-reservas"],
-    queryFn: () => api.get("/reservas/mis-reservas/").then((r) => r.data),
+    queryFn: () => apiToken.get("/reservas/mis-reservas/").then((r) => r.data),
   });
 
   const [selected, setSelected] = useState<Reserva | null>(null);
@@ -41,7 +41,7 @@ export default function MisViajes() {
 
   const mutation = useMutation({
     mutationFn: (payload: { reserva_id: number; puntuacion: number; comentario: string }) =>
-      api.post("/calificaciones/", payload),
+      apiToken.post("/calificaciones/", payload),
     onSuccess: () => {
       toast.success("¡Reseña enviada!");
       queryClient.invalidateQueries({ queryKey: ["mis-reservas"] });
