@@ -1504,6 +1504,7 @@ async function handleReservar(
       "¡Reserva creada! Revisa tus viajes para más detalles.",
     );
   } catch (err: any) {
+    console.error(err);
     const msg =
       err?.response?.data?.detail ||
       "No se pudo crear la reserva. Intenta de nuevo.";
