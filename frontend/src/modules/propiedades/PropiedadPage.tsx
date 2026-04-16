@@ -249,7 +249,7 @@ export default function PropiedadPage() {
                 : "habitaciones"}
             </p>
 
-            <Divider />
+            <FavoritoBanner />
 
             <div className="flex gap-2 mt-2">
               <Avatar
@@ -266,7 +266,7 @@ export default function PropiedadPage() {
               </div>
             </div>
 
-            <Divider />
+            {isBestRated && <Divider />}
 
             <PropertyHighlights
               isBestRated={isBestRated}
@@ -1516,10 +1516,24 @@ const FavoritoBanner = ({
   score,
 }: FavoritoBannerProps) => {
   return (
-    <div className=" flex w-full">
-      <img src={leftwing} alt="left wing" />
-      <h6>Favorito entre huéspedes</h6>
-      <img src={rightwing} alt="right wing" />
+    <div className=" flex w-full flex-1 p-6  border-border rounded-xl items-center justify-center gap-4 border-2">
+      <img
+        src={leftwing}
+        alt="left wing "
+        className="w-6"
+      />
+      <h5 className="w-[175px] text-wrap text-base/[8px]">
+        Favorito entre huéspedes
+      </h5>
+      <img
+        src={rightwing}
+        alt="right wing"
+        className="w-6"
+      />
+      <h5 className="text-left">
+        Uno de los alojamientos más populares entre los
+        huéspedes en Waymark
+      </h5>
     </div>
   );
 };
