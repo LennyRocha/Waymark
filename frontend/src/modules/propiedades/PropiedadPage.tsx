@@ -118,20 +118,26 @@ export default function PropiedadPage() {
       return;
     }
     if (!Array.isArray(range) || !range[0] || !range[1]) {
-      toast.error("Selecciona las fechas de entrada y salida.");
+      toast.error(
+        "Selecciona las fechas de entrada y salida.",
+      );
       return;
     }
-    const toISO = (d: Date) => d.toISOString().split("T")[0];
+    const toISO = (d: Date) =>
+      d.toISOString().split("T")[0];
     setReservando(true);
     try {
-      const { default: api } = await import("../../utils/api");
+      const { default: api } =
+        await import("../../utils/api");
       await api.post("/reservas/", {
         propiedad_id: Number(id),
         fecha_inicio: toISO(range[0] as Date),
         fecha_fin: toISO(range[1] as Date),
         huespedes,
       });
-      toast.success("¡Reserva creada! Revisa tus viajes para más detalles.");
+      toast.success(
+        "¡Reserva creada! Revisa tus viajes para más detalles.",
+      );
     } catch (err: any) {
       const msg =
         err?.response?.data?.detail ||

@@ -13,7 +13,6 @@ function routeByRole(roleName = "") {
 
 export default function Login() {
   const navigate = useNavigate();
-  const auth = useAuth();
   const [form, setForm] = useState({
     correo: "",
     password: "",
@@ -39,12 +38,11 @@ export default function Login() {
         password: form.password,
       });
 
-    setAuthToken(data.access);
+      setAuthToken(data.access);
       setAuthRefreshToken(data.refresh);
       localStorage.setItem("user_role", data?.usuario?.rol_nombre || "");
-      
 
-      navigate(routeByRole(data?.usuario?.rol_nombre), {replace: true});
+      navigate(routeByRole(data?.usuario?.rol_nombre), { replace: true });
     } catch (err) {
       const msg =
         err?.response?.data?.detail ||
