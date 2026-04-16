@@ -39,7 +39,7 @@ export default function Router() {
                     <Route index element={<Landing />} />
                     <Route path="login" element={<Login />} />
                     {/* Rutas que requieren auth */}
-                    <Route path="wishlist" element={<PrivateRoute><MisFavoritos /></PrivateRoute>} />
+                    <Route path="wishlist" element={<MisFavoritos />} />
                     <Route path="my-trips" element={<PrivateRoute><MisViajes /></PrivateRoute>} />
                     <Route path="profile" element={<PrivateRoute><h1>Vista de mi perfil</h1></PrivateRoute>} />
                 </Route>
