@@ -1,6 +1,5 @@
 import axios, {
   AxiosError,
-  AxiosRequestConfig,
 } from "axios";
 
 const url = import.meta.env.VITE_API_URL;
@@ -56,10 +55,8 @@ apiToken.interceptors.response.use(
   (response) => response,
 
   async (error: AxiosError) => {
-    const originalRequest =
-      error.config as AxiosRequestConfig & {
-        _retry?: boolean;
-      };
+    const originalRequest = error.config;
+    (originalRequest as any)._retry = true;
 
     if (
       error.response?.status === 401 &&

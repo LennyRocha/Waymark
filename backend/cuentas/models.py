@@ -1,5 +1,10 @@
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin, update_last_login
+from django.contrib.auth.models import (
+    AbstractBaseUser,
+    BaseUserManager,
+    PermissionsMixin,
+    update_last_login,
+)
 from django.contrib.auth.signals import user_logged_in
 from django.utils import timezone
 
@@ -42,7 +47,10 @@ user_logged_in.disconnect(update_last_login)
 
 
 class Usuario(AbstractBaseUser, PermissionsMixin):
-    last_login = None  # la columna no existe en la tabla MySQL
+    last_login = models.DateTimeField(null=True, blank=True, db_column="last_login")
+    is_superuser = models.BooleanField(default=False)
+    is_staff = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
     usuario_id = models.AutoField(primary_key=True)
     nombre = models.CharField(max_length=50)
     apellido_p = models.CharField(max_length=50)
@@ -50,7 +58,7 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     telefono = models.CharField(max_length=20)
     correo = models.EmailField(unique=True, max_length=50)
 
-    password = models.CharField(max_length=255, db_column="contra")
+    password = models.CharField(max_length=128)
 
     rol = models.ForeignKey(Rol, on_delete=models.PROTECT, db_column="rol")
     foto_perfil = models.ImageField(upload_to="usuarios/", blank=True, null=True)
@@ -63,7 +71,6 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     created_by = models.IntegerField(blank=True, null=True)
     updated_by = models.IntegerField(blank=True, null=True)
 
-    is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
 
     objects = UsuarioManager()

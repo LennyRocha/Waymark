@@ -58,6 +58,8 @@ import NavigationList from "./components/NavigationList";
 import usePromedio from "../calificaciones/hooks/usePromedio";
 import useCalificaciones from "../calificaciones/hooks/useCalificaciones";
 
+import apiToken from "../../utils/apiToken";
+
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 const MAX_LENGTH = 500;
 
@@ -146,10 +148,6 @@ export default function PropiedadPage() {
     ubicacionRef,
     resenasRef,
   ];
-
-  useEffect(() => {
-    console.log(cardQuery.data);
-  }, [cardQuery.data]);
 
   const isPageLoading = isAnyQueryLoading([
     propiedad,
@@ -605,7 +603,16 @@ export default function PropiedadPage() {
           </div>
           <CustomButton
             customWidth=" max-[490px]:w-full  min-[490px]:w-auto"
-            onClick={handleReservar}
+            onClick={async () => {
+              handleReservar(
+                auth,
+                setReservando,
+                range,
+                id,
+                huespedes,
+                navigate,
+              );
+            }}
             disabled={reservando}
           >
             {reservando ? "Reservando..." : "Reservar"}
