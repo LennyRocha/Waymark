@@ -143,7 +143,20 @@ export default function PropiedadCard({
       </div>
       <Modal open={open} close={closeModal} closeButton>
         <Modal.Body>
-          <Login />
+          <Login
+            fromModal={true}
+            closeModal={() => {
+              closeModal();
+              globalThis.location.reload();
+            }}
+          />
+          {auth?.userRole !== "turista" &&
+            auth?.userRole !== "ambos" && (
+              <p className="text-center text-sm text-red-500 mt-4">
+                Solo los usuarios con rol de turista pueden
+                marcar favoritos.
+              </p>
+            )}
         </Modal.Body>
       </Modal>
     </div>

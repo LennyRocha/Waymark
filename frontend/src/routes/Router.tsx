@@ -21,10 +21,10 @@ import { useAuth } from '../context/AuthContext';
 function PrivateRoute({ children, role }: Readonly<{ children: ReactNode; role?: string | string[] }>) {
     const auth = useAuth();
     const location = useLocation();
-    if (!auth?.isAuthenticated || location.pathname !== '/wishlist') return <Navigate to="/login" replace />;
+    if (!auth?.isAuthenticated && location.pathname !== '/wishlist') return <Navigate to="/login" replace />;
     if (role) {
         const allowed = Array.isArray(role) ? role : [role];
-        if (!auth.userRole || !allowed.includes(auth.userRole)) {
+        if (!auth?.userRole || !allowed.includes(auth.userRole)) {
             return <Navigate to="/403" replace />;
         }
     }
@@ -38,13 +38,13 @@ export default function Router() {
                 {/* Rutas públicas */}
                 <Route path="/" element={<TabsScreen />}>
                     <Route index element={<Landing />} />
-                    <Route path="login" element={<Login />} />
+                    <Route path="login" element={<Login fromModal={false} closeModal={() => {}} />} />
                     {/* Rutas que requieren auth */}
                     <Route path="wishlist" element={<MisFavoritos />} />
                     <Route path="my-trips" element={<PrivateRoute><MisViajes /></PrivateRoute>} />
                     <Route path="profile" element={<PrivateRoute><h1>Vista de mi perfil</h1></PrivateRoute>} />
                 </Route>
-                <Route path="login" element={<Login />} />
+                <Route path="login" element={<Login fromModal={false} closeModal={() => {}} />} />
                 <Route path="registro" element={<Registro />} />
                 <Route path="rooms/:idSlug" element={<PropiedadPage />} />
                 <Route path="s/:ciudad_pais/homes" element={<FiltrosPage />} />

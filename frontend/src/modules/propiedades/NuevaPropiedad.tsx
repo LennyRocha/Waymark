@@ -45,8 +45,6 @@ import useReglas from "./hooks/useReglas";
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 
-type Form = ReturnType<typeof usePropiedadForm>;
-
 type TabItem = {
   label: string;
   component: React.ComponentType<any>;
@@ -1197,6 +1195,7 @@ const Step9 = ({
   submit,
   triggerStep,
   success,
+  form,
 }: any) => {
   const [showReglas, setShowReglas] = useState(false);
 
@@ -1335,7 +1334,7 @@ const Step9 = ({
         )}
         <CustomButton
           variant="secondary"
-          disabled={success}
+          disabled={success || !form.isValid}
           onClick={submit}
           isWaiting={loading}
         >

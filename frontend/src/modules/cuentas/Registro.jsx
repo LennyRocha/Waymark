@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../../utils/api";
+import { getAxiosErrorMessage } from "../../utils/getAxiosErrorMessage";
 
 export default function Registro() {
   const navigate = useNavigate();
@@ -56,7 +57,7 @@ export default function Registro() {
         const firstVal = Array.isArray(payload[firstKey]) ? payload[firstKey][0] : payload[firstKey];
         setError(String(firstVal || "Error al registrar"));
       } else {
-        setError("Error al registrar");
+        setError(getAxiosErrorMessage(err) || "Error al registrar");
       }
     } finally {
       setLoading(false);
@@ -64,7 +65,7 @@ export default function Registro() {
   };
 
   return (
-    <main className="min-h-[100dvh] bg-gradient-to-br from-[#fff7f2] via-white to-[#f5f7fb] px-4 py-10 flex items-center justify-center">
+    <main className="min-h-[100dvh] bg-white px-4 py-10 flex items-center justify-center">
       <section className="w-full max-w-[560px] rounded-2xl border border-[var(--color-border)] bg-white/90 p-6 md:p-8 shadow-[0_18px_40px_rgba(43,49,69,0.14)]">
         <p className="m-0 uppercase tracking-[0.1em] text-xs font-bold text-[var(--secundario)]">
           Waymark

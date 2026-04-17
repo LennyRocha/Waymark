@@ -105,6 +105,8 @@ export default function PropiedadPage() {
     setOpen(val);
   }
 
+  console.log(propiedad.data?.imagenes);
+
   const nextThreeDays = new Date();
   transformarFecha(nextThreeDays);
 
@@ -485,7 +487,7 @@ export default function PropiedadPage() {
         <div className="flex gap-2 md:gap-8 flex-col md:flex-row w-full items-start justify-start md:justify-center">
           <div className="flex-1 flex flex-col gap-2 items-start justify-start">
             <h4>Conoce a tu anfitrión</h4>
-            <div className="inline-flex gap-2 items-center justify-center px-4 py-2 rounded-xl bg-green-100 text-green-800 w-max">
+            <div className="flex-col flex gap-2 items-center justify-center p-4  rounded-xl bg-white  w-full shadow-[0_5px_15px_rgba(0,0,0,0.25)]">
               <Avatar
                 src={hostQuery.data?.foto_perfil}
                 size={72}
@@ -496,6 +498,11 @@ export default function PropiedadPage() {
                   "Anfitrión"}{" "}
                 {hostQuery.data?.apellido_p || "Apellido"}
               </h4>
+              <CustomLink
+                to={`mailto:${hostQuery.data?.correo}`}
+              >
+                {hostQuery.data?.correo}
+              </CustomLink>
             </div>
           </div>
           <div
@@ -1405,13 +1412,13 @@ const ResenasView = ({
     promedioData.total === 1 ? "reseña" : "reseñas";
   return (
     <>
-      <h4>
+      <h4 className="text-left">
         {(promedioData?.total ?? 0) > 0
           ? `${Number(promedioData.promedio).toFixed(1)} · ${promedioData.total} ${resenaText}`
           : "Reseñas"}
       </h4>
       {calificaciones.length === 0 ? (
-        <p className="text-text-secondary font-[cabin]">
+        <p className="text-left text-text-secondary font-[cabin]">
           Aún no hay reseñas para este alojamiento.
         </p>
       ) : (
@@ -1502,7 +1509,7 @@ async function handleReservar(
       "¡Reserva creada! Revisa tus viajes para más detalles.",
     );
   } catch (err: any) {
-    console.log(err)
+    console.log(err);
     const msg =
       err?.response?.data?.detail ||
       "No se pudo crear la reserva. Intenta de nuevo.";
