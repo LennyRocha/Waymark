@@ -65,9 +65,6 @@ SIMPLE_JWT = {
     "USER_ID_CLAIM": "user_id",
 }
 
-MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
-
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
@@ -172,8 +169,17 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
-MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
+# Media: Cloudinary en producción, disco local en desarrollo
+if os.getenv("CLOUD_NAME") and os.getenv("CLOUD_KEY") and os.getenv("CLOUD_SECRET"):
+    CLOUDINARY_STORAGE = {
+        "CLOUD_NAME": os.getenv("CLOUD_NAME"),
+        "API_KEY": os.getenv("CLOUD_KEY"),
+        "API_SECRET": os.getenv("CLOUD_SECRET"),
+    }
+    DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
+else:
+    MEDIA_URL = "/media/"
+    MEDIA_ROOT = BASE_DIR / "media"
 
 LOGGING_CONFIG = None
 
