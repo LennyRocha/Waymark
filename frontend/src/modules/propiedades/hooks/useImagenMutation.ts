@@ -1,4 +1,7 @@
-import { useMutation, type UseMutationOptions } from "@tanstack/react-query";
+import {
+  useMutation,
+  type UseMutationOptions,
+} from "@tanstack/react-query";
 import Imagen from "../types/Imagen";
 import ImagenRepository from "../repositories/ImagenRepository";
 
@@ -21,16 +24,23 @@ export default function useImagenMutation(
       }) => Promise<Imagen>);
 
   if (accion === "post") {
-    mutationFn = (data: Imagen) => ImagenRepository.save(data);
+    mutationFn = (data: Imagen) =>
+      ImagenRepository.save(data);
   } else if (accion === "put") {
-    mutationFn = ({ id, data }: { id: number; data: Imagen }) =>
-      ImagenRepository.update(data, id);
+    mutationFn = ({
+      id,
+      data,
+    }: {
+      id: number;
+      data: Imagen;
+    }) => ImagenRepository.update(data, id);
   } else {
-    mutationFn = (data: FormData) => ImagenRepository.saveAll(data as any);
+    mutationFn = (data: FormData) =>
+      ImagenRepository.saveAll(data as any);
   }
 
   return useMutation({
     mutationFn: mutationFn as any,
     ...props,
-  } as any);
+  });
 }

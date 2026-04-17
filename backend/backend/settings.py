@@ -65,8 +65,6 @@ SIMPLE_JWT = {
     "USER_ID_CLAIM": "user_id",
 }
 
-
-# Mientras está  en desarrollo
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
