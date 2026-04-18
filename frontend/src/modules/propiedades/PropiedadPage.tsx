@@ -28,6 +28,7 @@ import {
   Dog,
   Baby,
   Star,
+  X,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import Calendar from "react-calendar";
@@ -62,6 +63,8 @@ import rightwing from "../../assets/alarde_der.png";
 import NavigationList from "./components/NavigationList";
 import usePromedio from "../calificaciones/hooks/usePromedio";
 import useCalificaciones from "../calificaciones/hooks/useCalificaciones";
+
+import Imagen from "./types/Imagen";
 
 import apiToken from "../../utils/apiToken";
 
@@ -109,8 +112,6 @@ export default function PropiedadPage() {
   function toggle(val) {
     setOpen(val);
   }
-
-  console.log(propiedad.data?.imagenes);
 
   const nextThreeDays = new Date();
   transformarFecha(nextThreeDays);
@@ -219,7 +220,9 @@ export default function PropiedadPage() {
         <Header toggle={toggle} value={open} />
       </AnimatePresence>
       <HeaderScroll ref={sectionRef} listRefs={listRef} />
-      <main className="w-full p-[1rem] mx-auto max-w-[1200px] flex flex-col items-start justify-start gap-4">
+      <HeaderMobile />
+      <CarruselMobile images={prop.imagenes} />
+      <main className="w-full p-[1rem] mx-auto max-w-[1200px] flex flex-col items-start justify-start gap-4 max-md:rounded-t-4xl max-md:z-[9992] bg-white">
         <h3 className="md:text-left font-[montserrat]">
           {prop?.titulo}
         </h3>
@@ -1269,65 +1272,6 @@ const AdditionalRulesSection = ({
   );
 };
 
-const ImagenesGrid = ({
-  imagenes,
-  ref,
-}: {
-  imagenes: Imagen[];
-  ref: React.Ref<HTMLDivElement>;
-}) => {
-  return (
-    <div
-      ref={ref}
-      className="grid grid-cols-4 gap-2 md:h-[450px] max-md:hidden"
-    >
-      <div className="overflow-hidden col-span-2 row-span-2 rounded-l-xl hover:brightness-95 cursor-pointer">
-        <img
-          className="w-full h-full object-cover"
-          src={imagenes[0]?.url}
-          alt={`Imagen #${imagenes[0]?.orden}`}
-        />
-      </div>
-      <div className=" text-white hover:brightness-95 cursor-pointer overflow-hidden ">
-        <img
-          className="w-full h-full object-cover"
-          src={imagenes[1]?.url}
-          alt={`Imagen #${imagenes[1]?.orden}`}
-        />
-      </div>
-      <div className=" text-white hover:brightness-95 cursor-pointer overflow-hidden rounded-tr-xl">
-        <img
-          className="w-full h-full object-cover"
-          src={imagenes[2]?.url}
-          alt={`Imagen #${imagenes[2]?.orden}`}
-        />
-      </div>
-      <div className=" hover:brightness-95 cursor-pointer overflow-hidden">
-        <img
-          className="w-full h-full object-cover"
-          src={imagenes[3]?.url}
-          alt={`Imagen #${imagenes[3]?.orden}`}
-        />
-      </div>
-      <div
-        className={`hover:brightness-95 cursor-pointer overflow-hidden rounded-br-xl relative bg-cover flex items-end justify-center p-4 `}
-      >
-        <img
-          className="w-full h-full object-cover absolute top-0 left-0 z-0"
-          src={imagenes[4]?.url}
-          alt={`Imagen #${imagenes[4]?.orden}`}
-        />
-        {imagenes.length > 5 && (
-          <button className="bg-white rounded-xl py-2 px-4 w-auto  z-10 font-semibold cursor-pointer">
-            <LayoutGrid size={20} className="inline mb-1" />{" "}
-            Mostrar todas las fotos
-          </button>
-        )}
-      </div>
-    </div>
-  );
-};
-
 const HeaderScroll = ({ ref, listRefs }) => {
   const { scrollY } = useScroll();
   const [elementTop, setElementTop] = useState(0);
@@ -1552,7 +1496,9 @@ const FavoritoBanner = ({
     }
   });
   return (
-    <div className={`${isFavorito ? "flex" : "hidden"} w-full flex-1 p-6  border-border rounded-xl items-center justify-between gap-4 border-2 max-md:border-transparent max-[600px]:flex-col`}>
+    <div
+      className={`${isFavorito ? "flex" : "hidden"} w-full flex-1 p-6  border-border rounded-xl items-center justify-between gap-4 border-2 max-md:border-transparent max-[600px]:flex-col`}
+    >
       <div className="flex gap-0 items-center justify-center max-w-[200px]">
         <img
           src={leftwing}
@@ -1622,3 +1568,213 @@ const FavoritoBanner = ({
     </div>
   );
 };
+
+const ImagenesGrid = ({
+  imagenes,
+  ref,
+}: {
+  imagenes: Imagen[];
+  ref: React.Ref<HTMLDivElement>;
+}) => {
+  const [showCarrusel, setShowCarrusel] = useState(false);
+  return (
+    <AnimatePresence>
+      <div
+        ref={ref}
+        className="grid grid-cols-4 gap-2 md:h-[450px] max-md:hidden"
+      >
+        <div className="overflow-hidden col-span-2 row-span-2 rounded-l-xl hover:brightness-95 cursor-pointer">
+          <motion.img
+            layoutId="img-1"
+            className="w-full h-full object-cover"
+            src={imagenes[0]?.url}
+            alt={`Imagen #${imagenes[0]?.orden}`}
+          />
+        </div>
+        <div className=" text-white hover:brightness-95 cursor-pointer overflow-hidden ">
+          <motion.img
+            layoutId="img-2"
+            className="w-full h-full object-cover"
+            src={imagenes[1]?.url}
+            alt={`Imagen #${imagenes[1]?.orden}`}
+          />
+        </div>
+        <div className=" text-white hover:brightness-95 cursor-pointer overflow-hidden rounded-tr-xl">
+          <motion.img
+            layoutId="img-3"
+            className="w-full h-full object-cover"
+            src={imagenes[2]?.url}
+            alt={`Imagen #${imagenes[2]?.orden}`}
+          />
+        </div>
+        <div className=" hover:brightness-95 cursor-pointer overflow-hidden">
+          <motion.img
+            layoutId="img-4"
+            className="w-full h-full object-cover"
+            src={imagenes[3]?.url}
+            alt={`Imagen #${imagenes[3]?.orden}`}
+          />
+        </div>
+        <div
+          className={`hover:brightness-95 cursor-pointer overflow-hidden rounded-br-xl relative bg-cover flex items-end justify-center p-4 `}
+        >
+          <motion.img
+            layoutId="img-5"
+            className="w-full h-full object-cover absolute top-0 left-0 z-0"
+            src={imagenes[4]?.url}
+            alt={`Imagen #${imagenes[4]?.orden}`}
+          />
+          {imagenes.length > 5 && (
+            <button
+              className="bg-white rounded-xl py-2 px-4 w-auto  z-10 font-semibold cursor-pointer"
+              onClick={(e) => setShowCarrusel(true)}
+            >
+              <LayoutGrid
+                size={20}
+                className="inline mb-1"
+              />{" "}
+              Mostrar todas las fotos
+            </button>
+          )}
+        </div>
+      </div>
+      {showCarrusel && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="max-md:hidden fixed top-0 left-0 w-full h-full bg-black/50 flex items-center justify-center items-center flex gap-2 flex-col text-white text-lg font-semibold z-[9999]"
+          onClick={() => setShowCarrusel(false)}
+        >
+          <button
+            onClick={() => setShowCarrusel(false)}
+            className="flex items-center justify-center self-start pl-[4.5vw]"
+          >
+            <X size={32} /> Cerrar
+          </button>
+          <Carrusel images={imagenes} />
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};
+
+interface CarruselProps {
+  images: Imagen[];
+}
+
+const Carrusel = ({ images }: CarruselProps) => {
+  const sliderRef = useRef(null);
+  const slidesRef = useRef(null);
+
+  const [sliderWidth, setSliderWidth] = useState(0);
+  const [slidesWidth, setSlidesWidth] = useState(0);
+
+  const slideMarginRight = 15;
+  const totalSlidesMarginRight =
+    slideMarginRight * images.length;
+
+  useEffect(() => {
+    const measureSliderWidth = () => {
+      setSliderWidth(sliderRef.current.clientWidth);
+    };
+
+    const measureSlidesWidth = () => {
+      const slidesNode = slidesRef.current.childNodes;
+      const slidesArr = Array.from(slidesNode);
+      const slidesSumWidth = slidesArr.reduce(
+        (acc, node) => acc + node.clientWidth,
+        0,
+      );
+      setSlidesWidth(slidesSumWidth);
+    };
+
+    measureSliderWidth();
+    measureSlidesWidth();
+
+    window.addEventListener("resize", measureSliderWidth);
+    window.addEventListener("resize", measureSlidesWidth);
+
+    return () => {
+      window.removeEventListener(
+        "resize",
+        measureSliderWidth,
+      );
+      window.removeEventListener(
+        "resize",
+        measureSlidesWidth,
+      );
+    };
+  }, [sliderWidth, slidesWidth]);
+
+  return (
+    <div ref={sliderRef} className="slider">
+      <motion.ul
+        ref={slidesRef}
+        drag="x"
+        dragConstraints={{
+          left: -(
+            slidesWidth -
+            sliderWidth +
+            totalSlidesMarginRight
+          ),
+          right: 0,
+        }}
+        dragElastic={0.2}
+        dragTransition={{ bounceDamping: 18 }}
+        className="slides"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {images.map((image, idx) => (
+          <motion.li
+            key={image.orden}
+            layoutId={
+              idx < 5 ? `img-${image.orden}` : undefined
+            }
+            className="slide"
+          >
+            <div
+              style={{
+                backgroundImage: `url(${typeof image.url === "string" ? image.url : ""})`,
+              }}
+            />
+          </motion.li>
+        ))}
+      </motion.ul>
+    </div>
+  );
+};
+
+const CarruselMobile = ({ images }: CarruselProps) => {
+  return (
+    <div className="md:hidden w-full -mb-8 z-[9991]">
+      <div className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide">
+        {images.map((img, idx) => (
+          <div
+            key={img.orden}
+            className="min-w-full h-[350px] snap-center relative"
+          >
+            <img
+              src={img.url}
+              alt={`Imagen #${img.orden}`}
+              className="w-full h-full object-cover"
+            />
+
+            {/* Contador */}
+            <div className="absolute bottom-10 right-3 bg-black/60 text-white text-sm px-3 py-1 rounded-lg">
+              {idx + 1} / {images.length}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const HeaderMobile = () => {
+  return (
+    <div className="w-full bg-white p-4 md:hidden">
+      <X size={32} />
+    </div>
+  )
+}

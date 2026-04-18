@@ -131,9 +131,39 @@
     }
 }
 
-.banner-title{
+.banner-title {
     line-height: .9 !important;
-    width:fit-content !important;
+    width: fit-content !important;
     margin: 0 -20px !important;
-    padding:auto !important;
+    padding: auto !important;
+}
+
+.slider {
+    width: 90vw;
+    height: 50vh;
+    overflow: hidden;
+    position: relative;
+}
+
+.slides {
+    display: flex;
+    height: 100%;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.slide {
+    min-width: 650px;
+    margin-right: 15px;
+    border-radius: 12px;
+    overflow: hidden;
+    aspect-ratio: 16/9;
+}
+
+.slide div {
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
 }
