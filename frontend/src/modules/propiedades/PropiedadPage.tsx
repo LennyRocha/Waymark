@@ -15,6 +15,7 @@ import CustomLoader from "../../layout/CustomLoader";
 import ErrorViewComponent from "../../layout/ErrorViewComponent";
 import CustomButton from "../../components/CustomButton";
 import useSetPageTitle from "../../utils/setPageTitle";
+import FavoritoButton from "./components/FavoritoButton";
 import {
   Dot,
   MapPinHouse,
@@ -29,6 +30,8 @@ import {
   Baby,
   Star,
   X,
+  ArrowLeft,
+  Share,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import Calendar from "react-calendar";
@@ -67,12 +70,15 @@ import useCalificaciones from "../calificaciones/hooks/useCalificaciones";
 import Imagen from "./types/Imagen";
 
 import apiToken from "../../utils/apiToken";
+import Card from "./types/Card";
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 const MAX_LENGTH = 500;
 
 type ValuePiece = Date | null;
 type Value = ValuePiece | [ValuePiece, ValuePiece];
+
+const MotionShare = motion(Share);
 
 export default function PropiedadPage() {
   const navigate = useNavigate();
@@ -203,6 +209,20 @@ export default function PropiedadPage() {
     ids,
   );
 
+  const compartirPagina = async () => {
+    const url = globalThis.location.href;
+    if (navigator.share) {
+      await navigator.share({
+        title: document.title,
+        text: prop?.titulo,
+        url,
+      });
+    } else {
+      await navigator.clipboard.writeText(url);
+      toast.success("Enlace copiado al portapapeles");
+    }
+  };
+
   return (
     <>
       <AnimatePresence>
@@ -220,12 +240,39 @@ export default function PropiedadPage() {
         <Header toggle={toggle} value={open} />
       </AnimatePresence>
       <HeaderScroll ref={sectionRef} listRefs={listRef} />
-      <HeaderMobile />
+      <HeaderMobile
+        share={compartirPagina}
+        card={cardQuery.data}
+      />
       <CarruselMobile images={prop.imagenes} />
       <main className="w-full p-[1rem] mx-auto max-w-[1200px] flex flex-col items-start justify-start gap-4 max-md:rounded-t-4xl max-md:z-[9992] bg-white">
-        <h3 className="md:text-left font-[montserrat]">
-          {prop?.titulo}
-        </h3>
+        <div className="flex items-center justify-center md:justify-between w-full gap-4">
+          <h3 className="md:text-left font-[montserrat] max-md:w-full text-wrap text-center">
+            {prop?.titulo}
+          </h3>
+          <div className="flex gap-4 max-md:hidden">
+            <button
+              className="flex gap-1"
+              onClick={async () => await compartirPagina()}
+            >
+              <MotionShare
+                transition={{
+                  type: "spring",
+                  stiffness: 300,
+                }}
+                whileHover={{ scale: 1.1 }}
+                size={20}
+              />
+              <p className="text-text-primary text-sm font-semibold">
+                Compartir
+              </p>
+            </button>
+            <FavoritoButton
+              isOnSmallScreen={false}
+              propiedad={cardQuery.data}
+            />
+          </div>
+        </div>
         <ImagenesGrid
           imagenes={prop.imagenes}
           ref={fotosRef}
@@ -496,8 +543,8 @@ export default function PropiedadPage() {
             />
           </Marker>
         </Map>
-        <div className="flex gap-2 md:gap-8 flex-col md:flex-row w-full items-start justify-start md:justify-center">
-          <div className="flex-1 flex flex-col gap-2 items-start justify-start">
+        <div className="flex gap-4 md:gap-8 flex-col md:flex-row w-full items-start justify-start md:justify-center">
+          <div className="flex-1 flex flex-col gap-2 items-start justify-start max-md:w-full">
             <h4>Conoce a tu anfitrión</h4>
             <div className="flex-col flex gap-2 items-center justify-center p-4  rounded-xl bg-white  w-full shadow-[0_5px_15px_rgba(0,0,0,0.25)]">
               <Avatar
@@ -1771,10 +1818,29 @@ const CarruselMobile = ({ images }: CarruselProps) => {
   );
 };
 
-const HeaderMobile = () => {
+const HeaderMobile = ({
+  share,
+  card,
+}: {
+  share: () => Promise<void>;
+  card: Card;
+}) => {
+  const navigate = useNavigate();
   return (
-    <div className="w-full bg-white p-4 md:hidden">
-      <X size={32} />
+    <div className="w-full bg-white p-6 md:hidden flex items-center justify-between">
+      <ArrowLeft size={20} onClick={() => navigate(-1)} />
+      <div className="flex gap-4">
+        <MotionShare
+          transition={{ type: "spring", stiffness: 300 }}
+          whileHover={{ scale: 1.1 }}
+          size={20}
+          onClick={share}
+        />
+        <FavoritoButton
+          isOnSmallScreen={true}
+          propiedad={card}
+        />
+      </div>
     </div>
-  )
-}
+  );
+};
