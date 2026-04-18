@@ -871,6 +871,9 @@ const Step5 = ({
 
   const hasCover = !!list?.[0]?.url;
 
+  const hasEnough =
+    list.filter((img) => img.url).length >= 5;
+
   const canContinue = validateStep(4);
 
   const removeImage = (index: number) => {
@@ -940,9 +943,9 @@ const Step5 = ({
       <small className="font-[montserrat] text-sm text-text-secondary block">
         <b className="text-primary-500">NOTA:</b> Debes
         adjuntar al menos una imagen de portada para tu
-        propiedad. Puedes agregar más imágenes si lo deseas,
-        pero la primera imagen será la que se muestre como
-        portada.
+        propiedad, y 4 más de referencia. Puedes agregar más
+        imágenes si lo deseas, pero la primera imagen será
+        la que se muestre como portada.
       </small>
       <div className="w-full flex flex-row items-center justify-end gap-2">
         <CustomButton variant="tertiary" onClick={prev}>
@@ -951,7 +954,7 @@ const Step5 = ({
         <CustomButton
           variant="secondary"
           onClick={next}
-          disabled={!canContinue || !hasCover}
+          disabled={!canContinue || !hasCover || !hasEnough}
         >
           Siguiente
         </CustomButton>
