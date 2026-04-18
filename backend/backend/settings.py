@@ -15,6 +15,7 @@ import os
 from datetime import timedelta
 from dotenv import load_dotenv
 from loguru import logger
+import cloudinary
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -167,7 +168,8 @@ USE_TZ = True
 STATIC_URL = "static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
+print("USING CLOUDINARY:", bool(os.getenv("CLOUD_NAME")))
 
 # Media: Cloudinary en producción, disco local en desarrollo
 if os.getenv("CLOUD_NAME") and os.getenv("CLOUD_KEY") and os.getenv("CLOUD_SECRET"):
@@ -176,10 +178,31 @@ if os.getenv("CLOUD_NAME") and os.getenv("CLOUD_KEY") and os.getenv("CLOUD_SECRE
         "API_KEY": os.getenv("CLOUD_KEY"),
         "API_SECRET": os.getenv("CLOUD_SECRET"),
     }
-    DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
+
+    cloudinary.config(
+        cloud_name=os.getenv("CLOUD_NAME"),
+        api_key=os.getenv("CLOUD_KEY"),
+        api_secret=os.getenv("CLOUD_SECRET"),
+    )
+
+    STORAGES = {
+        "default": {
+            "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        },
+    }
+
 else:
     MEDIA_URL = "/media/"
     MEDIA_ROOT = BASE_DIR / "media"
+
+    STORAGES = {
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        },
+    }
 
 LOGGING_CONFIG = None
 

@@ -1,12 +1,10 @@
-import axios, {
-  AxiosError,
-} from "axios";
+import axios, { AxiosError } from "axios";
 
 const url = import.meta.env.VITE_API_URL;
 
 const apiToken = axios.create({
   baseURL: url,
-  timeout: 5000,
+  timeout: 60000,
 });
 
 // instancia separada SOLO para refresh
@@ -55,14 +53,15 @@ apiToken.interceptors.response.use(
   (response) => response,
 
   async (error: AxiosError) => {
-    const originalRequest = error.config;
-    (originalRequest as any)._retry = true;
+    const originalRequest = error.config as any;
 
     if (
       error.response?.status === 401 &&
       !originalRequest._retry &&
       !originalRequest.url?.includes("/token/refresh/")
     ) {
+      originalRequest._retry = true;
+
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({
@@ -78,6 +77,8 @@ apiToken.interceptors.response.use(
           });
         });
       }
+
+      isRefreshing = true;
 
       originalRequest._retry = true;
       isRefreshing = true;

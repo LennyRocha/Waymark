@@ -1334,7 +1334,7 @@ const Step9 = ({
         )}
         <CustomButton
           variant="secondary"
-          disabled={success || !form.isValid}
+          disabled={success || !form.formState.isValid}
           onClick={submit}
           isWaiting={loading}
         >
