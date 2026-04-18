@@ -1,6 +1,11 @@
 // @ts-nocheck
 /* eslint-disable react-hooks/set-state-in-effect */
-import React, { useState, useRef, useEffect } from "react";
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useMemo,
+} from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Modal from "../../layout/Modal";
 import useAmenidades from "./hooks/useAmenidades";
@@ -249,9 +254,13 @@ export default function PropiedadPage() {
                 : "habitaciones"}
             </p>
 
-            <FavoritoBanner />
+            <FavoritoBanner
+              isFavorito={cardQuery.data?.es_favorito}
+              evaluacion={calificacionesQuery.data}
+              score={promedioQuery.data}
+            />
 
-            <div className="flex gap-2 mt-2">
+            <div className="flex gap-4 mt-2">
               <Avatar
                 src={hostQuery.data?.foto_perfil}
                 size={48}
@@ -1308,10 +1317,12 @@ const ImagenesGrid = ({
           src={imagenes[4]?.url}
           alt={`Imagen #${imagenes[4]?.orden}`}
         />
-        <button className="bg-white rounded-xl py-2 px-4 w-auto  z-10 font-semibold cursor-pointer">
-          <LayoutGrid size={20} className="inline mb-1" />{" "}
-          Mostrar todas las fotos
-        </button>
+        {imagenes.length > 5 && (
+          <button className="bg-white rounded-xl py-2 px-4 w-auto  z-10 font-semibold cursor-pointer">
+            <LayoutGrid size={20} className="inline mb-1" />{" "}
+            Mostrar todas las fotos
+          </button>
+        )}
       </div>
     </div>
   );
@@ -1530,25 +1541,84 @@ const FavoritoBanner = ({
   evaluacion,
   score,
 }: FavoritoBannerProps) => {
+  const textCount = useMemo(() => {
+    switch (evaluacion.length) {
+      case 0:
+        return "Evaluaciones";
+      case 1:
+        return "Evaluación";
+      default:
+        return `Evaluaciones`;
+    }
+  });
   return (
-    <div className=" flex w-full flex-1 p-6  border-border rounded-xl items-center justify-center gap-4 border-2">
-      <img
-        src={leftwing}
-        alt="left wing "
-        className="w-6"
-      />
-      <h5 className="w-[175px] text-wrap text-base/[8px]">
-        Favorito entre huéspedes
-      </h5>
-      <img
-        src={rightwing}
-        alt="right wing"
-        className="w-6"
-      />
-      <h5 className="text-left">
+    <div className={`${isFavorito ? "flex" : "hidden"} w-full flex-1 p-6  border-border rounded-xl items-center justify-between gap-4 border-2 max-md:border-transparent max-[600px]:flex-col`}>
+      <div className="flex gap-0 items-center justify-center max-w-[200px]">
+        <img
+          src={leftwing}
+          alt="left wing "
+          className="w-6"
+        />
+        <h5 className="banner-title">
+          Favorito entre huéspedes
+        </h5>
+        <img
+          src={rightwing}
+          alt="right wing"
+          className="w-6"
+        />
+      </div>
+      <h5 className="text-left max-[1128px]:hidden text-base/[8px] max-w-[200px] xl:max-w-[225px] text-wrap">
         Uno de los alojamientos más populares entre los
         huéspedes en Waymark
       </h5>
+      <div className="h-[75px] w-[2px] bg-border max-md:hidden xl:hidden"></div>
+      <div>
+        <h5 className="text-center text-wrap">
+          {score.promedio ?? 0}
+        </h5>
+        <small className="text-center text-wrap flex py-2 gap-0.5 justify-center">
+          <Star
+            size={10}
+            fill="var(--color-text-primary)"
+            color="var(--color-text-primary)"
+            className="shrink-0"
+          />
+          <Star
+            size={10}
+            fill="var(--color-text-primary)"
+            color="var(--color-text-primary)"
+            className="shrink-0"
+          />
+          <Star
+            size={10}
+            fill="var(--color-text-primary)"
+            color="var(--color-text-primary)"
+            className="shrink-0"
+          />
+          <Star
+            size={10}
+            fill="var(--color-text-primary)"
+            color="var(--color-text-primary)"
+            className="shrink-0"
+          />
+          <Star
+            size={10}
+            fill="var(--color-text-primary)"
+            color="var(--color-text-primary)"
+            className="shrink-0"
+          />
+        </small>
+      </div>
+      <div className="h-[75px] w-[2px] bg-border max-md:hidden"></div>
+      <div>
+        <h5 className="text-center text-wrap">
+          {evaluacion.length}
+        </h5>
+        <small className="text-center text-wrap">
+          {textCount}
+        </small>
+      </div>
     </div>
   );
 };
