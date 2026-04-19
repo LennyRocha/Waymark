@@ -34,7 +34,7 @@ export default function MisFavoritos() {
   );
   const isAuthenticated =
     auth?.isAuthenticated &&
-    (auth.userRole === "anfitrion" ||
+    (auth.userRole === "turista" ||
       auth.userRole === "ambos");
 
   if (!isAuthenticated) {
