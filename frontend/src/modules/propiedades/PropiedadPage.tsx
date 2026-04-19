@@ -71,6 +71,7 @@ import Imagen from "./types/Imagen";
 import Card from "./types/Card";
 import useReservaMutation from "../reservas/hooks/useReservaMutation";
 import { useQueryClient } from "@tanstack/react-query";
+import { getAxiosErrorMessage } from "../../utils/getAxiosErrorMessage";
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 const MAX_LENGTH = 500;
@@ -208,12 +209,15 @@ export default function PropiedadPage() {
           </div>
         </div>
       ));
-      queryClient.invalidateQueries({ queryKey: ["solicitudes"]});
+      queryClient.invalidateQueries({
+        queryKey: ["solicitudes"],
+      });
     },
     onError: () => {
       console.log(err);
       const msg =
         err?.response?.data?.detail ||
+        getAxiosErrorMessage(err) ||
         "No se pudo crear la reserva. Intenta de nuevo.";
       toast.error(msg);
     },
@@ -530,9 +534,7 @@ export default function PropiedadPage() {
                   reserva,
                 )
               }
-              disabled={
-                reserva.isPending || !auth?.isAuthenticated
-              }
+              disabled={reserva.isPending}
               isWaiting={reserva.isPending}
             >
               {reserva.isPending
@@ -727,9 +729,7 @@ export default function PropiedadPage() {
                 reserva,
               );
             }}
-            disabled={
-              reserva.isPending || !auth?.isAuthenticated
-            }
+            disabled={reserva.isPending}
             isWaiting={reserva.isPending}
           >
             {reserva.isPending
@@ -1873,7 +1873,10 @@ const HeaderMobile = ({
   const navigate = useNavigate();
   return (
     <div className="w-full bg-white p-6 md:hidden flex items-center justify-between">
-      <ArrowLeft size={20} onClick={() => navigate(-1)} />
+      <ArrowLeft
+        size={20}
+        onClick={() => navigate("/s/homes")}
+      />
       <div className="flex gap-4">
         <MotionShare
           transition={{ type: "spring", stiffness: 300 }}
