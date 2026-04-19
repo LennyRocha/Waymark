@@ -68,9 +68,9 @@ import usePromedio from "../calificaciones/hooks/usePromedio";
 import useCalificaciones from "../calificaciones/hooks/useCalificaciones";
 
 import Imagen from "./types/Imagen";
-
-import apiToken from "../../utils/apiToken";
 import Card from "./types/Card";
+import useReservaMutation from "../reservas/hooks/useReservaMutation";
+import { useQueryClient } from "@tanstack/react-query";
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 const MAX_LENGTH = 500;
@@ -78,7 +78,7 @@ const MAX_LENGTH = 500;
 type ValuePiece = Date | null;
 type Value = ValuePiece | [ValuePiece, ValuePiece];
 
-const MotionShare = motion(Share);
+const MotionShare = motion.create(Share);
 
 export default function PropiedadPage() {
   const navigate = useNavigate();
@@ -130,7 +130,6 @@ export default function PropiedadPage() {
   const [huespedes, setHuespedes] = useState(1);
 
   const [noches, setNoches] = useState(1);
-  const [reservando, setReservando] = useState(false);
   const auth = useAuth();
 
   useEffect(() => {
@@ -175,6 +174,50 @@ export default function PropiedadPage() {
     propiedad,
     hostQuery,
   ]);
+
+  const queryClient = useQueryClient();
+
+  const reserva = useReservaMutation({
+    onSuccess: () => {
+      toast((t) => (
+        <div className="max-w-lg bg-white flex w-full items-center gap-3">
+          <div className="flex-shrink-0">
+            <img
+              className="h-12 w-12 rounded-full"
+              src={hostQuery.data?.foto_perfil}
+              alt="foto de perfil del anfitrión"
+            />
+          </div>
+
+          <div className="flex-1 min-w-0 flex flex-col items-start justify-center">
+            <p className="text-left text-sm font-medium text-gray-900">
+              Solicitud de reserva enviada
+            </p>
+            <small className="text-left text-wrap mt-1 text-[8px] text-gray-500">
+              Esperando la respuesta del anfitrión
+            </small>
+          </div>
+
+          <div className="flex border-l border-gray-200">
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              className="px-4 py-3 text-sm font-medium text-primary-600 hover:text-secondary-500"
+            >
+              Ok
+            </button>
+          </div>
+        </div>
+      ));
+      queryClient.invalidateQueries({ queryKey: ["solicitudes"]});
+    },
+    onError: () => {
+      console.log(err);
+      const msg =
+        err?.response?.data?.detail ||
+        "No se pudo crear la reserva. Intenta de nuevo.";
+      toast.error(msg);
+    },
+  });
 
   if (isPageLoading)
     return (
@@ -477,19 +520,24 @@ export default function PropiedadPage() {
             <CustomButton
               size="large"
               fullWidth
-              onClick={() =>
-                handleReservar(
+              onClick={async () =>
+                await handleReservar(
                   auth,
-                  setReservando,
                   range,
                   id,
                   huespedes,
                   navigate,
+                  reserva,
                 )
               }
-              disabled={reservando}
+              disabled={
+                reserva.isPending || !auth?.isAuthenticated
+              }
+              isWaiting={reserva.isPending}
             >
-              {reservando ? "Reservando..." : "Reservar"}
+              {reserva.isPending
+                ? "Reservando..."
+                : "Reservar"}
             </CustomButton>
             <p className="text-text-secondary text-center mx-auto">
               El pago se realiza en efectivo
@@ -670,18 +718,23 @@ export default function PropiedadPage() {
           <CustomButton
             customWidth=" max-[490px]:w-full  min-[490px]:w-auto"
             onClick={async () => {
-              handleReservar(
+              await handleReservar(
                 auth,
-                setReservando,
                 range,
                 id,
                 huespedes,
                 navigate,
+                reserva,
               );
             }}
-            disabled={reservando}
+            disabled={
+              reserva.isPending || !auth?.isAuthenticated
+            }
+            isWaiting={reserva.isPending}
           >
-            {reservando ? "Reservando..." : "Reservar"}
+            {reserva.isPending
+              ? "Reservando..."
+              : "Reservar"}
           </CustomButton>
         </div>
       </main>
@@ -1480,16 +1533,24 @@ const ResenasView = ({
 
 async function handleReservar(
   auth: AuthContextValue,
-  setReservando: React.Dispatch<
-    React.SetStateAction<boolean>
-  >,
   range: Date[],
   id: number | undefined,
   huespedes: number,
   navigate: ReturnType<typeof useNavigate>,
+  mutation?: ReturnType<typeof useMutation>,
 ) {
   if (!auth?.isAuthenticated) {
-    navigate("/login");
+    toast.error(
+      "Inicia sesión para reservar este alojamiento.",
+    );
+    return;
+  } else if (
+    auth.userRole !== "turista" &&
+    auth.userRole !== "ambos"
+  ) {
+    toast.error(
+      "Inicia sesión con una cuenta de turista para reservar.",
+    );
     return;
   }
   if (!Array.isArray(range) || !range[0] || !range[1]) {
@@ -1498,27 +1559,11 @@ async function handleReservar(
     );
     return;
   }
-  const toISO = (d: Date) => d.toISOString().split("T")[0];
-  setReservando(true);
-  try {
-    await apiToken.post("/reservas/", {
-      propiedad_id: Number(id),
-      fecha_inicio: toISO(range[0]),
-      fecha_fin: toISO(range[1]),
-      huespedes,
-    });
-    toast.success(
-      "¡Reserva creada! Revisa tus viajes para más detalles.",
-    );
-  } catch (err: any) {
-    console.log(err);
-    const msg =
-      err?.response?.data?.detail ||
-      "No se pudo crear la reserva. Intenta de nuevo.";
-    toast.error(msg);
-  } finally {
-    setReservando(false);
-  }
+  mutation.mutate({
+    id: Number(id),
+    range,
+    huespedes,
+  });
 }
 
 interface FavoritoBannerProps {

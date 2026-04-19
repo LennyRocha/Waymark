@@ -43,7 +43,7 @@ class SolicitudSerializer(serializers.ModelSerializer):
 
     def get_huesped_foto(self, obj):
         foto = obj.huesped.foto_perfil
-        return str(foto) if foto else None
+        return foto.url if foto else None
 
     def get_propiedad_titulo(self, obj):
         propiedades_map = self.context.get("propiedades_map", {})

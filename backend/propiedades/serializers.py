@@ -11,9 +11,6 @@ from .models import (
 )
 from rest_framework import serializers
 
-from cuentas.models import Usuario
-
-
 class DivisaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Divisa
