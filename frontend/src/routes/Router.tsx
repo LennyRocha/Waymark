@@ -1,4 +1,4 @@
-import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import type { ReactNode } from 'react';
 import Landing from '../modules/propiedades/Landing';
 import Page404 from '../modules/paginas_error/404';
@@ -20,8 +20,7 @@ import { useAuth } from '../context/AuthContext';
 /** Requiere sesión iniciada. Sin rol requerido = cualquier usuario autenticado. */
 function PrivateRoute({ children, role }: Readonly<{ children: ReactNode; role?: string | string[] }>) {
     const auth = useAuth();
-    const location = useLocation();
-    if (!auth?.isAuthenticated && location.pathname !== '/wishlist') return <Navigate to="/login" replace />;
+    if (!auth?.isAuthenticated) return <Navigate to="/login" replace />;
     if (role) {
         const allowed = Array.isArray(role) ? role : [role];
         if (!auth?.userRole || !allowed.includes(auth.userRole)) {
