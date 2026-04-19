@@ -185,14 +185,6 @@ export default function NavigationList() {
             <div className="w-full bg-border h-[1px]"></div>
           </li>
           <li className="py-4 px-2 text-left text-nowrap">
-            <CustomLink to="/search-hosts" disabled={false}>
-              Buscar a un anfitrión
-            </CustomLink>
-          </li>
-          <li>
-            <div className="w-full bg-border h-[1px]"></div>
-          </li>
-          <li className="py-4 px-2 text-left text-nowrap">
             <CustomLink to="/login" disabled={false}>
               Iniciar sesión
             </CustomLink>
@@ -208,14 +200,6 @@ const CommonLinks = () => {
   const auth = useAuth();
   return (
     <>
-      <li>
-        <div className="w-full bg-border h-[1px]"></div>
-      </li>
-      <li className="py-4 px-2 text-left text-nowrap">
-        <CustomLink to="/search-hosts" disabled={false}>
-          Buscar a un anfitrión
-        </CustomLink>
-      </li>
       <li>
         <div className="w-full bg-border h-[1px]"></div>
       </li>

@@ -6,6 +6,7 @@ import Modal from "../../layout/Modal";
 import { Star } from "lucide-react";
 import toast from "react-hot-toast";
 import apiToken from "../../utils/apiToken";
+import Breadcrumb from "../../components/Breadcrumb";
 
 type Reserva = {
   reserva_id: number;
@@ -60,6 +61,18 @@ export default function MisViajes() {
     mutation.mutate({ reserva_id: selected.reserva_id, puntuacion, comentario });
   }
 
+  const links = [
+    {
+      label: "Inicio",
+      href: "/",
+    },
+    {
+      label: "Mis viajes",
+      href: "/my-trips",
+      disabled: true,
+    },
+  ];
+
   if (isLoading) return (
     <main className="w-full h-[60dvh] flex items-center justify-center">
       <CustomLoader />
@@ -74,6 +87,7 @@ export default function MisViajes() {
 
   return (
     <main className="max-w-[900px] mx-auto px-4 py-8 flex flex-col gap-6">
+      <Breadcrumb items={links} />
       <h2 className="text-left font-[montserrat]">Mis viajes</h2>
 
       {reservas.length === 0 ? (
