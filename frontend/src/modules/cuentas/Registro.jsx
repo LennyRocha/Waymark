@@ -27,7 +27,7 @@ export default function Registro() {
   });
 
   const [foto, setFoto] = useState(null);
-  const isHost = form.rol === "2";
+  const isHost = form.rol === "2" || form.rol === "4";
 
   const normalizeText = (value) => {
     if (!value) return "";
