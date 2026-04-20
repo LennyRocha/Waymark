@@ -49,6 +49,8 @@ export default function AdminHeader() {
         return () => globalThis.removeEventListener('resize', updateWidth);
     }, []);
 
+    const{userImage } = useAuth() || {};
+
     return (
         <div>
             <header className="w-full border-border border-1">
@@ -72,7 +74,7 @@ export default function AdminHeader() {
                                 >
                                     <img
                                         className="w-8 h-8 rounded-full"
-                                        src="https://flowbite.com/docs/images/people/profile-picture-5.jpg"
+                                        src={userImage || "https://flowbite.com/docs/images/people/profile-picture-5.jpg"}
                                         alt="Perfil de usuario"
                                     />
                                 </button>
@@ -126,7 +128,7 @@ export default function AdminHeader() {
                                     transition={{ duration: 0.25 }}
                                     className="flex flex-col w-full lg:flex lg:flex-row lg:w-auto lg:order-1"
                                 >
-                                    <ul className="flex flex-col mt-4 font-medium lg:flex-row lg:space-x-8 lg:mt-0">
+                                    <motion.ul className="flex flex-col mt-4 font-medium lg:flex-row lg:space-x-8 lg:mt-0">
                                         {links.map((l) => (
                                             <motion.li key={l.name}
                                                 initial={{ opacity: 0, x: -20 }}
@@ -162,7 +164,7 @@ export default function AdminHeader() {
                                                 Cerrar sesión
                                             </button>
                                         </motion.li>
-                                    </ul>
+                                    </motion.ul>
                                 </motion.div>
                             )}
                         </AnimatePresence>

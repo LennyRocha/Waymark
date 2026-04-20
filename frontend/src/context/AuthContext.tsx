@@ -6,11 +6,13 @@ import {
   type ReactNode,
 } from "react";
 import Role from "../types/Rol";
+import useSetUserImage from "../utils/useSetUserImage";
 
 export type AuthContextValue = {
   token: string | null;
   isAuthenticated: boolean;
   userRole: Role;
+  userImage?: string | null;
   setAuthToken: (token: string | null) => void;
   setAuthRefreshToken: (token: string | null) => void;
   refreshToken?: string | null;
@@ -29,6 +31,7 @@ type AuthProviderProps = {
 export function AuthProvider({
   children,
 }: Readonly<AuthProviderProps>) {
+  useSetUserImage();
   const [token, setToken] = useState<string | null>(
     localStorage.getItem("access_token"),
   );
@@ -65,6 +68,7 @@ export function AuthProvider({
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
     localStorage.removeItem("user_role");
+    localStorage.removeItem("user_image");
     setToken(null);
     setRefreshToken(null);
   };
@@ -79,6 +83,8 @@ export function AuthProvider({
     }
   };
 
+  const userImage = localStorage.getItem("user_image");
+
   const value: AuthContextValue = useMemo(() => {
     return {
       token,
@@ -89,8 +95,15 @@ export function AuthProvider({
       refreshToken,
       handleLogout,
       checkAuthOnLoad,
+      userImage,
     };
-  }, [token, isAuthenticated, userRole, refreshToken]);
+  }, [
+    token,
+    isAuthenticated,
+    userRole,
+    refreshToken,
+    userImage,
+  ]);
 
   return (
     <AuthContext.Provider value={value}>

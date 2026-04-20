@@ -4,6 +4,7 @@ import apiToken from "../../utils/apiToken";
 import { useAuth } from "../../context/AuthContext";
 import useSetPageTitle from "../../utils/setPageTitle";
 import { getAxiosErrorMessage } from "../../utils/getAxiosErrorMessage";
+import Breadcrumb from "../../components/Breadcrumb";
 
 const EMPTY_PROFILE = {
   nombre: "",
@@ -227,6 +228,18 @@ export default function Perfil() {
     }
   };
 
+    const links = [
+    {
+      label: "Inicio",
+      href: "/",
+    },
+    {
+      label: "Mi perfil",
+      href: "/profile",
+      disabled: true,
+    },
+  ];
+
   const fullName = [profile.nombre, profile.apellido_p, profile.apellido_m]
     .filter(Boolean)
     .join(" ");
@@ -243,6 +256,8 @@ export default function Perfil() {
 
   return (
     <main className="mx-auto w-full max-w-[1180px] px-3 py-6 text-left md:px-5 lg:px-6">
+      <Breadcrumb items={links} />
+      <br />
       <section className="rounded-[24px] border border-[var(--color-border)] bg-white p-6 shadow-sm md:p-8">
         <p className="m-0 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--secundario)]">
           {profileLabel}
