@@ -28,6 +28,11 @@ const links: HostLink[] = [
     text: "Alojamientos",
     to: "/host/listings",
   },
+  {
+    name: "profile",
+    text: "Mi perfil",
+    to: "/host/profile",
+  },
 ];
 
 export default function HostHeader() {
@@ -183,14 +188,6 @@ export default function HostHeader() {
                     </NavLink>
                   ))}
 
-                  <NavLink
-                    to="/host/profile"
-                    className={({ isActive }) =>
-                      `block rounded-lg px-3 py-2 text-base font-semibold transition ${isActive ? "text-secondary-500" : "text-text-primary hover:bg-black/5"}`
-                    }
-                  >
-                    Mi perfil
-                  </NavLink>
                 </div>
               </motion.aside>
             </>
