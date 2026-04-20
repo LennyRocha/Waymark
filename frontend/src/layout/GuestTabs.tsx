@@ -23,6 +23,7 @@ import { motion } from "framer-motion";
 import CustomLink from "../components/CustomLink";
 import CustomDropdown from "../components/CustomDropdown";
 import DropdownParent from "../components/DropdownParent";
+import useSetUserImage from "../utils/useSetUserImage";
 
 export default function TabsScreen() {
   const location = useLocation();
@@ -181,6 +182,8 @@ function Header({
   const auth = useAuth();
   const [showMenu, setShowMenu] = useState(false);
   const avatarRef = useRef(null);
+
+  useSetUserImage();
 
   return (
     <header className="max-md:hidden bg-white border-border border-1">

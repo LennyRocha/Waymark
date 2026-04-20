@@ -5,6 +5,7 @@ import { Menu } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import CustomDropdown from '../components/CustomDropdown';
 import DropdownParent from '../components/DropdownParent';
+import useSetUserImage from '../utils/useSetUserImage';
 
 type AdminLink = {
     name: string;
@@ -48,6 +49,8 @@ export default function AdminHeader() {
         globalThis.addEventListener('resize', updateWidth);
         return () => globalThis.removeEventListener('resize', updateWidth);
     }, []);
+
+    useSetUserImage();
 
     const{userImage } = useAuth() || {};
 
