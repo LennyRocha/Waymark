@@ -56,3 +56,6 @@ npm install react-markdown
 
 #Decode token
 npm install jwt-decode
+
+# Prop types
+npm install prop-types

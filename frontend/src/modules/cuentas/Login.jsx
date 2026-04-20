@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../../utils/api";
 import { useAuth } from "../../context/AuthContext";
+import PropTypes from 'prop-types'
 
 function routeByRole(roleName = "") {
   const role = roleName.trim().toLowerCase();
@@ -129,4 +130,14 @@ export default function Login({ fromModal = false, closeModal }) {
       </section>
     </main>
   );
+}
+
+Login.propTypes = {
+  fromModal: PropTypes.bool,
+  closeModal: PropTypes.func
+}
+
+Login.defaultProps = {
+  fromModal: false,
+  closeModal: () => {}
 }

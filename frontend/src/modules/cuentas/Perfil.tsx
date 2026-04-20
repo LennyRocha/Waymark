@@ -1,7 +1,6 @@
-import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from "react";
+import React, { useEffect, useMemo, useState, type ChangeEvent } from "react";
 import { useLocation } from "react-router-dom";
 import apiToken from "../../utils/apiToken";
-import { useAuth } from "../../context/AuthContext";
 import useSetPageTitle from "../../utils/setPageTitle";
 import { getAxiosErrorMessage } from "../../utils/getAxiosErrorMessage";
 import Breadcrumb from "../../components/Breadcrumb";
@@ -22,7 +21,6 @@ type PerfilFormState = typeof EMPTY_PROFILE;
 
 export default function Perfil() {
   const location = useLocation();
-  const auth = useAuth();
   const [profile, setProfile] = useState<PerfilFormState>(EMPTY_PROFILE);
   const [loading, setLoading] = useState(true);
   const [savingProfile, setSavingProfile] = useState(false);
@@ -124,7 +122,7 @@ export default function Perfil() {
   };
 
   const handleProfileSubmit = async (
-    e: FormEvent<HTMLFormElement>,
+    e: React.SyntheticEvent<HTMLFormElement>,
   ) => {
     e.preventDefault();
     setSavingProfile(true);
@@ -170,7 +168,7 @@ export default function Perfil() {
   };
 
   const handlePasswordSubmit = async (
-    e: FormEvent<HTMLFormElement>,
+    e: React.SyntheticEvent<HTMLFormElement>,
   ) => {
     e.preventDefault();
     setSavingPassword(true);
@@ -207,7 +205,7 @@ export default function Perfil() {
               }
               return String(messages);
             })
-            .filter(msg => msg)
+            .filter(Boolean)
             .join(" | ");
           
           if (errorMessages) {
@@ -239,10 +237,6 @@ export default function Perfil() {
       disabled: true,
     },
   ];
-
-  const fullName = [profile.nombre, profile.apellido_p, profile.apellido_m]
-    .filter(Boolean)
-    .join(" ");
 
   if (loading) {
     return (

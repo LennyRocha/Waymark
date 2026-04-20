@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../../utils/api";
 import { getAxiosErrorMessage } from "../../utils/getAxiosErrorMessage";
+import { useMutation } from "@tanstack/react-query";
 
 export default function Registro() {
   const navigate = useNavigate();
@@ -33,9 +34,9 @@ export default function Registro() {
     if (!value) return "";
     return value
       .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
+      .replaceAll(/[\u0300-\u036f]/g, "")
       .trim()
-      .replace(/\s+/g, " ")
+      .replaceAll(/\s+/g, " ")
       .toLowerCase();
   };
 
@@ -127,6 +128,34 @@ export default function Registro() {
     }
   };
 
+  const fieldsToValidate = [
+    { key: "nombre", label: "nombre" },
+    { key: "apellido_p", label: "apellido paterno" },
+    { key: "apellido_m", label: "apellido materno" },
+  ];
+
+  const post = useMutation({
+    mutationFn: async ({ data }) => {
+      await api.post("/registro/", data, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+    },
+    onSuccess: () => {
+      setOk("Registro exitoso. Ahora inicia sesion.");
+      setTimeout(() => navigate("/login"), 1000);
+    },
+    onError: (err) => {
+      const payload = err?.response?.data;
+      if (payload && typeof payload === "object") {
+        const firstKey = Object.keys(payload)[0];
+        const firstVal = Array.isArray(payload[firstKey]) ? payload[firstKey][0] : payload[firstKey];
+        setError(String(firstVal || "Error al registrar"));
+      } else {
+        setError(getAxiosErrorMessage(err) || "Error al registrar");
+      }
+    }
+  })
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -143,12 +172,6 @@ export default function Registro() {
         return;
       }
 
-      const fieldsToValidate = [
-        { key: "nombre", label: "nombre" },
-        { key: "apellido_p", label: "apellido paterno" },
-        { key: "apellido_m", label: "apellido materno" },
-      ];
-
       const mismatchedFields = fieldsToValidate
         .filter(({ key }) => normalizeText(form[key]) !== normalizeText(ineData[key]))
         .map(({ label }) => label);
@@ -163,29 +186,11 @@ export default function Registro() {
 
     setLoading(true);
 
-    try {
-      const data = new FormData();
-      Object.entries(form).forEach(([key, value]) => data.append(key, value));
-      if (foto) data.append("foto_perfil", foto);
-
-      await api.post("/registro/", data, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-
-      setOk("Registro exitoso. Ahora inicia sesion.");
-      setTimeout(() => navigate("/login"), 1000);
-    } catch (err) {
-      const payload = err?.response?.data;
-      if (payload && typeof payload === "object") {
-        const firstKey = Object.keys(payload)[0];
-        const firstVal = Array.isArray(payload[firstKey]) ? payload[firstKey][0] : payload[firstKey];
-        setError(String(firstVal || "Error al registrar"));
-      } else {
-        setError(getAxiosErrorMessage(err) || "Error al registrar");
-      }
-    } finally {
-      setLoading(false);
-    }
+    const data = new FormData();
+    Object.entries(form).forEach(([key, value]) => data.append(key, value));
+    if (foto) data.append("foto_perfil", foto);
+    await post.mutateAsync({ data });
+    setLoading(false);
   };
 
   return (
@@ -234,7 +239,9 @@ export default function Registro() {
 
           {isHost && (
             <div className="grid gap-3">
-              <label className="font-semibold text-[var(--t_primario)]">Escanear INE</label>
+              <label htmlFor="ine_input" className="font-semibold text-[var(--t_primario)]">
+                Escanear INE
+              </label>
               <input
                 type="file"
                 id="ine_input"
