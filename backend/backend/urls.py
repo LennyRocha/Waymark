@@ -24,17 +24,18 @@ from rest_framework_simplejwt.views import (
 from cuentas.views import RegistroView, LoginView
 
 
-
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/", include("propiedades.urls")),
     path("api/", include("calificaciones.urls")),
     path("api/", include("reservas.urls")),
+    path("api/cuentas/", include("cuentas.urls")),
 
     # Endpoints de cuentas
     path("api/login/", LoginView.as_view(), name="token_obtain_pair"),
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("api/registro/", RegistroView.as_view(), name="registro"),
+    path('api/documentos/', include('documentos.urls')),
 ]
 
 # Esto permite visualizar las imágenes en modo DEBUG (desarrollo)

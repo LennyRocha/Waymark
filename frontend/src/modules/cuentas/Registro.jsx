@@ -174,9 +174,9 @@ export default function Registro() {
                 required
                 className="w-full rounded-xl border border-[#d8dbe5] px-3.5 py-3 text-[var(--t_primario)] outline-none transition focus:border-[var(--primario)] focus:shadow-[0_0_0_3px_rgba(191,6,3,0.15)]"
               >
-                <option value="3">Cliente</option>
+                <option value="1">Cliente</option>
                 <option value="2">Anfitrion</option>
-                <option value="1">Admin</option>
+                <option value="3">Admin</option>
               </select>
             </div>
 

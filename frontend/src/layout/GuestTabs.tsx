@@ -9,6 +9,7 @@ import {
   NotebookText,
   Calendar,
   LayoutPanelLeft,
+  Plane,
 } from "lucide-react";
 import {
   Link,
@@ -116,6 +117,11 @@ export default function TabsScreen() {
               label: "Favoritos",
               to: "/wishlist",
               icon: <Heart size={24} strokeWidth={1.5} />,
+            },
+            {
+              label: "Mis viajes",
+              to: "/my-trips",
+              icon: <Plane size={24} strokeWidth={1.5} />,
             },
             {
               label: "Perfil",
@@ -253,7 +259,10 @@ function Header({
               <div className="w-full bg-border h-[1px]" />
               <ul>
                 <li className="py-3 px-2 text-left">
-                  <CustomLink to="/profile" disabled={false}>
+                  <CustomLink
+                    to="/profile"
+                    disabled={false}
+                  >
                     Mi perfil
                   </CustomLink>
                 </li>
@@ -341,17 +350,6 @@ const HeaderNoAuth = () => {
                   disabled={false}
                 >
                   Convierte en anfitrión
-                </CustomLink>
-              </li>
-              <li>
-                <div className="w-full bg-border h-[1px]"></div>
-              </li>
-              <li className="py-4 px-2 text-left text-nowrap">
-                <CustomLink
-                  to="/search-hosts"
-                  disabled={false}
-                >
-                  Buscar a un anfitrión
                 </CustomLink>
               </li>
               <li>

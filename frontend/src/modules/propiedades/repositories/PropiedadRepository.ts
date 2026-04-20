@@ -11,6 +11,7 @@ import Card, {
   LandingResponse,
 } from "../types/Card";
 import apiToken from "../../../utils/apiToken";
+import apiLanding from "../../../utils/apiLanding";
 import Anfitrion from "../types/Anfitrion";
 const prefix = "propiedades/";
 const PropiedadRepository = {
@@ -42,7 +43,7 @@ const PropiedadRepository = {
     return res.data;
   },
   getLanding: async () => {
-    const res = await api.get<LandingResponse>(
+    const res = await apiLanding.get<LandingResponse>(
       `${prefix}landing/`,
     );
 
