@@ -162,3 +162,15 @@ b {
 #error_h1{
     font-size: clamp(3rem, calc(5vw + 2rem), 6rem);
 }
+
+#about > *{
+  text-align: left;
+}
+
+#about  p{
+  color: var(--color-text-secondary) !important;
+}
+
+#about  ul{
+  color: var(--color-text-secondary) !important;
+}

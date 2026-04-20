@@ -17,6 +17,7 @@ import Page403 from '../modules/paginas_error/403';
 import MisViajes from '../modules/reservas/MisViajes';
 import Solicitudes from '../modules/reservas/Solicitudes';
 import { useAuth } from '../context/AuthContext';
+import About from '../modules/paginas_error/About';
 
 /** Requiere sesión iniciada. Sin rol requerido = cualquier usuario autenticado. */
 function PrivateRoute({ children, role }: Readonly<{ children: ReactNode; role?: string | string[] }>) {
@@ -46,6 +47,7 @@ export default function Router() {
                 </Route>
                 <Route path="login" element={<Login fromModal={false} closeModal={() => {}} />} />
                 <Route path="registro" element={<Registro />} />
+                <Route path="about" element={<About />} />
                 <Route path="rooms/:idSlug" element={<PropiedadPage />} />
                 <Route path="s/:ciudad_pais/homes" element={<FiltrosPage />} />
                 <Route path="s/homes" element={<FiltrosPage />} />

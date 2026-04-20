@@ -99,7 +99,7 @@ export default function Landing() {
           />
         </main>
       ) : (
-        <main className="content">
+        <main className="content min-h-[100dvh]">
           {landing.data?.favoritos.length !== 0 && (
             <LandingRow
               item={{} as CardsResponse}
