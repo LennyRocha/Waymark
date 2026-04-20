@@ -35,6 +35,7 @@ urlpatterns = [
     path("api/login/", LoginView.as_view(), name="token_obtain_pair"),
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("api/registro/", RegistroView.as_view(), name="registro"),
+    path('api/documentos/', include('documentos.urls')),
 ]
 
 # Esto permite visualizar las imágenes en modo DEBUG (desarrollo)
