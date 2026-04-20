@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     "cuentas",
     "calificaciones",
     "reservas",
+    'documentos',
 ]
 
 AUTH_USER_MODEL = "cuentas.Usuario"

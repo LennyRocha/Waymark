@@ -1,6 +1,6 @@
 import re
 import requests
-from django.conf import settings
+import os
 
 
 def limpiar_texto(texto: str) -> str:
@@ -54,7 +54,7 @@ def procesar_ine_con_ocr_space(imagen) -> dict:
             "filename": (imagen.name, imagen, imagen.content_type)
         },
         data={
-            "apikey": settings.OCR_API_KEY,
+            "apikey": os.getenv("OCR_SPACE_API_KEY"),
             "language": "spa",
             "isOverlayRequired": False,
             "OCREngine": 2,
@@ -88,17 +88,3 @@ def extraer_domicilio(texto: str) -> str:
         return domicilio
 
     return ""
-
-    respuesta.raise_for_status()
-    data = respuesta.json()
-
-    resultados = data.get("ParsedResults", [])
-    texto = " ".join([resultado.get("ParsedText", "") for resultado in resultados])
-    texto_limpio = limpiar_texto(texto)
-
-    return {
-        "texto_detectado": texto_limpio,
-        "nombre": extraer_nombre(texto_limpio),
-        "curp": extraer_curp(texto_limpio),
-        "fecha_nacimiento": extraer_fecha_nacimiento(texto_limpio),
-    }
