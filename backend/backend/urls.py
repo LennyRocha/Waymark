@@ -24,12 +24,12 @@ from rest_framework_simplejwt.views import (
 from cuentas.views import RegistroView, LoginView
 
 
-
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/", include("propiedades.urls")),
     path("api/", include("calificaciones.urls")),
     path("api/", include("reservas.urls")),
+    path("api/cuentas/", include("cuentas.urls")),
 
     # Endpoints de cuentas
     path("api/login/", LoginView.as_view(), name="token_obtain_pair"),

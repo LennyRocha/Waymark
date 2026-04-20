@@ -12,6 +12,7 @@ import MisFavoritos from '../modules/propiedades/MisFavoritos';
 import TabsScreen from '../layout/GuestTabs';
 import Login from '../modules/cuentas/Login';
 import Registro from '../modules/cuentas/Registro';
+import Perfil from '../modules/cuentas/Perfil';
 import Page403 from '../modules/paginas_error/403';
 import MisViajes from '../modules/reservas/MisViajes';
 import Solicitudes from '../modules/reservas/Solicitudes';
@@ -41,7 +42,7 @@ export default function Router() {
                     {/* Rutas que requieren auth */}
                     <Route path="wishlist" element={<MisFavoritos />} />
                     <Route path="my-trips" element={<PrivateRoute><MisViajes /></PrivateRoute>} />
-                    <Route path="profile" element={<PrivateRoute><h1>Vista de mi perfil</h1></PrivateRoute>} />
+                    <Route path="profile" element={<PrivateRoute><Perfil /></PrivateRoute>} />
                 </Route>
                 <Route path="login" element={<Login fromModal={false} closeModal={() => {}} />} />
                 <Route path="registro" element={<Registro />} />
@@ -56,7 +57,8 @@ export default function Router() {
                     <Route path="today" element={<Solicitudes />} />
                     <Route path="calendar" element={<h1>Vista de calendario</h1>} />
                     <Route path="listings" element={<MisPropiedades />} />
-                    <Route path="profile" element={<h1>Vista de mi perfil</h1>} />
+                    <Route path="profile" element={<Perfil />} />
+                    <Route path="explore" element={<h1>Vista de alojamientos</h1>} />
                     <Route path="new-listing" element={<NuevaPropiedad />} />
                     <Route path="manage-listing/:idSlug" element={<AdministrarPropiedad />} />
                 </Route>
@@ -67,7 +69,7 @@ export default function Router() {
                     <Route path="dashboard" element={<h1>Dashboard todo feo, vista de usuarios</h1>} />
                     <Route path="currencys" element={<h1>Vista de mis divisas</h1>} />
                     <Route path="calendar" element={<h1>Vista de calendario</h1>} />
-                    <Route path="profile" element={<h1>Vista de mi perfil</h1>} />
+                    <Route path="profile" element={<Perfil />} />
                 </Route>
 
                 <Route path="404" element={<Page404 />} />
