@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import CustomLoader from "../../layout/CustomLoader";
 import Avatar from "../../components/Avatar";
 import apiToken from "../../utils/apiToken";
+import Breadcrumb from "../../components/Breadcrumb";
 
 type Solicitud = {
   reserva_id: number;
@@ -21,16 +22,35 @@ type Solicitud = {
 };
 
 const ESTADO_COLOR: Record<string, string> = {
-  pendiente:  "bg-yellow-100 text-yellow-800",
+  pendiente: "bg-yellow-100 text-yellow-800",
   confirmada: "bg-green-100 text-green-800",
-  cancelada:  "bg-red-100 text-red-800",
+  cancelada: "bg-red-100 text-red-800",
   completada: "bg-blue-100 text-blue-800",
 };
 
+const links = [
+  {
+    label: "Inicio",
+    href: "/",
+  },
+  {
+    label: "Anfitrión",
+    href: "/host",
+    disabled: true,
+  },
+];
+
 export default function Solicitudes() {
-  const { data: solicitudes = [], isLoading, isError } = useQuery({
+  const {
+    data: solicitudes = [],
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ["solicitudes"],
-    queryFn: () => apiToken.get("/reservas/solicitudes/").then((r) => r.data),
+    queryFn: () =>
+      apiToken
+        .get("/reservas/solicitudes/")
+        .then((r) => r.data),
   });
 
   if (isLoading)
@@ -43,16 +63,23 @@ export default function Solicitudes() {
   if (isError)
     return (
       <main className="w-full h-[60dvh] flex items-center justify-center">
-        <p className="text-red-500">No se pudieron cargar las solicitudes.</p>
+        <p className="text-red-500">
+          No se pudieron cargar las solicitudes.
+        </p>
       </main>
     );
 
   return (
     <main className="max-w-[900px] mx-auto px-4 py-8 flex flex-col gap-6">
-      <h2 className="text-left font-[montserrat]">Solicitudes</h2>
+      <Breadcrumb items={links} />
+      <h2 className="text-left font-[montserrat]">
+        Solicitudes
+      </h2>
 
       {solicitudes.length === 0 ? (
-        <p className="text-text-secondary">Aún no tienes solicitudes de reserva.</p>
+        <p className="text-text-secondary">
+          Aún no tienes solicitudes de reserva.
+        </p>
       ) : (
         <div className="flex flex-col gap-4">
           {solicitudes.map((s: Solicitud) => (
@@ -76,7 +103,10 @@ export default function Solicitudes() {
                 </div>
                 <span className="text-text-secondary text-sm">
                   {s.fecha_inicio} → {s.fecha_fin} ·{" "}
-                  {s.huespedes} {s.huespedes === 1 ? "huésped" : "huéspedes"}
+                  {s.huespedes}{" "}
+                  {s.huespedes === 1
+                    ? "huésped"
+                    : "huéspedes"}
                 </span>
                 <span className="text-text-primary font-semibold text-sm">
                   Total: ${s.precio_total} MXN

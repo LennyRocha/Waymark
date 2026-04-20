@@ -57,7 +57,6 @@ export default function Router() {
                     <Route path="calendar" element={<h1>Vista de calendario</h1>} />
                     <Route path="listings" element={<MisPropiedades />} />
                     <Route path="profile" element={<h1>Vista de mi perfil</h1>} />
-                    <Route path="explore" element={<h1>Vista de alojamientos</h1>} />
                     <Route path="new-listing" element={<NuevaPropiedad />} />
                     <Route path="manage-listing/:idSlug" element={<AdministrarPropiedad />} />
                 </Route>
