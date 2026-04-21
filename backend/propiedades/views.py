@@ -34,6 +34,7 @@ from rest_framework.filters import OrderingFilter
 import traceback
 from django.db import IntegrityError
 from rest_framework.exceptions import ValidationError
+from .paginations import PropiedadPagination
 
 from loguru import logger
 
@@ -75,6 +76,8 @@ class PropiedadViewSet(viewsets.ModelViewSet):
         return queryset
 
     serializer_class = PropiedadSerializer
+
+    pagination_class = PropiedadPagination
 
     filter_backends = [DjangoFilterBackend, OrderingFilter]
 
