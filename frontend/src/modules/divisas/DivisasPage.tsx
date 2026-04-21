@@ -10,6 +10,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import Divisa from "./types/Divisa";
 import useDivisaMutation from "./hooks/useDivisaMutation";
 import { useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
+import useWatchResize from "../../utils/useWatchResize";
 
 const links = [
   {
@@ -37,6 +39,7 @@ function DivisasPage() {
       queryClient.invalidateQueries({
         queryKey: ["divisas"],
       });
+      toast.success(id ? "Divisa actualizada exitosamente" : "Divisa guardada exitosamente");
       clearForm();
     },
     onError: (error: any) => {
@@ -91,6 +94,11 @@ function DivisasPage() {
     setId(divisa.divisa_id);
   }
 
+  const isSmalll = useWatchResize({
+    pixeles: 768,
+    metrica: "max",
+  });
+
   if (
     divisasQuery.isLoading ||
     divisasQuery.isInitialLoading
@@ -140,6 +148,7 @@ function DivisasPage() {
                   }}
                   key={d.divisa_id}
                   className="flex items-center gap-2 justify-between my-2 p-2 rounded-md  bg-white"
+                  onClick={() => isSmalll && setDivisa(d)}
                 >
                   <div className="flex items-center gap-2 justify-start">
                     <Landmark
@@ -166,7 +175,7 @@ function DivisasPage() {
                     initial={{ opacity: 0 }}
                     whileHover={{ opacity: 1 }}
                     size={24}
-                    className="justify-self-end-safe shrink-0 cursor-pointer text-secondary-500 rounded-sm"
+                    className="justify-self-end-safe shrink-0 cursor-pointer text-secondary-500 rounded-sm max-md:hidden p-1 transition-colors"
                     onClick={() => setDivisa(d)}
                   />
                 </motion.li>

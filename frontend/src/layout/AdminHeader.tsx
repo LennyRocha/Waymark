@@ -162,7 +162,7 @@ export default function AdminHeader() {
                                         >
                                             <button
                                                 onClick={() => auth?.handleLogout?.()}
-                                                className="-mx-3 block rounded-lg px-3 py-2 text-base/5 font-semibold text-red-600 hover:bg-black/5 font-[montserrat]"
+                                                className="-mx-3 block rounded-lg px-3 py-2 text-base/5 font-semibold text-red-600 hover:bg-black/5 font-[montserrat] mx-auto"
                                             >
                                                 Cerrar sesión
                                             </button>
