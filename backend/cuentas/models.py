@@ -50,6 +50,9 @@ class UsuarioManager(BaseUserManager):
             raise ValueError("El superusuario debe tener is_superuser=True")
 
         return self.create_user(correo, password, **extra_fields)
+    
+    def get_queryset(self):
+        return super().get_queryset().defer("last_login")
 
 
 user_logged_in.disconnect(update_last_login)
