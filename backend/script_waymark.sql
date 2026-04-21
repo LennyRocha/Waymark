@@ -272,6 +272,27 @@ CREATE TABLE documento (
 );
 
 -- =========================
+-- AUDITORIA
+-- Se usa para registrar eventos de API de todos los módulos.
+-- =========================
+
+CREATE TABLE auditoria (
+    auditoria_id BIGINT AUTO_INCREMENT PRIMARY KEY NOT NULL,
+    modulo VARCHAR(80) NOT NULL,
+    accion VARCHAR(180) NOT NULL,
+    usuario_id INT NULL,
+    ip VARCHAR(64) NULL,
+    status_code SMALLINT NULL,
+    detalle TEXT NULL,
+    fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    INDEX idx_auditoria_modulo (modulo),
+    INDEX idx_auditoria_usuario (usuario_id),
+    INDEX idx_auditoria_fecha (fecha),
+    FOREIGN KEY (usuario_id) REFERENCES usuario(usuario_id)
+);
+
+-- =========================
 -- DATOS INICIALES (catálogos)
 -- Sin estos registros el registro/login falla con 400.
 -- =========================

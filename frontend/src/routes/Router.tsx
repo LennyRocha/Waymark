@@ -51,7 +51,6 @@ export default function Router() {
                 <Route path="rooms/:idSlug" element={<PropiedadPage />} />
                 <Route path="s/:ciudad_pais/homes" element={<FiltrosPage />} />
                 <Route path="s/homes" element={<FiltrosPage />} />
-                <Route path="become-a-host" element={<h1>Conviertete en anfitrion</h1>} />
 
                 {/* Rutas de anfitrión */}
                 <Route path="host" element={<PrivateRoute role={['anfitrion', 'ambos']}><TabsScreen /></PrivateRoute>}>

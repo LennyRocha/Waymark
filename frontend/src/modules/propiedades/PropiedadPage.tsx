@@ -213,7 +213,7 @@ export default function PropiedadPage() {
         queryKey: ["solicitudes"],
       });
     },
-    onError: () => {
+    onError: (err) => {
       console.log(err);
       const msg =
         err?.response?.data?.detail ||
@@ -809,18 +809,6 @@ const Header = ({ toggle, value }: HeaderProps) => {
             classes=" flex flex-row gap-2 justify-center items-center"
             hideFunction={setShow}
           >
-            {showLink &&
-              (!auth?.isAuthenticated ||
-                auth.userRole === "turista") && (
-                <button
-                  className="font-bold"
-                  onClick={() => navigate("/become-a-host")}
-                  title="Convertirte en anfitrión"
-                  aria-label="Convertirte en anfitrión"
-                >
-                  Conviertete en anfitrión
-                </button>
-              )}
             <button
               aria-label="abrir menú lateral"
               ref={buttonRef}

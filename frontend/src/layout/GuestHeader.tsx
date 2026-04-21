@@ -100,14 +100,6 @@ export default function GuestHeader() {
           </div>
           <div className="hidden lg:flex lg:flex-1 lg:justify-end gap-2">
             <button
-              className="font-bold"
-              onClick={() => navigate("/")}
-              title="Convertirte en anfitrión"
-              aria-label="Convertirte en anfitrión"
-            >
-              Conviertete en anfitrión
-            </button>
-            <button
               type="button"
               className="flex text-sm bg-gray-800 rounded-full focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600"
               onClick={() => navigate("/guest/profile")}

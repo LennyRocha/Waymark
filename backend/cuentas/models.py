@@ -19,7 +19,16 @@ class Rol(models.Model):
         return self.nombre
 
 
-class UsuarioManager(BaseUserManager):
+class UsuarioQuerySet(models.QuerySet):
+    """QuerySet that defers last_login to avoid selecting non-existent column."""
+    def get(self, *args, **kwargs):
+        return super().defer("last_login").get(*args, **kwargs)
+    
+    def all(self):
+        return super().defer("last_login")
+
+
+class UsuarioManager(BaseUserManager.from_queryset(UsuarioQuerySet)):
     def create_user(self, correo, password=None, **extra_fields):
         if not correo:
             raise ValueError("El usuario debe tener un correo")
@@ -47,7 +56,7 @@ user_logged_in.disconnect(update_last_login)
 
 
 class Usuario(AbstractBaseUser, PermissionsMixin):
-    last_login = models.DateTimeField(null=True, blank=True, db_column="last_login")
+    last_login = models.DateTimeField(null=True, blank=True, editable=False, db_column=None)
     is_superuser = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)

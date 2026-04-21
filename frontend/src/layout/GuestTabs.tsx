@@ -221,16 +221,6 @@ function Header({
           )}
         </div>
         <div className="flex flex-1 justify-end gap-2">
-          {auth?.userRole === "turista" && (
-            <button
-              className="font-bold hidden lg:block"
-              onClick={() => navigate("/become-a-host")}
-              title="Convertirte en anfitrión"
-              aria-label="Convertirte en anfitrión"
-            >
-              Conviertete en anfitrión
-            </button>
-          )}
           <DropdownParent
             classes="flex items-center"
             hideFunction={setShowMenu}
@@ -318,18 +308,6 @@ const HeaderNoAuth = () => {
           classes=" flex flex-row gap-2 justify-center items-center"
           hideFunction={setShow}
         >
-          {(!auth?.isAuthenticated ||
-            (auth.userRole !== "anfitrion" &&
-              auth.userRole !== "ambos")) && (
-            <button
-              className="font-bold lg:block hidden"
-              onClick={() => navigate("/become-a-host")}
-              title="Convertirte en anfitrión"
-              aria-label="Convertirte en anfitrión"
-            >
-              Conviertete en anfitrión
-            </button>
-          )}
           <button
             aria-label="abrir menú lateral"
             ref={buttonRef}
@@ -352,7 +330,7 @@ const HeaderNoAuth = () => {
             <ul>
               <li className="py-4 px-2 text-left text-nowrap">
                 <CustomLink
-                  to="/become-a-host"
+                  to="/registro"
                   disabled={false}
                 >
                   Convierte en anfitrión

@@ -388,21 +388,6 @@ const Header = ({
               classes=" flex flex-row gap-2 justify-center items-center"
               hideFunction={setShow}
             >
-              {showLink &&
-                (!auth?.isAuthenticated ||
-                  (auth.userRole !== "anfitrion" &&
-                    auth.userRole !== "ambos")) && (
-                  <button
-                    className="font-bold"
-                    onClick={() =>
-                      navigate("/become-a-host")
-                    }
-                    title="Convertirte en anfitrión"
-                    aria-label="Convertirte en anfitrión"
-                  >
-                    Conviertete en anfitrión
-                  </button>
-                )}
               <button
                 aria-label="abrir menú lateral"
                 ref={buttonRef}

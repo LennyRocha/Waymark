@@ -24,6 +24,7 @@ const ESTADO_COLOR: Record<string, string> = {
   pendiente:  "bg-yellow-100 text-yellow-800",
   confirmada: "bg-green-100 text-green-800",
   cancelada:  "bg-red-100 text-red-800",
+  finalizada: "bg-blue-100 text-blue-800",
   completada: "bg-blue-100 text-blue-800",
 };
 
@@ -52,6 +53,21 @@ export default function MisViajes() {
     },
     onError: (err: any) => {
       toast.error(err?.response?.data?.detail || "No se pudo enviar la reseña.");
+    },
+  });
+
+  const cancelMutation = useMutation({
+    mutationFn: (reservaId: number) =>
+      apiToken.patch(`/reservas/${reservaId}/cancelar/`),
+    onSuccess: () => {
+      toast.success("Reserva cancelada");
+      queryClient.invalidateQueries({ queryKey: ["mis-reservas"] });
+      queryClient.invalidateQueries({ queryKey: ["solicitudes"] });
+    },
+    onError: (err: any) => {
+      toast.error(
+        err?.response?.data?.detail || "No se pudo cancelar la reserva.",
+      );
     },
   });
 
@@ -120,12 +136,23 @@ export default function MisViajes() {
                 >
                   {r.estado_nombre}
                 </span>
-                <button
-                  onClick={() => setSelected(r)}
-                  className="text-sm font-semibold text-primary-500 hover:underline"
-                >
-                  Dejar reseña
-                </button>
+                {(r.estado_nombre === "pendiente" || r.estado_nombre === "confirmada") && (
+                  <button
+                    onClick={() => cancelMutation.mutate(r.reserva_id)}
+                    disabled={cancelMutation.isPending}
+                    className="text-xs font-semibold rounded-lg px-3 py-1 bg-red-600 text-white disabled:opacity-60"
+                  >
+                    Cancelar reserva
+                  </button>
+                )}
+                {(r.estado_nombre === "finalizada" || r.estado_nombre === "completada") && (
+                  <button
+                    onClick={() => setSelected(r)}
+                    className="text-sm font-semibold text-primary-500 hover:underline"
+                  >
+                    Dejar reseña
+                  </button>
+                )}
               </div>
             </article>
           ))}

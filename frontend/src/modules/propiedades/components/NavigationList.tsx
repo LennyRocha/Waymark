@@ -175,7 +175,7 @@ export default function NavigationList() {
         <ul>
           <li className="py-4 px-2 text-left text-nowrap">
             <CustomLink
-              to="/become-a-host"
+              to="/registro"
               disabled={false}
             >
               Convierte en anfitrión
