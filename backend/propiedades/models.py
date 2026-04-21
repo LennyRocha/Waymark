@@ -46,10 +46,18 @@ class Divisa(models.Model):
         max_length=50,
         blank=False,
         validators=[
-            RegexValidator("^[a-zA-ZáéíóúÁÉÍÓÚ ]$", "No puedes incluir números")
+            RegexValidator("^[a-zA-ZáéíóúÁÉÍÓÚ ]+$", "No puedes incluir números")
         ],
     )
-    acronimo = models.TextField(blank=False)
+    acronimo = models.CharField(
+        blank=False,
+        max_length=5,
+        validators=[
+            RegexValidator(
+                "^[A-Z]+$", "El acrónimo debe contener solo letras mayúsculas"
+            )
+        ],
+    )
     created_at = models.DateTimeField(blank=True, null=True, auto_now_add=True)
     updated_at = models.DateTimeField(blank=True, null=True, auto_now_add=True)
     created_by = models.IntegerField(blank=True, null=True)
