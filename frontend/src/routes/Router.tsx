@@ -18,6 +18,7 @@ import MisViajes from '../modules/reservas/MisViajes';
 import Solicitudes from '../modules/reservas/Solicitudes';
 import { useAuth } from '../context/AuthContext';
 import About from '../modules/paginas_error/About';
+import DivisasPage from '../modules/divisas/DivisasPage';
 
 /** Requiere sesión iniciada. Sin rol requerido = cualquier usuario autenticado. */
 function PrivateRoute({ children, role }: Readonly<{ children: ReactNode; role?: string | string[] }>) {
@@ -68,7 +69,7 @@ export default function Router() {
                 <Route path="admin" element={<PrivateRoute role="administrador"><AdminHeader /></PrivateRoute>}>
                     <Route index element={<Navigate to="dashboard" />} />
                     <Route path="dashboard" element={<h1>Dashboard todo feo, vista de usuarios</h1>} />
-                    <Route path="currencys" element={<h1>Vista de mis divisas</h1>} />
+                    <Route path="currencys" element={<DivisasPage />} />
                     <Route path="calendar" element={<h1>Vista de calendario</h1>} />
                     <Route path="profile" element={<Perfil />} />
                 </Route>

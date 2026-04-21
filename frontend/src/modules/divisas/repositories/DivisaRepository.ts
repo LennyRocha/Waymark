@@ -1,4 +1,5 @@
 import api from "../../../utils/api";
+import apiToken from "../../../utils/apiToken";
 import Divisa from "../types/Divisa";
 const prefix = "divisas/";
 const DivisaRepository = {
@@ -10,12 +11,12 @@ const DivisaRepository = {
     const res = await api.get<Divisa>(`${prefix}${id}`);
     return res.data;
   },
-  save: async (data: Divisa) => {
-    const res = await api.post<Divisa>(prefix, data);
+  save: async (data: Partial<Divisa>) => {
+    const res = await apiToken.post<Divisa>(prefix, data);
     return res.data;
   },
   update: async (data: Partial<Divisa>, id: number) => {
-    const res = await api.patch<Divisa>(
+    const res = await apiToken.patch<Divisa>(
       `${prefix}${id}`,
       data,
     );

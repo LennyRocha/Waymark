@@ -124,7 +124,7 @@ export default function About() {
           <Divider />
           <article className="flex flex-col gap-2">
             <h3>Información del equipo</h3>
-            <p>Proyecto desarrollado por: Synverge inc.</p>
+            <p>Proyecto desarrollado por: Equipo Synverge.</p>
             <p>
               Institución educativa: Universidad Tecnológica
               Emiliano Zapata
