@@ -40,7 +40,7 @@ function DivisasPage() {
       clearForm();
     },
     onError: (error: any) => {
-      console.log(error.response?.data);
+      console.log(error.response?.data, error);
     },
   });
   const emptyForm = {
@@ -66,7 +66,6 @@ function DivisasPage() {
 
   function handleSubmit() {
     if (!isFormValid) return;
-    console.log("Submitting form with data:", formData, "and id:", id);
     if (id) {
       divisaMutation.mutate({
         data: formData,
