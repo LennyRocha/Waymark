@@ -28,7 +28,7 @@ class UsuarioQuerySet(models.QuerySet):
         return super().defer("last_login")
 
 
-class UsuarioManager(BaseUserManager.from_queryset(UsuarioQuerySet)):
+class UsuarioManager(BaseUserManager):
     def create_user(self, correo, password=None, **extra_fields):
         if not correo:
             raise ValueError("El usuario debe tener un correo")
