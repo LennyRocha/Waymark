@@ -173,6 +173,9 @@ export default function NavigationList() {
     } else {
       return (
         <ul>
+          <li>
+            <div className="w-full bg-border h-[1px]"></div>
+          </li>
           <li className="py-4 px-2 text-left text-nowrap">
             <CustomLink to="/login" disabled={false}>
               Iniciar sesión
