@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import api from "../../utils/api";
 import { useAuth } from "../../context/AuthContext";
 import PropTypes from 'prop-types'
+import { useQueryClient } from "@tanstack/react-query";
 
 function routeByRole(roleName = "") {
   const role = roleName.trim().toLowerCase();
@@ -13,6 +14,7 @@ function routeByRole(roleName = "") {
 }
 
 export default function Login({ fromModal = false, closeModal }) {
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [form, setForm] = useState({
     correo: "",
@@ -43,6 +45,8 @@ export default function Login({ fromModal = false, closeModal }) {
       setAuthRefreshToken(data.refresh);
       localStorage.setItem("user_role", data?.usuario?.rol_nombre || "");
 
+      queryClient.invalidateQueries({ queryKey: ["landing"] });
+
       fromModal ? closeModal() : navigate(routeByRole(data?.usuario?.rol_nombre));
     } catch (err) {
       const msg =
@@ -56,7 +60,7 @@ export default function Login({ fromModal = false, closeModal }) {
 
   return (
     <main className={`${fromModal ? "h-auto" : "min-h-[100dvh] py-10"} bg-white px-4 flex items-center justify-center`}>
-      <section className={`w-full max-w-[460px] rounded-2xl border border-[var(--color-border)] bg-white/90 p-6 md:p-8 ${!fromModal && "shadow-[0_18px_40px_rgba(43,49,69,0.14)]" }`}>
+      <section className={`w-full max-w-[460px] rounded-2xl border border-[var(--color-border)] bg-white/90 p-6 md:p-8 ${!fromModal && "shadow-[0_18px_40px_rgba(43,49,69,0.14)]"}`}>
         <p className="m-0 uppercase tracking-[0.1em] text-xs font-bold text-[var(--secundario)]">
           Waymark
         </p>
@@ -139,5 +143,5 @@ Login.propTypes = {
 
 Login.defaultProps = {
   fromModal: false,
-  closeModal: () => {}
+  closeModal: () => { }
 }
