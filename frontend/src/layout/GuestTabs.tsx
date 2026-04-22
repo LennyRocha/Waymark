@@ -16,7 +16,6 @@ import {
   NavLink,
   Outlet,
   useLocation,
-  useNavigate,
 } from "react-router-dom";
 import { useState, useRef, useMemo } from "react";
 import { motion } from "framer-motion";
@@ -178,7 +177,6 @@ export default function TabsScreen() {
 function Header({
   links,
 }: Readonly<{ links: UserLinkProps[] }>) {
-  const navigate = useNavigate();
   const auth = useAuth();
   const [showMenu, setShowMenu] = useState(false);
   const avatarRef = useRef(null);
@@ -283,10 +281,6 @@ function Header({
 }
 
 const HeaderNoAuth = () => {
-  const navigate = useNavigate();
-
-  const auth = useAuth();
-
   const [show, setShow] = useState(false);
 
   const buttonRef = useRef(null);
@@ -328,14 +322,6 @@ const HeaderNoAuth = () => {
             </p>
             <div className="w-full bg-border h-[1px]"></div>
             <ul>
-              <li className="py-4 px-2 text-left text-nowrap">
-                <CustomLink
-                  to="/registro"
-                  disabled={false}
-                >
-                  Convierte en anfitrión
-                </CustomLink>
-              </li>
               <li>
                 <div className="w-full bg-border h-[1px]"></div>
               </li>

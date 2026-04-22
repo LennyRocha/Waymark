@@ -174,17 +174,6 @@ export default function NavigationList() {
       return (
         <ul>
           <li className="py-4 px-2 text-left text-nowrap">
-            <CustomLink
-              to="/registro"
-              disabled={false}
-            >
-              Convierte en anfitrión
-            </CustomLink>
-          </li>
-          <li>
-            <div className="w-full bg-border h-[1px]"></div>
-          </li>
-          <li className="py-4 px-2 text-left text-nowrap">
             <CustomLink to="/login" disabled={false}>
               Iniciar sesión
             </CustomLink>
