@@ -41,8 +41,8 @@ export default function FiltrosPage() {
     page: undefined,
     size: undefined,
     // Fechas
-    entrada: checkIn?.replaceAll("-", "/") || undefined,
-    salida: checkOut?.replaceAll("-", "/") || undefined,
+    entrada: parseFecha(checkIn),
+    salida: parseFecha(checkOut),
   };
 
   function setFiltro(key: "string", value: any) {
@@ -52,4 +52,13 @@ export default function FiltrosPage() {
   const propiedadesQuery = usePropiedades(filtros);
   console.log(propiedadesQuery.data);
   return <div>{JSON.stringify(filtros)}</div>;
+}
+
+function parseFecha(fecha: string | null): string | undefined {
+  if (!fecha) return undefined;
+  const [day, month, year] = fecha.split("/").map(Number);
+  if (!day || !month || !year) return undefined;
+  return `${year}-${month.toString().padStart(2, "0")}-${day
+    .toString()
+    .padStart(2, "0")}`;
 }

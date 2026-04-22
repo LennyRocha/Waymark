@@ -167,3 +167,20 @@
     background-size: cover;
     background-position: center;
 }
+
+/* Estilo definitivo para días deshabilitados */
+.react-calendar__tile--disabled {
+    pointer-events: none !important;
+    background-color: #fee2e2 !important;
+    color: #b91c1c !important;
+    border-color: transparent !important;
+    cursor: not-allowed !important;
+    opacity: 0.6;
+}
+
+/* Bloquear hover visual en disabled */
+.react-calendar__tile--disabled:hover {
+    background-color: #fee2e2 !important;
+    color: #b91c1c !important;
+    border-color: transparent !important;
+}

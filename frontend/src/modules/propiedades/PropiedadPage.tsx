@@ -72,6 +72,7 @@ import Card from "./types/Card";
 import useReservaMutation from "../reservas/hooks/useReservaMutation";
 import { useQueryClient } from "@tanstack/react-query";
 import { getAxiosErrorMessage } from "../../utils/getAxiosErrorMessage";
+import useReservasPropiedad from "./hooks/useReservasPropiedad";
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 const MAX_LENGTH = 500;
@@ -98,6 +99,7 @@ export default function PropiedadPage() {
   const cardQuery = useCard(id);
   const promedioQuery = usePromedio(id);
   const calificacionesQuery = useCalificaciones(id);
+  const reservasQuery = useReservasPropiedad(id);
 
   const isBestRated =
     (promedioQuery.data?.promedio ?? 0) >= 4.5 &&
@@ -147,6 +149,7 @@ export default function PropiedadPage() {
     hostQuery.refetch();
     cardQuery.refetch();
     promedioQuery.refetch();
+    reservasQuery.refetch();
   }
 
   const sectionRef = useRef(null);
@@ -170,10 +173,12 @@ export default function PropiedadPage() {
     cardQuery,
     promedioQuery,
     calificacionesQuery,
+    reservasQuery,
   ]);
   const hasPageError = hasAnyQueryError([
     propiedad,
     hostQuery,
+    reservasQuery,
   ]);
 
   const queryClient = useQueryClient();
@@ -223,6 +228,27 @@ export default function PropiedadPage() {
     },
   });
 
+  function normalizarFecha(fecha: string) {
+    const d = new Date(fecha);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }
+
+  const fechasBloqueadas = useMemo(() => {
+    if (!reservasQuery.data) return [];
+
+    return reservasQuery.data.map((r) => ({
+      inicio: normalizarFecha(r.fecha_inicio),
+      fin: normalizarFecha(r.fecha_fin),
+    }));
+  }, [reservasQuery.data]);
+
+  function estaBloqueada(date: Date) {
+    return fechasBloqueadas.some(({ inicio, fin }) => {
+      return date >= inicio && date < fin;
+    });
+  }
+
   if (isPageLoading)
     return (
       <main className="w-[100dvw] h-[100dvh] flex items-center justify-center">
@@ -233,7 +259,11 @@ export default function PropiedadPage() {
     return (
       <main className="w-[100dvw] h-[100dvh]">
         <ErrorViewComponent
-          error={propiedad.error || hostQuery.error}
+          error={
+            propiedad.error ||
+            hostQuery.error ||
+            reservasQuery.error
+          }
           retryFunction={() => refetchAll()}
         />
       </main>
@@ -448,6 +478,7 @@ export default function PropiedadPage() {
             <CalendarContainer
               range={range}
               setRange={setRange}
+              blockFecha={estaBloqueada}
             />
             <div className="m-2 w-full flex items-center justify-end">
               <CustomButton
@@ -759,23 +790,15 @@ type HeaderProps = {
 };
 
 const Header = ({ toggle, value }: HeaderProps) => {
-  const navigate = useNavigate();
-
   const ubicaciones = useUbicaciones();
   const isLoading =
     ubicaciones.isInitialLoading || ubicaciones.isLoading;
-
-  const auth = useAuth();
 
   const [scrolled, setScrolled] = useState(true);
   const [show, setShow] = useState(false);
 
   const buttonRef = useRef(null);
 
-  const showLink = useWatchResize({
-    pixeles: 1125,
-    metrica: "min",
-  });
   const showBrand = useWatchResize({
     pixeles: 975,
     metrica: "min",
@@ -1282,7 +1305,15 @@ function groupAmenidades(
   return orderedEntries;
 }
 
-const CalendarContainer = ({ range, setRange }) => {
+const CalendarContainer = ({
+  range,
+  setRange,
+  blockFecha,
+}: {
+  range: [Date | null, Date | null];
+  setRange: (range: [Date | null, Date | null]) => void;
+  blockFecha: (date: Date) => boolean;
+}) => {
   const isLarge = useWatchResize({
     pixeles: 768,
     metrica: "min",
@@ -1304,6 +1335,7 @@ const CalendarContainer = ({ range, setRange }) => {
         locale="es-MX"
         minDetail="month"
         maxDetail="month"
+        tileDisabled={({ date }) => blockFecha(date)}
       />
     </div>
   );

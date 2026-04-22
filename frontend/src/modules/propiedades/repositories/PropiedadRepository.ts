@@ -13,6 +13,7 @@ import Card, {
 import apiToken from "../../../utils/apiToken";
 import apiLanding from "../../../utils/apiLanding";
 import Anfitrion from "../types/Anfitrion";
+import Reserva from "../../reservas/types/Reserva";
 const prefix = "propiedades/";
 const PropiedadRepository = {
   findAll: async (filters: FiltrosPropiedades = {}) => {
@@ -24,6 +25,10 @@ const PropiedadRepository = {
           }
         : filters,
     });
+    return res.data;
+  },
+  getFechas: async (id: number) => {
+    const res = await api.get<Reserva[]>(`reservas/calendario_propiedad/${id}`);
     return res.data;
   },
   findOne: async (id: number) => {
