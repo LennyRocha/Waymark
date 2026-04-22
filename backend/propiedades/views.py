@@ -66,9 +66,11 @@ class PropiedadViewSet(viewsets.ModelViewSet):
         return [AllowAny()]
 
     def get_queryset(self):
-        queryset = Propiedad.objects.select_related(
-            "divisa", "tipo_propiedad"
-        ).prefetch_related("amenidades", "imagenes")
+        queryset = (
+            Propiedad.objects.select_related("divisa", "tipo_propiedad")
+            .prefetch_related("amenidades", "imagenes")
+            .order_by("propiedad_id")
+        )
 
         if self.action == "list":
             queryset = queryset.filter(activa=True)
