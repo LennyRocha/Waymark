@@ -72,6 +72,13 @@ const FavoritoButton = ({
       await favoritoPost.mutateAsync(newFavorito);
     }
   };
+  const activeColor = active
+    ? "var(--primario)"
+    : "var(--text-primary)";
+  const color =
+    favoritoPost.isPending || favoritoDelete.isPending
+      ? "var(--color-text-secondary)"
+      : activeColor;
   return (
     <div>
       <button
@@ -81,9 +88,7 @@ const FavoritoButton = ({
         <MotionHeart
           size={20}
           style={{
-            color: active
-              ? "var(--primario)"
-              : "var(--text-primary)",
+            color,
           }}
           fill={active ? "currentColor" : "none"}
           strokeWidth={active ? 0 : 2}
@@ -94,9 +99,7 @@ const FavoritoButton = ({
         {!isOnSmallScreen && (
           <motion.p
             animate={{
-              color: active
-                ? "var(--primario)"
-                : "var(--text-primary)",
+              color,
             }}
             className="text-sm font-semibold"
           >

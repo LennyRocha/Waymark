@@ -14,10 +14,11 @@ import apiToken from "../../../utils/apiToken";
 import apiLanding from "../../../utils/apiLanding";
 import Anfitrion from "../types/Anfitrion";
 import Reserva from "../../reservas/types/Reserva";
+import PropiedadPaginacion from "../types/PropiedadPaginacion";
 const prefix = "propiedades/";
 const PropiedadRepository = {
   findAll: async (filters: FiltrosPropiedades = {}) => {
-    const res = await api.get<Propiedad[]>(prefix, {
+    const res = await api.get<PropiedadPaginacion>(prefix, {
       params: filters.amenidades
         ? {
             ...filters,
@@ -42,7 +43,7 @@ const PropiedadRepository = {
     return res.data;
   },
   getCard: async (id: number) => {
-    const res = await api.get<Card>(
+    const res = await apiLanding.get<Card>(
       `${prefix}cards/${id}/`,
     );
     return res.data;
