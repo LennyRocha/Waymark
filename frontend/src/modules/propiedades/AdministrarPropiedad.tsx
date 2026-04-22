@@ -138,7 +138,7 @@ export default function AdministrarPropiedad() {
             setSuccess(true);
             toast.success("!Propiedad modificada correctamente!", { id: toastRef.current, duration: 3000 });
             queryClient.invalidateQueries({ queryKey: ["propiedades_host"] });
-            queryClient.invalidateQueries({ queryKey: ["propiedad", id] });
+            queryClient.invalidateQueries({ queryKey: ["propiedad"] });
             setSavedData(false);
             setUpdatedImages(false);
             setTimeout(() => {
@@ -166,7 +166,7 @@ export default function AdministrarPropiedad() {
             toast.success("!Imagenes guardadas correctamente!", { id: toastRef.current, duration: 3000 });
             if (!updatedImages) {
                 queryClient.invalidateQueries({ queryKey: ["propiedades_host"] });
-                queryClient.invalidateQueries({ queryKey: ["propiedad", id] });
+                queryClient.invalidateQueries({ queryKey: ["propiedad"] });
                 setTimeout(() => {
                     form.reset();
                     navigate("/host/listings");
@@ -194,7 +194,7 @@ export default function AdministrarPropiedad() {
             if (updatedImages) {
                 setUpdatedImages(false);
                 queryClient.invalidateQueries({ queryKey: ["propiedades_host"] });
-                queryClient.invalidateQueries({ queryKey: ["propiedad", id] });
+                queryClient.invalidateQueries({ queryKey: ["propiedad"] });
                 setTimeout(() => {
                     form.reset();
                     navigate("/host/listings");

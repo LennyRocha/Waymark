@@ -74,7 +74,7 @@ export default function MisPropiedades() {
         closeModal();
         toast.success("¡Estado de propiedad actualizado!");
         queryClient.invalidateQueries({
-          queryKey: ["propiedad", id],
+          queryKey: ["propiedad"],
         });
       },
       onerror: (error) => {

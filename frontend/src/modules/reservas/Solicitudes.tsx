@@ -1,5 +1,9 @@
 // @ts-nocheck
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import CustomLoader from "../../layout/CustomLoader";
 import Avatar from "../../components/Avatar";
 import apiToken from "../../utils/apiToken";
@@ -62,7 +66,12 @@ export default function Solicitudes() {
       apiToken.patch(`/reservas/${reservaId}/confirmar/`),
     onSuccess: () => {
       toast.success("Reserva confirmada");
-      queryClient.invalidateQueries({ queryKey: ["solicitudes"] });
+      queryClient.invalidateQueries({
+        queryKey: ["solicitudes"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["reservas_propiedad"],
+      });
     },
     onError: (err: any) => {
       toast.error(
@@ -77,7 +86,12 @@ export default function Solicitudes() {
       apiToken.patch(`/reservas/${reservaId}/cancelar/`),
     onSuccess: () => {
       toast.success("Reserva cancelada");
-      queryClient.invalidateQueries({ queryKey: ["solicitudes"] });
+      queryClient.invalidateQueries({
+        queryKey: ["solicitudes"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["reservas_propiedad"],
+      });
     },
     onError: (err: any) => {
       toast.error(
@@ -159,7 +173,9 @@ export default function Solicitudes() {
                   <div className="flex gap-2 mt-1">
                     <button
                       onClick={() =>
-                        confirmarMutation.mutate(s.reserva_id)
+                        confirmarMutation.mutate(
+                          s.reserva_id,
+                        )
                       }
                       disabled={
                         confirmarMutation.isPending ||
@@ -171,7 +187,9 @@ export default function Solicitudes() {
                     </button>
                     <button
                       onClick={() =>
-                        cancelarMutation.mutate(s.reserva_id)
+                        cancelarMutation.mutate(
+                          s.reserva_id,
+                        )
                       }
                       disabled={
                         confirmarMutation.isPending ||
