@@ -35,6 +35,8 @@ import traceback
 from django.db import IntegrityError
 from rest_framework.exceptions import ValidationError
 from .paginations import PropiedadPagination
+from reservas.models import Reserva
+from django.db.models import Exists, OuterRef
 
 from loguru import logger
 
@@ -74,6 +76,23 @@ class PropiedadViewSet(viewsets.ModelViewSet):
 
         if self.action == "list":
             queryset = queryset.filter(activa=True)
+
+            entrada = self.request.query_params.get("entrada")
+            salida = self.request.query_params.get("salida")
+
+            if entrada and salida:
+
+                reservas_solapadas = Reserva.objects.filter(
+                    propiedad_id=OuterRef("propiedad_id"),
+                    fecha_inicio__lt=salida,
+                    fecha_fin__gt=entrada,
+                )
+
+                queryset = queryset.annotate(
+                    tiene_reserva=Exists(reservas_solapadas)
+                ).filter(
+                    tiene_reserva=False
+                )
 
         return queryset
 

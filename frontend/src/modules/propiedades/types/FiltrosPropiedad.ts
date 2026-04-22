@@ -8,8 +8,8 @@ type FiltrosPropiedades = {
   camas?: number | undefined;
   tipo_id?: number | undefined;
   amenidades?: number[] | undefined;
-  ninos?: boolean | undefined;
-  mascotas?: boolean | undefined;
+  regla_ninos?: boolean | undefined;
+  regla_mascotas?: boolean | undefined;
   entrada?: string | undefined;
   salida?: string | undefined;
   page?: number | undefined;

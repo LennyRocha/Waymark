@@ -27,8 +27,8 @@ export default function FiltrosPage() {
     max_huespedes: homies
       ? Number.parseInt(homies)
       : undefined,
-    ninos: kids ? kids === "true" : undefined,
-    mascotas: pets ? pets === "true" : undefined,
+    regla_ninos: kids ? kids === "true" : undefined,
+    regla_mascotas: pets ? pets === "true" : undefined,
     // Campos que se obtienen de un modal
     precio_min: 0,
     precio_max: 799999.99,
@@ -41,8 +41,8 @@ export default function FiltrosPage() {
     page: undefined,
     size: undefined,
     // Fechas
-    entrada: checkIn || undefined,
-    salida: checkOut || undefined,
+    entrada: checkIn?.replaceAll("-", "/") || undefined,
+    salida: checkOut?.replaceAll("-", "/") || undefined,
   };
 
   function setFiltro(key: "string", value: any) {

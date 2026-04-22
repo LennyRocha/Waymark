@@ -39,7 +39,7 @@ def _es_anfitrion(user) -> bool:
 
 class ReservaViewSet(GenericViewSet):
     def get_permissions(self):
-        if self.action in ("list",):
+        if self.action in ("list", "calendario_propiedad"):
             return [AllowAny()]
         return [IsAuthenticated()]
 
@@ -141,7 +141,25 @@ class ReservaViewSet(GenericViewSet):
             reservas, many=True, context={"propiedades_map": propiedades_map}
         )
         return Response(serializer.data)
-
+    
+    @action(detail=False, methods=["GET"], url_path="calendario_propiedad/(?P<pk>[^/.]+)")
+    def calendario_propiedad(self, request, pk=None):
+        """GET /api/reservas/calendario_propiedad/{pk}/ — reservas de lecta de una propiedad específica"""
+        self.queryset = Reserva.objects.all().select_related("estado", "huesped").order_by("fecha_inicio")
+        if not pk:
+            return Response(
+                {"detail": "El ID de la propiedad es requerido."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+            
+        reserva = (
+            Reserva.objects.filter(propiedad_id=pk, estado=2)
+            .select_related("estado")
+            .order_by("fecha_inicio")
+        )
+        serializer = ReservaSerializer(reserva, many=True)
+        return Response(serializer.data)
+        
     @action(detail=False, methods=["get"], url_path="mis-reservas")
     def mis_reservas(self, request):
         """GET /api/reservas/mis-reservas/ — reservas del usuario autenticado."""
