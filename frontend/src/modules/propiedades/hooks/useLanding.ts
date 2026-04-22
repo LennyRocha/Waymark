@@ -1,9 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import PropiedadRepository from "../repositories/PropiedadRepository";
+import { useAuth } from "../../../context/AuthContext";
 
 export default function useLanding() {
+  const auth = useAuth();
+  const token = auth?.token || null;
   return useQuery({
-    queryKey: ["landing"],
+    queryKey: ["landing", token],
 
     queryFn: () => PropiedadRepository.getLanding(),
 

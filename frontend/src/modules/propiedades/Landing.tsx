@@ -1,10 +1,6 @@
 // @ts-nocheck
 /* eslint-disable no-unused-vars */
-import React, {
-  useState,
-  useRef,
-  useEffect,
-} from "react";
+import React, { useState, useRef, useEffect } from "react";
 import PropiedadCard from "./components/PropiedadCard";
 import {
   ArrowRight,
@@ -32,7 +28,6 @@ import ErrorViewComponent from "../../layout/ErrorViewComponent";
 import EmptyListComponent from "../../layout/EmptyListComponent";
 import { Ubicacion } from "./types/Propiedad";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
 import { CardsResponse } from "./types/Card";
 import NavigationList from "./components/NavigationList";
 
@@ -304,10 +299,6 @@ const Header = ({
   isWaiting = false,
   ubicaciones = [],
 }: HeaderProps) => {
-  const navigate = useNavigate();
-
-  const auth = useAuth();
-
   const { scrollY } = useScroll();
   const [scrolled, setScrolled] = useState(false);
   const [show, setShow] = useState(false);
@@ -319,16 +310,12 @@ const Header = ({
   const [isSmall, setIsSmall] = useState(
     window.innerWidth <= 767,
   );
-  const [showLink, setShowLink] = useState(
-    window.innerWidth >= 1125,
-  );
   const [showBrand, setShowBrand] = useState(
     window.innerWidth >= 950,
   );
 
   function updateWidth() {
     setIsSmall(window.innerWidth <= 767);
-    setShowLink(window.innerWidth >= 1125);
     setShowBrand(window.innerWidth >= 950);
   }
 

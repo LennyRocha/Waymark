@@ -1,14 +1,12 @@
 import {
   createContext,
   useContext,
-  useEffect,
   useMemo,
   useState,
   type ReactNode,
 } from "react";
 import Role from "../types/Rol";
 import useSetUserImage from "../utils/useSetUserImage";
-import { useQueryClient } from "@tanstack/react-query";
 
 export type AuthContextValue = {
   token: string | null;
@@ -34,7 +32,6 @@ export function AuthProvider({
   children,
 }: Readonly<AuthProviderProps>) {
   useSetUserImage();
-  const queryClient = useQueryClient();
   const [token, setToken] = useState<string | null>(
     localStorage.getItem("access_token"),
   );
@@ -75,12 +72,6 @@ export function AuthProvider({
     setToken(null);
     setRefreshToken(null);
   };
-
-  useEffect(() => {
-    queryClient.invalidateQueries({
-      queryKey: ["landing"],
-    });
-  }, [token]);
 
   const setAuthRefreshToken = (newToken: string | null) => {
     if (newToken) {
