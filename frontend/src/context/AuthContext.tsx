@@ -1,6 +1,7 @@
 import {
   createContext,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type ReactNode,
@@ -73,10 +74,13 @@ export function AuthProvider({
     localStorage.removeItem("user_image");
     setToken(null);
     setRefreshToken(null);
+  };
+
+  useEffect(() => {
     queryClient.invalidateQueries({
       queryKey: ["landing"],
     });
-  };
+  }, [token]);
 
   const setAuthRefreshToken = (newToken: string | null) => {
     if (newToken) {

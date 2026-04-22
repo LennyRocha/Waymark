@@ -3,7 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import api from "../../utils/api";
 import { useAuth } from "../../context/AuthContext";
 import PropTypes from 'prop-types'
-import { useQueryClient } from "@tanstack/react-query";
 
 function routeByRole(roleName = "") {
   const role = roleName.trim().toLowerCase();
@@ -14,7 +13,6 @@ function routeByRole(roleName = "") {
 }
 
 export default function Login({ fromModal = false, closeModal }) {
-  const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [form, setForm] = useState({
     correo: "",
@@ -44,8 +42,6 @@ export default function Login({ fromModal = false, closeModal }) {
       setAuthToken(data.access);
       setAuthRefreshToken(data.refresh);
       localStorage.setItem("user_role", data?.usuario?.rol_nombre || "");
-
-      queryClient.invalidateQueries({ queryKey: ["landing"] });
 
       fromModal ? closeModal() : navigate(routeByRole(data?.usuario?.rol_nombre));
     } catch (err) {
