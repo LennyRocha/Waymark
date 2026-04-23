@@ -42,9 +42,6 @@ function DivisasPage() {
       toast.success(id ? "Divisa actualizada exitosamente" : "Divisa guardada exitosamente");
       clearForm();
     },
-    onError: (error: any) => {
-      console.log(error.response?.data, error);
-    },
   });
   const emptyForm = {
     nombre: "",

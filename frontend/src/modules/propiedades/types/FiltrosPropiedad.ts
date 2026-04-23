@@ -8,8 +8,8 @@ type FiltrosPropiedades = {
   camas?: number | undefined;
   tipo_id?: number | undefined;
   amenidades?: number[] | undefined;
-  regla_ninos?: boolean | undefined;
-  regla_mascotas?: boolean | undefined;
+  regla_ninos?: boolean | undefined | number;
+  regla_mascotas?: boolean | undefined | number;
   entrada?: string | undefined;
   salida?: string | undefined;
   page?: number | undefined;
@@ -17,3 +17,20 @@ type FiltrosPropiedades = {
 };
 //Enviar amenidades: filters.amenidades?.join(",")
 export default FiltrosPropiedades;
+
+export type FiltrosPropiedadesKeys =
+  | "ciudad"
+  | "precio_min"
+  | "precio_max"
+  | "max_huespedes"
+  | "habitaciones"
+  | "banos"
+  | "camas"
+  | "tipo_id"
+  | "amenidades"
+  | "regla_ninos"
+  | "regla_mascotas"
+  | "entrada"
+  | "salida"
+  | "page"
+  | "size";

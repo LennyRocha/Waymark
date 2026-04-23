@@ -219,7 +219,6 @@ export default function PropiedadPage() {
       });
     },
     onError: (err) => {
-      console.log(err);
       const msg =
         err?.response?.data?.detail ||
         getAxiosErrorMessage(err) ||
