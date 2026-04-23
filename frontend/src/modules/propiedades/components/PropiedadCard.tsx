@@ -16,10 +16,12 @@ const MotionHeart = motion.create(Heart);
 
 type Props = {
   propiedad: Card;
+  fullWidth?: boolean;
 };
 
 export default function PropiedadCard({
   propiedad,
+  fullWidth = false,
 }: Readonly<Props>) {
   const [open, setOpen] = React.useState(false);
   const openModal = () => setOpen(true);
@@ -81,12 +83,12 @@ export default function PropiedadCard({
   };
   const propType = `${propiedad.tipo.charAt(0).toUpperCase()}${propiedad.tipo.slice(1)}`;
   return (
-    <div className=" w-[clamp(138px,13.5%,250px)] shrink-0   relative flex flex-col items-start justify-start gap-2">
-      <button onClick={() => goToPropiedad()}>
+    <div className={`shrink-0 relative flex flex-col items-start justify-start gap-2 ${fullWidth ? "flex-1" : " w-[clamp(138px,13.5%,250px)] "}`}>
+      <button onClick={() => goToPropiedad()} className="w-full">
         <img
           src={propiedad.portada}
           alt={propiedad.slug}
-          className="rounded-3xl w-full h-auto max-h-[238px] min-h-[138px] aspect-square object-cover object-center"
+          className="rounded-3xl w-full h-auto max-h-[238px] min-h-[138px] aspect-square object-cover object-center shrink-0"
           title={propType + " en " + propiedad.ciudad}
           draggable="false"
         />

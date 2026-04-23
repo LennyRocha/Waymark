@@ -106,6 +106,53 @@ class PropiedadViewSet(viewsets.ModelViewSet):
 
     filterset_class = PropiedadFilter
     serializer_class = PropiedadSerializer
+    
+    def list(self, request, *args, **kwargs):
+        # 1️⃣ Filtrar propiedades normalmente
+        queryset = self.filter_queryset(self.get_queryset())
+
+        # 2️⃣ Paginar propiedades
+        page = self.paginate_queryset(queryset)
+
+        if page is not None:
+
+            # Obtener IDs de la página
+            propiedad_ids = [
+                p.propiedad_id
+                for p in page
+            ]
+
+            # Buscar Cards correspondientes
+            cards_queryset = Cards.objects.filter(
+                propiedad_id__in=propiedad_ids
+            )
+
+            serializer = CardSerializer(
+                cards_queryset,
+                many=True,
+                context={"request": request}
+            )
+
+            return self.get_paginated_response(
+                serializer.data
+            )
+
+        # Si no hay paginación
+        propiedad_ids = list(
+            queryset.values_list("propiedad_id", flat=True)
+        )
+
+        cards_queryset = Cards.objects.filter(
+            propiedad_id__in=propiedad_ids
+        )
+
+        serializer = CardSerializer(
+            cards_queryset,
+            many=True,
+            context={"request": request}
+        )
+
+        return Response(serializer.data)    
 
     @action(detail=False, methods=["GET"])
     def cards(self, request):

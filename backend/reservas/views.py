@@ -144,7 +144,7 @@ class ReservaViewSet(GenericViewSet):
     
     @action(detail=False, methods=["GET"], url_path="calendario_propiedad/(?P<pk>[^/.]+)")
     def calendario_propiedad(self, request, pk=None):
-        """GET /api/reservas/calendario_propiedad/{pk}/ — reservas de lecta de una propiedad específica"""
+        """GET /api/reservas/calendario_propiedad/{pk}/ — reservas de lectura de una propiedad específica"""
         self.queryset = Reserva.objects.all().select_related("estado", "huesped").order_by("fecha_inicio")
         if not pk:
             return Response(
