@@ -215,7 +215,7 @@ const MenuHuespedes = ({
     if (visible) {
       functions?.setConPets?.(false);
       functions?.setConKids?.(false);
-      functions?.setHuespedes?.(null);
+      functions?.setHuespedes?.(1);
       setGuests?.(
         values?.huespedes
           ? `${values?.huespedes} Huéspedes`
@@ -425,7 +425,7 @@ const Buscador = ({
   }
 
   const params = new URLSearchParams();
-  makeQuery(params, values);
+  makeQuery(params, values, guests);
 
   const query = ubicacion
     ? ubicacion.replace(", ", "-")
@@ -571,6 +571,7 @@ const Buscador = ({
 export function makeQuery(
   params: URLSearchParams,
   values: Values,
+  guests: string = "",
 ) {
   const { checkin, checkout, huespedes, conPets, conKids } =
     values;
@@ -581,7 +582,7 @@ export function makeQuery(
   if (checkout) {
     params.set("checkout", checkout);
   }
-  if (huespedes) {
+  if (huespedes && guests !== "") {
     params.set("adults", huespedes.toString());
   }
   if (conPets) {
