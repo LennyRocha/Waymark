@@ -220,7 +220,6 @@ export default function Registro() {
               >
                 <option value="3">Cliente</option>
                 <option value="2">Anfitrion</option>
-                <option value="1">Admin</option>
                 <option value="4">Anfitrión  turista</option>
               </select>
             </div>

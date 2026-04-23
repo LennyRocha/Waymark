@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import api from "../../utils/api";
 import { useAuth } from "../../context/AuthContext";
 import PropTypes from 'prop-types'
+import useSetUserImage from "../../utils/useSetUserImage";
 
 function routeByRole(roleName = "") {
   const role = roleName.trim().toLowerCase();
@@ -22,6 +23,8 @@ export default function Login({ fromModal = false, closeModal }) {
   const [error, setError] = useState("");
 
   const { setAuthToken, setAuthRefreshToken } = useAuth();
+
+  useSetUserImage();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
