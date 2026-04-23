@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from .serializers import EscanearINESerializer
-from .services import procesar_ine_con_ocr_space
+from .services import OCRSpaceError, procesar_ine_con_ocr_space
 
 
 class EscanearINEView(APIView):
@@ -38,6 +38,15 @@ class EscanearINEView(APIView):
     status=status.HTTP_200_OK
 )
 
+        except OCRSpaceError as e:
+            return Response(
+                {
+                    "status": "error",
+                    "mensaje": e.mensaje,
+                    "detalle": e.detalle,
+                },
+                status=e.status_code,
+            )
         except Exception as e:
             return Response(
                 {
