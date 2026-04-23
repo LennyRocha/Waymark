@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { MapPin, Minus, Plus, Search } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import DropdownParent from "../../../components/DropdownParent";
@@ -16,10 +16,19 @@ import {
   useParamsValues,
 } from "./Buscador";
 import { useNavigate } from "react-router-dom";
+import FiltrosPropiedades, {
+  FiltrosPropiedadesKeys,
+} from "../types/FiltrosPropiedad";
 
 type Props = {
   isWaiting: boolean;
   locations: Ubicacion[];
+  filtros?: FiltrosPropiedades;
+  setFiltro?: (
+    key: FiltrosPropiedadesKeys,
+    value: any,
+  ) => void;
+  setFiltros?: (values: Record<string, any>) => void;
 };
 
 type MenuProps = {
@@ -32,6 +41,9 @@ type MenuProps = {
 export default function BuscadorBoton({
   isWaiting = false,
   locations = [],
+  filtros,
+  setFiltro,
+  setFiltros,
 }: Readonly<Props>) {
   const [vis, setVis] = useState(false);
   const buttonReff = useRef<HTMLButtonElement | null>(null);
@@ -52,6 +64,31 @@ export default function BuscadorBoton({
     conKids,
     setConKids,
   } = useParamsValues();
+
+  useEffect(() => {
+    if (filtros) {
+      setUbicacion(filtros.ciudad ?? "");
+      setCheckin(filtros.entrada ?? "");
+      setCheckout(filtros.salida ?? "");
+      setConPets(filtros.regla_mascotas);
+      setConKids(filtros.regla_ninos);
+      setHuespedes(filtros.max_huespedes ?? null);
+    }
+  }, [filtros]);
+
+  function setEverything() {
+    if (setFiltros) {
+      close();
+      setFiltros({
+        ciudad: ubicacion,
+        entrada: checkin,
+        salida: checkout,
+        regla_mascotas: conPets,
+        regla_ninos: conKids,
+        max_huespedes: huespedes,
+      });
+    }
+  }
 
   const filteredLocations = React.useMemo(() => {
     return locations;
@@ -332,12 +369,12 @@ const MenuHuespedes = ({
       />
       <CheckNav
         question="¿Viajas con mascotas?"
-        checked={values?.conPets ?? false}
+        checked={Boolean(values?.conPets)}
         onChange={functions?.setConPets ?? (() => {})}
       />
       <CheckNav
         question="¿Viajas con niños?"
-        checked={values?.conKids ?? false}
+        checked={Boolean(values?.conKids)}
         onChange={functions?.setConKids ?? (() => {})}
       />
       <small className="text-[10px] text-left text-text-secondary">

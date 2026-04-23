@@ -19,6 +19,9 @@ import { Ubicacion } from "../types/Propiedad";
 import { CustomCheckBox } from "../../../components/CustomInputs";
 import Calendar from "react-calendar";
 import "../css/propiedades.css";
+import FiltrosPropiedades, {
+  FiltrosPropiedadesKeys,
+} from "../types/FiltrosPropiedad";
 
 export type Functions = {
   setUbicacion: (ciudad: string) => void;
@@ -32,8 +35,8 @@ export type Values = {
   ubicacion: string;
   checkin: string;
   checkout: string;
-  conPets: boolean | undefined;
-  conKids: boolean | undefined;
+  conPets: boolean | undefined | number;
+  conKids: boolean | undefined | number;
   huespedes: number | null;
 };
 
@@ -44,6 +47,8 @@ type DropdownMenuProps = {
   functions?: Functions;
   values?: Values;
   close?: () => void;
+  setGuests?: (value: string | undefined) => void;
+  filtros?: FiltrosPropiedades;
 };
 
 const MenuDestino = ({
@@ -198,18 +203,35 @@ const MenuHuespedes = ({
   visible,
   functions,
   values,
+  setGuests,
+  filtros,
 }: Readonly<DropdownMenuProps>) => {
+  React.useEffect(() => {
+    functions?.setConPets?.(false);
+    functions?.setConKids?.(false);
+    functions?.setHuespedes?.(null);
+  }, []);
   React.useEffect(() => {
     if (visible) {
       functions?.setConPets?.(false);
       functions?.setConKids?.(false);
       functions?.setHuespedes?.(1);
-    } else {
+      setGuests?.(
+        values?.huespedes
+          ? `${values?.huespedes} Huéspedes`
+          : "",
+      );
+    } else if (!visible && filtros) {
       functions?.setConPets?.(undefined);
       functions?.setConKids?.(undefined);
       functions?.setHuespedes?.(null);
+      setGuests?.("");
     }
   }, [visible]);
+  function onChange(value: number | null) {
+    setGuests?.(`${value} Huéspedes`);
+    functions?.setHuespedes(value);
+  }
   return (
     <CustomDropdown
       anchorRef={anchorRef}
@@ -221,16 +243,16 @@ const MenuHuespedes = ({
         <SelectNav
           value={values?.huespedes ?? null}
           label="¿Cuántos se van a alojar?"
-          change={functions?.setHuespedes ?? (() => {})}
+          change={onChange ?? (() => {})}
         />
         <CheckNav
           question="¿Viajas con mascotas?"
-          checked={values?.conPets ?? false}
+          checked={Boolean(values?.conPets)}
           onChange={functions?.setConPets ?? (() => {})}
         />
         <CheckNav
           question="¿Viajas con niños?"
-          checked={values?.conKids ?? false}
+          checked={Boolean(values?.conKids)}
           onChange={functions?.setConKids ?? (() => {})}
         />
         <small className="text-[10px] text-left text-text-secondary">
@@ -284,6 +306,12 @@ type BuscadorProps = {
   setScrolled: (value: boolean) => void;
   isWaiting: boolean;
   locations: Ubicacion[];
+  filtros?: FiltrosPropiedades;
+  setFiltro?: (
+    key: FiltrosPropiedadesKeys,
+    value: any,
+  ) => void;
+  toggle?: (val: boolean) => void;
 };
 
 const Buscador = ({
@@ -291,6 +319,9 @@ const Buscador = ({
   setScrolled,
   isWaiting,
   locations = [],
+  filtros,
+  setFiltro,
+  toggle,
 }: Readonly<BuscadorProps>) => {
   const [focus, setFocus] = useState(false);
   const [inputIdx, setInputIdx] = useState(0);
@@ -330,6 +361,28 @@ const Buscador = ({
     content,
   } = useParamsValues();
 
+  const [guests, setGuests] = useState<string | undefined>(
+    undefined,
+  );
+
+  useEffect(() => {
+    if (filtros) {
+      setUbicacion(filtros.ciudad ?? "");
+      setCheckin(filtros.entrada ?? "");
+      setCheckout(filtros.salida ?? "");
+      if (filtros.regla_mascotas) {
+        setConPets(filtros.regla_mascotas);
+      }
+      if (filtros.regla_ninos) {
+        setConKids(filtros.regla_ninos);
+      }
+      if (filtros.max_huespedes && !huespedes) {
+        setHuespedes(filtros.max_huespedes);
+        setGuests(content);
+      }
+    }
+  }, [filtros]);
+
   const filteredLocations = filterLocations(
     locations,
     ubicacion,
@@ -358,8 +411,21 @@ const Buscador = ({
     huespedes,
   };
 
+  function setEverything() {
+    if (setFiltro) {
+      toggle?.(false);
+      close();
+      setFiltro("ciudad", ubicacion);
+      setFiltro("entrada", checkin);
+      setFiltro("salida", checkout);
+      setFiltro("regla_mascotas", conPets);
+      setFiltro("regla_ninos", conKids);
+      setFiltro("max_huespedes", huespedes);
+    }
+  }
+
   const params = new URLSearchParams();
-  makeQuery(params, values);
+  makeQuery(params, values, guests);
 
   const query = ubicacion
     ? ubicacion.replace(", ", "-")
@@ -368,6 +434,8 @@ const Buscador = ({
   const url = ubicacion
     ? `/s/${query}/homes?${params.toString()}`
     : `/s/homes?${params.toString()}`;
+
+  const buscadorSetFiltroProps = filtros ? { filtros } : {};
 
   return (
     <DropdownParent
@@ -405,7 +473,9 @@ const Buscador = ({
             focus={focus}
             scrolled={scrolled}
             showButton={false}
-            onClick={() => navigate(url)}
+            onClick={() =>
+              setFiltro ? setEverything() : navigate(url)
+            }
             cleanInput={() => setUbicacion("")}
             thisFocus={inputIdx === 1}
           />
@@ -447,7 +517,7 @@ const Buscador = ({
           open={open}
           close={close}
           refProp={input3Ref}
-          value={inputIdx === 3 && huespedes ? content : ""}
+          value={huespedes ? guests : ""}
           hasButton
           isWaiting={isWaiting}
           readonly
@@ -459,6 +529,7 @@ const Buscador = ({
             onClick={() => navigate(url)}
             thisFocus={inputIdx === 3}
             cleanInput={() => {
+              setGuests("");
               setHuespedes(1);
               setConPets(false);
               setConKids(false);
@@ -488,6 +559,8 @@ const Buscador = ({
             visible={inputIdx === 3}
             functions={functions}
             values={values}
+            setGuests={setGuests}
+            {...buscadorSetFiltroProps}
           />
         </>
       )}
@@ -498,6 +571,7 @@ const Buscador = ({
 export function makeQuery(
   params: URLSearchParams,
   values: Values,
+  guests: string = "",
 ) {
   const { checkin, checkout, huespedes, conPets, conKids } =
     values;
@@ -508,7 +582,7 @@ export function makeQuery(
   if (checkout) {
     params.set("checkout", checkout);
   }
-  if (huespedes) {
+  if (huespedes && guests !== "") {
     params.set("adults", huespedes.toString());
   }
   if (conPets) {
@@ -541,10 +615,10 @@ export function useParamsValues() {
   const [checkout, setCheckout] = useState<string>("");
 
   const [conPets, setConPets] = useState<
-    boolean | undefined
+    boolean | undefined | number
   >(undefined);
   const [conKids, setConKids] = useState<
-    boolean | undefined
+    boolean | undefined | number
   >(undefined);
 
   const content = `${huespedes} Huéspedes${conPets ? " + Mascotas" : ""}${conKids ? " + Niños" : ""}`;

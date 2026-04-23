@@ -1,4 +1,4 @@
-import Propiedad from "./Propiedad";
+import Card from "./Card";
 
 export default interface PropiedadPaginacion {
     count: number;
@@ -7,5 +7,5 @@ export default interface PropiedadPaginacion {
     total_pages: number;
     next: string | null;
     previous: string | null;
-    results: Propiedad[];
+    results: Card[];
 }

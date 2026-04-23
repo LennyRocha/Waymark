@@ -112,6 +112,7 @@ export default function Landing() {
                 scrollLeft={scrollLeft}
                 scrollRight={scrollRight}
                 showPopular={false}
+                ubicaciones={ubicaciones.data ?? []}
               />
             );
           })}
@@ -132,6 +133,7 @@ type RowProps = {
   ) => void;
   showPopular?: boolean;
   list?: Card[];
+  ubicaciones?: Ubicacion[];
 };
 
 const LandingRow = ({
@@ -140,6 +142,7 @@ const LandingRow = ({
   scrollRight,
   showPopular = false,
   list = [],
+  ubicaciones = [],
 }: RowProps) => {
   const navigate = useNavigate();
   const scrollRef = useRef<HTMLSectionElement>(null);
@@ -173,6 +176,15 @@ const LandingRow = ({
     return () =>
       el.removeEventListener("scroll", checkScrollPosition);
   }, []);
+  function findRegion() {
+    const region = ubicaciones.find(
+      (ubicacion) =>
+        ubicacion.ciudad.toLowerCase() ===
+        item.ciudad.toLowerCase(),
+    )?.region;
+    return region ? `${region}` : "";
+  }
+  const region = findRegion();
   return (
     <div>
       <div
@@ -190,7 +202,7 @@ const LandingRow = ({
               navigate(
                 showPopular
                   ? `/s/homes`
-                  : `/s/${item.ciudad}/homes`,
+                  : `/s/${item.ciudad}-${region}/homes`,
               )
             }
             size={32}
